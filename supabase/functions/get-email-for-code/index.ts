@@ -23,11 +23,8 @@ Deno.serve(async (req) => {
       .eq('employee_code', employee_code)
       .single()
 
-    if (error) {
-      throw new Error('Invalid employee code.')
-    }
+    if (error) throw error
 
-    // Return only the email in a clean JSON object
     return new Response(JSON.stringify({ email: employee.email }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
