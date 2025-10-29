@@ -28,7 +28,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  // The application's primary theme configuration
   @override
   Widget build(BuildContext context) {
     TextTheme textTheme = createTextTheme(context, "Ubuntu", "Lato");
@@ -43,3 +43,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+// Set your DashboardWidget as the default screen
+// // FIX: Removed 'const' keyword to resolve the "Not a constant expression" error.
+// home: Widgets(), 

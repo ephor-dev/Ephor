@@ -23,7 +23,6 @@ dev_dependencies:
 
   flutter_lints: ^5.0.0
 
-
 flutter:
 
   # The following line ensures that the Material Icons font is
@@ -33,6 +32,9 @@ flutter:
 
   assets:
     - assets/
+    - assets/images/logo.png
+  #   - images/a_dot_ham.jpeg
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
