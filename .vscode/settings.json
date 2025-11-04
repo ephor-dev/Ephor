@@ -4,12 +4,7 @@
   "terminal.integrated.profiles.windows": {
     "PowerShell": {
       "path": "powershell.exe",
-      "args": [
-        "-NoExit",
-        "-Command",
-        "cd 'F:\\College Subjects\\AddRemovePersonnel\\addremove'"
-      ]
+      "args": []
     }
   }
 }
-
