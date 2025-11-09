@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'add_personnel_viewmodel.dart';
 import 'personnel_model.dart';
+import 'personnel_service.dart';
 
 class AddPersonnelView extends StatefulWidget {
   const AddPersonnelView({super.key});
@@ -26,7 +27,9 @@ class _AddPersonnelViewState extends State<AddPersonnelView> {
   @override
   void initState() {
     super.initState();
-    viewModel = AddPersonnelViewModel();
+    // Use the shared service so added personnel appear in Remove Personnel view
+    // In production, this would be injected via dependency injection
+    viewModel = AddPersonnelViewModel(service: sharedPersonnelService);
   }
 
   @override

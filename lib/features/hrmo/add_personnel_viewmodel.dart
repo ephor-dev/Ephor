@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'personnel_model.dart';
+import 'personnel_service.dart';
 
 /// Result class for form submission
 class FormSubmissionResult {
@@ -17,6 +18,10 @@ class FormSubmissionResult {
 }
 
 class AddPersonnelViewModel extends ChangeNotifier {
+  final PersonnelService? service; // Optional service for saving
+
+  AddPersonnelViewModel({this.service});
+
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController middleNameController = TextEditingController();
@@ -122,23 +127,37 @@ class AddPersonnelViewModel extends ChangeNotifier {
     );
   }
 
-  /// Stubbed database save function
-  /// This will be replaced with actual Supabase/Firebase call later
+  /// Save personnel data using the service
+  /// If service is provided, saves to it; otherwise just prints (for debugging)
   Future<void> _savePersonnelData(PersonnelModel data) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Print to console for debugging
-    debugPrint('=== Personnel Data to Save ===');
-    debugPrint('ID: ${data.id}');
-    debugPrint('Full Name: ${data.fullName}');
-    debugPrint('Employee Type: ${data.employeeType.name}');
-    debugPrint('Department: ${data.department ?? 'None'}');
-    debugPrint('Extra Tags: ${data.extraTags.join(', ')}');
-    debugPrint('Photo URL: ${data.photoUrl ?? 'None'}');
-    debugPrint('Created At: ${data.createdAt}');
-    debugPrint('JSON: ${data.toJson()}');
-    debugPrint('============================');
+    if (service != null) {
+      // Use the service to save (service will print detailed info)
+      await service!.add(data);
+      // Additional summary print from ViewModel
+      debugPrint('=== Personnel Data Saved via Service ===');
+      debugPrint('ID: ${data.id}');
+      debugPrint('Full Name: ${data.fullName}');
+      debugPrint('Employee Type: ${data.employeeType.name}');
+      debugPrint('Department: ${data.department ?? 'None'}');
+      debugPrint('Extra Tags: ${data.extraTags.isEmpty ? 'None' : data.extraTags.join(', ')}');
+      debugPrint('Photo URL: ${data.photoUrl ?? 'None'}');
+      debugPrint('Created At: ${data.createdAt}');
+      debugPrint('JSON: ${data.toJson()}');
+      debugPrint('============================');
+    } else {
+      // Fallback: just print (for debugging when no service is provided)
+      await Future.delayed(const Duration(seconds: 2));
+      debugPrint('=== Personnel Data to Save (No Service) ===');
+      debugPrint('ID: ${data.id}');
+      debugPrint('Full Name: ${data.fullName}');
+      debugPrint('Employee Type: ${data.employeeType.name}');
+      debugPrint('Department: ${data.department ?? 'None'}');
+      debugPrint('Extra Tags: ${data.extraTags.join(', ')}');
+      debugPrint('Photo URL: ${data.photoUrl ?? 'None'}');
+      debugPrint('Created At: ${data.createdAt}');
+      debugPrint('JSON: ${data.toJson()}');
+      debugPrint('============================');
+    }
 
     // In the future, this will be:
     // await supabase.from('personnel').insert(data.toJson());
