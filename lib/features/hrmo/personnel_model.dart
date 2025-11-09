@@ -9,6 +9,7 @@ class PersonnelModel {
   final EmployeeType employeeType;
   final String? department;
   final List<String> extraTags;
+  final String? photoUrl;
   final DateTime createdAt;
 
   const PersonnelModel({
@@ -19,6 +20,7 @@ class PersonnelModel {
     required this.employeeType,
     this.department,
     this.extraTags = const <String>[],
+    this.photoUrl,
     required this.createdAt,
   });
 
@@ -35,6 +37,7 @@ class PersonnelModel {
     EmployeeType? employeeType,
     String? department,
     List<String>? extraTags,
+    String? photoUrl,
     DateTime? createdAt,
   }) {
     return PersonnelModel(
@@ -45,6 +48,7 @@ class PersonnelModel {
       employeeType: employeeType ?? this.employeeType,
       department: department ?? this.department,
       extraTags: extraTags ?? this.extraTags,
+      photoUrl: photoUrl ?? this.photoUrl,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -58,6 +62,7 @@ class PersonnelModel {
       employeeType: EmployeeType.values.byName(json['employeeType'] as String),
       department: json['department'] as String?,
       extraTags: (json['extraTags'] as List<dynamic>? ?? <dynamic>[]).map((dynamic e) => e.toString()).toList(),
+      photoUrl: json['photoUrl'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
@@ -71,6 +76,7 @@ class PersonnelModel {
       'employeeType': employeeType.name,
       'department': department,
       'extraTags': extraTags,
+      'photoUrl': photoUrl,
       'createdAt': createdAt.toIso8601String(),
     };
   }

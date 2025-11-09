@@ -220,7 +220,7 @@ class _FormSection extends StatelessWidget {
                   ? Column(
                       children: <Widget>[
                         _NameField(
-                          label: 'Last Name',
+                          label: 'LAST NAME',
                           controller: viewModel.lastNameController,
                           decoration: decoration,
                           placeholder: 'Enter last name',
@@ -228,7 +228,7 @@ class _FormSection extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         _NameField(
-                          label: 'First Name',
+                          label: 'FIRST NAME',
                           controller: viewModel.firstNameController,
                           decoration: decoration,
                           placeholder: 'Enter first name',
@@ -236,7 +236,7 @@ class _FormSection extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         _NameField(
-                          label: 'Middle Name',
+                          label: 'MIDDLE NAME',
                           controller: viewModel.middleNameController,
                           decoration: decoration,
                           placeholder: 'Enter middle name',
@@ -248,27 +248,27 @@ class _FormSection extends StatelessWidget {
                       children: <Widget>[
                         Expanded(
                           child: _NameField(
-                            label: 'Last Name',
+                            label: 'LAST NAME',
                             controller: viewModel.lastNameController,
                             decoration: decoration,
                             placeholder: 'Enter last name',
                             isRequired: true,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: _NameField(
-                            label: 'First Name',
+                            label: 'FIRST NAME',
                             controller: viewModel.firstNameController,
                             decoration: decoration,
                             placeholder: 'Enter first name',
                             isRequired: true,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: _NameField(
-                            label: 'Middle Name',
+                            label: 'MIDDLE NAME',
                             controller: viewModel.middleNameController,
                             decoration: decoration,
                             placeholder: 'Enter middle name',
@@ -280,28 +280,85 @@ class _FormSection extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             // Employee Type with label
-            const _FieldLabel('Employee Type'),
-            const SizedBox(height: 8),
-            _EmployeeType(viewModel: viewModel),
-            const SizedBox(height: 20),
-            // Department row
-            _DepartmentRow(viewModel: viewModel),
-            const SizedBox(height: 20),
-            // Extra Tags
-            const _FieldLabel('Extra Tags'),
-            const SizedBox(height: 6),
             Text(
-              'Separate multiple tags with commas',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w300,
+              'EMPLOYEE TYPE',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                    letterSpacing: 0.5,
                   ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity, // Match the width of name fields container
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFAFAFA),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: _EmployeeType(viewModel: viewModel),
+            ),
+            const SizedBox(height: 20),
+            // Department section with label
+            Text(
+              'DEPARTMENT',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                    letterSpacing: 0.5,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity, // Match the width of name fields and EmployeeType containers
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFAFAFA),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: _DepartmentRow(viewModel: viewModel),
+            ),
+            const SizedBox(height: 20),
+            // Extra Tags
+            Text(
+              'EXTRA TAGS (COMMA SEPARATED, IF APPLICABLE)',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                    letterSpacing: 0.5,
+                  ),
+            ),
+            const SizedBox(height: 8),
             TextFormField(
               controller: viewModel.tagsController,
-              style: const TextStyle(fontWeight: FontWeight.w300),
-              decoration: decoration.copyWith(hintText: 'e.g., non-teaching, part-time'),
+              maxLines: null,
+              minLines: 1,
+              style: const TextStyle(
+                fontWeight: FontWeight.w300,
+                color: Colors.black, // Black text when typing
+              ),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                hintText: 'i.e. non-teaching',
+                hintStyle: TextStyle(
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.w300,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25), // Large pill-shaped border radius
+                  borderSide: const BorderSide(color: Color(0xFFD4C4B0), width: 1), // Light brown/gray stroke
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  borderSide: const BorderSide(color: Color(0xFFD4C4B0), width: 1), // Light brown/gray stroke
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  borderSide: const BorderSide(color: Color(0xFFFFB47B), width: 2), // Peach/orange accent border when focused
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14), // Match other input fields
+              ),
             ),
             const SizedBox(height: 20),
             // Action buttons - Modernized
@@ -324,13 +381,37 @@ class _FormSection extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 FilledButton(
-                  onPressed: () {
-                    final PersonnelModel? result = viewModel.confirm();
-                    final String message = result == null
-                        ? 'Please fill out Last Name and First Name.'
-                        : 'Saved: ${result.fullName}';
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-                  },
+                  onPressed: viewModel.isLoading
+                      ? null
+                      : () async {
+                          final FormSubmissionResult result = await viewModel.submitForm();
+                          
+                          if (result.success && result.personnel != null) {
+                            // Show success message
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Personnel added successfully: ${result.personnel!.fullName}'),
+                                  backgroundColor: Colors.green,
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                              // Close the dialog
+                              Navigator.of(context).pop();
+                            }
+                          } else {
+                            // Show error message
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(result.errorMessage ?? 'Failed to save personnel data'),
+                                  backgroundColor: Colors.red,
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          }
+                        },
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFFFFB47B), // Peach/orange accent (original)
                     foregroundColor: Colors.white,
@@ -339,10 +420,21 @@ class _FormSection extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Confirm', style: TextStyle(fontWeight: FontWeight.w600)),
+                  child: viewModel.isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text('Confirm', style: TextStyle(fontWeight: FontWeight.w600)),
                 ),
               ],
             ),
+            // Extra bottom padding to ensure dropdown always has space below
+            const SizedBox(height: 100),
           ],
         ),
       ),
@@ -380,7 +472,9 @@ class _EmployeeType extends StatelessWidget {
     final Color accentColor = const Color(0xFFFFB47B); // Peach/orange accent (original)
     final Color inactiveBg = const Color(0xFFF5F5F5); // Soft light grey
     
-    return SegmentedButton<EmployeeType>(
+    return SizedBox(
+      width: double.infinity, // Match the width of name fields container
+      child: SegmentedButton<EmployeeType>(
       segments: <ButtonSegment<EmployeeType>>[
         ButtonSegment<EmployeeType>(
           value: EmployeeType.personnel,
@@ -439,50 +533,227 @@ class _EmployeeType extends StatelessWidget {
           if (states.contains(WidgetState.selected)) {
             return BorderSide(color: accentColor, width: 1.5);
           }
-          return const BorderSide(color: Color(0xFFE0E0E0), width: 1);
+          return const BorderSide(color: Color(0xFFE0E0E0), width: 1.5); // Fixed width to prevent movement
         }),
         shape: WidgetStateProperty.all<RoundedRectangleBorder>(
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
       ),
+      ),
     );
   }
 }
 
-class _DepartmentRow extends StatelessWidget {
+class _DepartmentRow extends StatefulWidget {
   const _DepartmentRow({required this.viewModel});
   final AddPersonnelViewModel viewModel;
 
   @override
+  State<_DepartmentRow> createState() => _DepartmentRowState();
+}
+
+class _DepartmentRowState extends State<_DepartmentRow> {
+  final GlobalKey _dropdownKey = GlobalKey();
+  OverlayEntry? _overlayEntry;
+  bool _isDropdownOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.viewModel.addListener(_onViewModelChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.viewModel.removeListener(_onViewModelChanged);
+    _closeDropdown();
+    super.dispose();
+  }
+
+  void _onViewModelChanged() {
+    if (widget.viewModel.noDepartment && _isDropdownOpen) {
+      _closeDropdown();
+    }
+  }
+
+  void _closeDropdown() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+    if (_isDropdownOpen) {
+      setState(() {
+        _isDropdownOpen = false;
+      });
+    }
+  }
+
+  void _toggleDropdown() {
+    if (widget.viewModel.noDepartment) return;
+
+    if (_isDropdownOpen) {
+      _closeDropdown();
+    } else {
+      final RenderBox? renderBox = _dropdownKey.currentContext?.findRenderObject() as RenderBox?;
+      if (renderBox == null) return;
+
+      final Size size = renderBox.size;
+      final Offset position = renderBox.localToGlobal(Offset.zero);
+
+      _overlayEntry = OverlayEntry(
+        builder: (BuildContext context) => GestureDetector(
+          onTap: () => _closeDropdown(),
+          behavior: HitTestBehavior.translucent,
+          child: Stack(
+            children: <Widget>[
+              Positioned.fill(
+                child: Container(color: Colors.transparent),
+              ),
+              Positioned(
+                left: position.dx,
+                top: position.dy + size.height,
+                width: size.width,
+                child: GestureDetector(
+                  onTap: () {}, // Prevent closing when tapping inside the dropdown
+                  child: Material(
+                    elevation: 8,
+                    child: Container(
+                      constraints: const BoxConstraints(maxHeight: 300),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: const Color(0xFFE0E0E0)),
+                      ),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        padding: EdgeInsets.zero,
+                        itemCount: widget.viewModel.departments.length,
+                        separatorBuilder: (BuildContext context, int index) => Container(
+                          height: 1,
+                          color: Colors.grey.shade200,
+                          margin: const EdgeInsets.symmetric(horizontal: 0),
+                        ),
+                        itemBuilder: (BuildContext context, int index) {
+                          final String department = widget.viewModel.departments[index];
+                          final bool isSelected = widget.viewModel.selectedDepartment == department;
+                          return InkWell(
+                            onTap: () {
+                              widget.viewModel.setDepartment(department);
+                              _closeDropdown();
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              color: isSelected ? const Color(0xFFF5F5F5) : Colors.white,
+                              child: Row(
+                                children: <Widget>[
+                                  // Department name
+                                  Expanded(
+                                    child: Text(
+                                      department,
+                                      style: TextStyle(
+                                        color: isSelected ? const Color(0xFFFFB47B) : Colors.black87,
+                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ),
+                                  // Checkmark on the right for selected item
+                                  if (isSelected)
+                                    Container(
+                                      margin: const EdgeInsets.only(left: 8),
+                                      child: const Icon(
+                                        Icons.check,
+                                        color: Color(0xFFFFB47B),
+                                        size: 20,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              ],
+            ),
+          ),
+      );
+
+      Overlay.of(context).insert(_overlayEntry!);
+      setState(() {
+        _isDropdownOpen = true;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
         Expanded(
-          child: DropdownButtonFormField<String>(
-            value: viewModel.noDepartment ? null : viewModel.selectedDepartment,
-            decoration: const InputDecoration(
-              labelText: 'Department',
-              labelStyle: TextStyle(fontWeight: FontWeight.w500, color: Colors.black87),
+          child: GestureDetector(
+            key: _dropdownKey,
+            onTap: _toggleDropdown,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100, // Light gray background
+                borderRadius: BorderRadius.circular(18), // Pill-shaped with large radius
+                border: Border.all(
+                  color: _isDropdownOpen ? const Color(0xFFFFB47B) : const Color(0xFFE0E0E0),
+                  width: _isDropdownOpen ? 2 : 1,
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      widget.viewModel.noDepartment
+                          ? 'Select Department'
+                          : (widget.viewModel.selectedDepartment ?? 'Select Department'),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: widget.viewModel.noDepartment || widget.viewModel.selectedDepartment == null
+                            ? Colors.grey.shade600
+                            : Colors.black,
+                        fontSize: 15,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    _isDropdownOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                    color: Colors.black87,
+                    size: 24,
+                  ),
+                ],
+              ),
             ),
-            style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.black87), // High-contrast text
-            items: viewModel.departments
-                .map((String e) => DropdownMenuItem<String>(value: e, child: Text(e)))
-                .toList(growable: false),
-            onChanged: viewModel.noDepartment ? null : viewModel.setDepartment,
           ),
         ),
         const SizedBox(width: 12),
-        Row(
+        Flexible(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Checkbox(
-              value: viewModel.noDepartment,
-              onChanged: (bool? v) => viewModel.setNoDepartment(v ?? false),
-              activeColor: const Color(0xFFFFB47B), // Peach/orange accent (original)
+              value: widget.viewModel.noDepartment,
+              onChanged: (bool? v) {
+                widget.viewModel.setNoDepartment(v ?? false);
+                if (v == true) {
+                  _closeDropdown();
+                }
+              },
+              activeColor: const Color(0xFFFF6B9D), // Pink fill color
             ),
+            const SizedBox(width: 4),
             Text(
-              'Not part of any department',
+              'Not part of any department.',
               style: TextStyle(
                 color: Colors.black87,
                 fontWeight: FontWeight.w400,
@@ -490,6 +761,7 @@ class _DepartmentRow extends StatelessWidget {
               ),
             ),
           ],
+          ),
         ),
       ],
     );
@@ -515,15 +787,53 @@ class _NameField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String displayLabel = isOptional ? '$label (Optional)' : label;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        _FieldLabel(displayLabel),
-        const SizedBox(height: 6),
+        Row(
+          children: <Widget>[
+            Text(
+              label,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                    letterSpacing: 0.5,
+                  ),
+            ),
+            if (isRequired)
+              const Padding(
+                padding: EdgeInsets.only(left: 4),
+                child: Text(
+                  '*',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            if (isOptional)
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: Text(
+                  '(OPTIONAL)',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w400,
+                        color: Colors.grey.shade600,
+                        letterSpacing: 0.3,
+                        fontSize: 14,
+                      ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
         TextFormField(
           controller: controller,
-          style: const TextStyle(fontWeight: FontWeight.w300), // Light font weight for input text
+          style: const TextStyle(
+            fontWeight: FontWeight.w300,
+            color: Colors.black, // Black text when typing
+          ),
           decoration: decoration.copyWith(hintText: placeholder),
         ),
       ],
