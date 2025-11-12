@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ephor/ui/login page/login_view/login_view.dart';
+import 'package:ephor/ui/login/login_view/login_view.dart';
 void main() {
   runApp(const MyApp());
 }
