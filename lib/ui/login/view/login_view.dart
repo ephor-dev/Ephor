@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ephor/ui/login/login_viewmodel/login_viewmodel.dart';
+import 'package:ephor/ui/login/view_model/login_viewmodel.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../routing/routes.dart';
