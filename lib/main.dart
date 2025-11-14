@@ -2,11 +2,13 @@ import 'package:ephor/config/dependencies.dart';
 import 'package:ephor/ui/core/themes/theme_util.dart';
 import 'package:ephor/config/supabase_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'ui/core/themes/theme.dart';
 import 'routing/router.dart';
 
 void main() async {
+  await dotenv.load(fileName: ".env");
   try {
     await SupabaseConfig.initialize();
   } catch (e) {

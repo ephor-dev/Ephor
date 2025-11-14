@@ -231,17 +231,17 @@ class _LoginViewState extends State<LoginView> {
                             ),
                             verticalSpace,
                             // Error message display
-                            // if (Provider.of<LoginViewModel>(context).errorMessage != null)
-                            //   Padding(
-                            //     padding: const EdgeInsets.only(bottom: 8.0),
-                            //     child: Text(
-                            //       Provider.of<LoginViewModel>(context).errorMessage!,
-                            //       style: const TextStyle(
-                            //         color: Colors.red,
-                            //         fontSize: 12,
-                            //       ),
-                            //     ),
-                            //   ),
+                            if (widget.viewModel.errorMessage != null)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0),
+                                child: Text(
+                                  widget.viewModel.errorMessage!,
+                                  style: const TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
                             Align(
                               alignment: Alignment.centerRight,
                               child: ListenableBuilder(
@@ -392,17 +392,17 @@ class _LoginViewState extends State<LoginView> {
                                     ),
                                     verticalSpace,
                                     // Error message display
-                                    // if (Provider.of<LoginViewModel>(context).errorMessage != null)
-                                    //   Padding(
-                                    //     padding: const EdgeInsets.only(bottom: 8.0),
-                                    //     child: Text(
-                                    //       Provider.of<LoginViewModel>(context).errorMessage!,
-                                    //       style: const TextStyle(
-                                    //         color: Colors.red,
-                                    //         fontSize: 12,
-                                    //       ),
-                                    //     ),
-                                    //   ),
+                                    if (widget.viewModel.errorMessage != null)
+                                      Padding(
+                                        padding: const EdgeInsets.only(bottom: 8.0),
+                                        child: Text(
+                                          widget.viewModel.errorMessage!,
+                                          style: const TextStyle(
+                                            color: Colors.red,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
                                     Align(
                                       alignment: Alignment.centerRight,
                                       child: ListenableBuilder(
