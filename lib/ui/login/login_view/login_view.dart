@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:ephor/ui/login/login_viewmodel/login_viewmodel.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../routing/routes.dart';
 
 class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+  final LoginViewModel viewModel;
+
+  const LoginView({super.key, required this.viewModel});
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -13,13 +19,39 @@ class _LoginViewState extends State<LoginView> {
   final TextEditingController _employeeCodeController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  Set<String> _userRoleController = {'employee'};
+  Set<String> _userRoleController = {'Supervisor'};
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    widget.viewModel.login.addListener(_onResult);
+  }
+
+  @override
+  void didUpdateWidget(covariant LoginView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    oldWidget.viewModel.login.removeListener(_onResult);
+    widget.viewModel.login.addListener(_onResult);
+  }
 
   @override
   void dispose() {
     _employeeCodeController.dispose();
     _passwordController.dispose();
+    widget.viewModel.login.removeListener(_onResult);
     super.dispose();
+  }
+
+  Future<void> _handleLogin(BuildContext context) async {
+    if (_formKey.currentState?.validate() ?? false) {
+      widget.viewModel.login.execute((
+        _employeeCodeController.text.trim(),
+        _passwordController.text,
+        _userRoleController.first,
+        _rememberMe
+      ));
+    }
   }
 
   Widget _buildRoleSegmentedButton() {
@@ -48,12 +80,12 @@ class _LoginViewState extends State<LoginView> {
 
       segments: const <ButtonSegment<String>>[
         ButtonSegment<String>(
-          value: 'employee',
-          label: Text('Employee'),
+          value: 'Supervisor',
+          label: Text('Supervisor'),
           icon: Icon(Icons.person),
         ),
         ButtonSegment<String>(
-          value: 'hr',
+          value: 'Human Resources',
           label: Text('Human Resources'),
           icon: Icon(Icons.business_center),
         ),
@@ -101,15 +133,17 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     ],
                   ),
-                  child: isNarrowScreen
-                      ? Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
+                  child: Form(
+                    key: _formKey,
+                    child: isNarrowScreen
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
                             const SizedBox(
                               width: 150,
                               height: 150,
                               child: Image(
-                                image: AssetImage('assets/ephor logo.jpg'),
+                                image: AssetImage('assets/ephor_logo.jpg'),
                               ),
                             ),
                             const Text(
@@ -129,9 +163,15 @@ class _LoginViewState extends State<LoginView> {
                             ),
                             verticalSpace,
                             verticalSpace,
-                            TextField(
+                            TextFormField(
                               controller: _employeeCodeController,
                               keyboardType: TextInputType.text,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Employee code is required';
+                                }
+                                return null;
+                              },
                               decoration: const InputDecoration(
                                 labelText: 'Employee Code',
                                 hintText: 'Enter Employee Code',
@@ -140,10 +180,16 @@ class _LoginViewState extends State<LoginView> {
                               ),
                             ),
                             verticalSpace,
-                            TextField(
+                            TextFormField(
                               controller: _passwordController,
                               obscureText: true,
                               keyboardType: TextInputType.text,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Password is required';
+                                }
+                                return null;
+                              },
                               decoration: const InputDecoration(
                                 labelText: 'Password',
                                 hintText: 'Enter your password',
@@ -184,11 +230,39 @@ class _LoginViewState extends State<LoginView> {
                               ],
                             ),
                             verticalSpace,
+                            // Error message display
+                            if (widget.viewModel.errorMessage != null)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0),
+                                child: Text(
+                                  widget.viewModel.errorMessage!,
+                                  style: const TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
                             Align(
                               alignment: Alignment.centerRight,
-                              child: ElevatedButton(
-                                onPressed: () {},
-                                child: const Text('Login'),
+                              child: ListenableBuilder(
+                                listenable: widget.viewModel.login, 
+                                builder: (context, _) {
+                                  return ElevatedButton(
+                                    onPressed: widget.viewModel.isLoading
+                                      ? null
+                                      : () => _handleLogin(context), 
+                                    child: widget.viewModel.isLoading
+                                      ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                          ),
+                                        )
+                                      : const Text("Login")
+                                  );
+                                }
                               ),
                             ),
                           ],
@@ -206,7 +280,7 @@ class _LoginViewState extends State<LoginView> {
                                       height: 150,
                                       child: Image(
                                         image: AssetImage(
-                                          'assets/ephor logo.jpg',
+                                          'assets/ephor_logo.jpg',
                                         ),
                                       ),
                                     ),
@@ -246,9 +320,15 @@ class _LoginViewState extends State<LoginView> {
                                       ),
                                     ),
                                     verticalSpace,
-                                    TextField(
+                                    TextFormField(
                                       controller: _employeeCodeController,
                                       keyboardType: TextInputType.text,
+                                      validator: (value) {
+                                        if (value == null || value.trim().isEmpty) {
+                                          return 'Employee code is required';
+                                        }
+                                        return null;
+                                      },
                                       decoration: const InputDecoration(
                                         labelText: 'Employee Code',
                                         hintText: 'Enter Employee Code',
@@ -257,10 +337,16 @@ class _LoginViewState extends State<LoginView> {
                                       ),
                                     ),
                                     verticalSpace,
-                                    TextField(
+                                    TextFormField(
                                       controller: _passwordController,
                                       obscureText: true,
                                       keyboardType: TextInputType.text,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Password is required';
+                                        }
+                                        return null;
+                                      },
                                       decoration: const InputDecoration(
                                         labelText: 'Password',
                                         hintText: 'Enter your password',
@@ -305,11 +391,39 @@ class _LoginViewState extends State<LoginView> {
                                       ],
                                     ),
                                     verticalSpace,
+                                    // Error message display
+                                    if (widget.viewModel.errorMessage != null)
+                                      Padding(
+                                        padding: const EdgeInsets.only(bottom: 8.0),
+                                        child: Text(
+                                          widget.viewModel.errorMessage!,
+                                          style: const TextStyle(
+                                            color: Colors.red,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
                                     Align(
                                       alignment: Alignment.centerRight,
-                                      child: ElevatedButton(
-                                        onPressed: () {},
-                                        child: const Text('Login'),
+                                      child: ListenableBuilder(
+                                        listenable: widget.viewModel.login, 
+                                        builder: (context, _) {
+                                          return ElevatedButton(
+                                            onPressed: widget.viewModel.isLoading
+                                              ? null
+                                              : () => _handleLogin(context),
+                                            child: widget.viewModel.isLoading
+                                              ? const SizedBox(
+                                                  width: 20,
+                                                  height: 20,
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                                  )
+                                                )
+                                              : const Text("Login")
+                                          );
+                                        }
                                       ),
                                     ),
                                   ],
@@ -318,6 +432,7 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ],
                         ),
+                    ),
                 );
               },
             ),
@@ -325,5 +440,30 @@ class _LoginViewState extends State<LoginView> {
         ),
       ),
     );
+  }
+
+  void _onResult() {
+    if (widget.viewModel.login.completed) {
+      widget.viewModel.login.clearResult();
+      context.go(Routes.home);
+    }
+
+    if (widget.viewModel.login.error) {
+      widget.viewModel.login.clearResult();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error while logging in"),
+          action: SnackBarAction(
+            label: "Try Again",
+            onPressed: () => widget.viewModel.login.execute((
+              _employeeCodeController.text.trim(),
+              _passwordController.text,
+              _userRoleController.first,
+              _rememberMe
+            )),
+          ),
+        ),
+      );
+    }
   }
 }
