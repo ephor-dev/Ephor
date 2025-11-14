@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:ephor/ui/login/login_viewmodel/login_viewmodel.dart';
-import 'package:ephor/domain/models/login/user_role.dart';
-import 'package:ephor/domain/models/login/login_request.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../routing/routes.dart';
 
 class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+  final LoginViewModel viewModel;
+
+  const LoginView({super.key, required this.viewModel});
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -21,54 +23,34 @@ class _LoginViewState extends State<LoginView> {
   final _formKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    super.initState();
+    widget.viewModel.login.addListener(_onResult);
+  }
+
+  @override
+  void didUpdateWidget(covariant LoginView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    oldWidget.viewModel.login.removeListener(_onResult);
+    widget.viewModel.login.addListener(_onResult);
+  }
+
+  @override
   void dispose() {
     _employeeCodeController.dispose();
     _passwordController.dispose();
+    widget.viewModel.login.removeListener(_onResult);
     super.dispose();
   }
 
-  /// Handle login button press
   Future<void> _handleLogin(BuildContext context) async {
     if (_formKey.currentState?.validate() ?? false) {
-      final viewModel = Provider.of<LoginViewModel>(context, listen: false);
-      
-      // Get selected role
-      final selectedRole = _userRoleController.first;
-      final userRole = UserRole.fromString(selectedRole);
-
-      // Create login request
-      final loginRequest = LoginRequest(
-        employeeCode: _employeeCodeController.text.trim(),
-        password: _passwordController.text,
-        userRole: userRole,
-        rememberMe: _rememberMe,
-      );
-
-      // Attempt login
-      final response = await viewModel.signInWithEmployeeCode(loginRequest);
-
-      if (response.success && response.isAuthenticated) {
-        // Navigate to next screen on success
-        // TODO: Navigate to home/dashboard screen
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Login successful!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } else {
-        // Error is already set in viewmodel, just show snackbar
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(response.errorMessage ?? 'Login failed'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
+      widget.viewModel.login.execute((
+        _employeeCodeController.text.trim(),
+        _passwordController.text,
+        _userRoleController.first,
+        _rememberMe
+      ));
     }
   }
 
@@ -161,7 +143,7 @@ class _LoginViewState extends State<LoginView> {
                               width: 150,
                               height: 150,
                               child: Image(
-                                image: AssetImage('assets/ephor logo.jpg'),
+                                image: AssetImage('assets/ephor_logo.jpg'),
                               ),
                             ),
                             const Text(
@@ -249,37 +231,38 @@ class _LoginViewState extends State<LoginView> {
                             ),
                             verticalSpace,
                             // Error message display
-                            if (Provider.of<LoginViewModel>(context).errorMessage != null)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: Text(
-                                  Provider.of<LoginViewModel>(context).errorMessage!,
-                                  style: const TextStyle(
-                                    color: Colors.red,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
+                            // if (Provider.of<LoginViewModel>(context).errorMessage != null)
+                            //   Padding(
+                            //     padding: const EdgeInsets.only(bottom: 8.0),
+                            //     child: Text(
+                            //       Provider.of<LoginViewModel>(context).errorMessage!,
+                            //       style: const TextStyle(
+                            //         color: Colors.red,
+                            //         fontSize: 12,
+                            //       ),
+                            //     ),
+                            //   ),
                             Align(
                               alignment: Alignment.centerRight,
-                              child: Consumer<LoginViewModel>(
-                                builder: (context, viewModel, child) {
+                              child: ListenableBuilder(
+                                listenable: widget.viewModel.login, 
+                                builder: (context, _) {
                                   return ElevatedButton(
-                                    onPressed: viewModel.isLoading
-                                        ? null
-                                        : () => _handleLogin(context),
-                                    child: viewModel.isLoading
-                                        ? const SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                            ),
-                                          )
-                                        : const Text('Login'),
+                                    onPressed: widget.viewModel.isLoading
+                                      ? null
+                                      : () => _handleLogin(context), 
+                                    child: widget.viewModel.isLoading
+                                      ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                          ),
+                                        )
+                                      : const Text("Login")
                                   );
-                                },
+                                }
                               ),
                             ),
                           ],
@@ -297,7 +280,7 @@ class _LoginViewState extends State<LoginView> {
                                       height: 150,
                                       child: Image(
                                         image: AssetImage(
-                                          'assets/ephor logo.jpg',
+                                          'assets/ephor_logo.jpg',
                                         ),
                                       ),
                                     ),
@@ -409,37 +392,38 @@ class _LoginViewState extends State<LoginView> {
                                     ),
                                     verticalSpace,
                                     // Error message display
-                                    if (Provider.of<LoginViewModel>(context).errorMessage != null)
-                                      Padding(
-                                        padding: const EdgeInsets.only(bottom: 8.0),
-                                        child: Text(
-                                          Provider.of<LoginViewModel>(context).errorMessage!,
-                                          style: const TextStyle(
-                                            color: Colors.red,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
+                                    // if (Provider.of<LoginViewModel>(context).errorMessage != null)
+                                    //   Padding(
+                                    //     padding: const EdgeInsets.only(bottom: 8.0),
+                                    //     child: Text(
+                                    //       Provider.of<LoginViewModel>(context).errorMessage!,
+                                    //       style: const TextStyle(
+                                    //         color: Colors.red,
+                                    //         fontSize: 12,
+                                    //       ),
+                                    //     ),
+                                    //   ),
                                     Align(
                                       alignment: Alignment.centerRight,
-                                      child: Consumer<LoginViewModel>(
-                                        builder: (context, viewModel, child) {
+                                      child: ListenableBuilder(
+                                        listenable: widget.viewModel.login, 
+                                        builder: (context, _) {
                                           return ElevatedButton(
-                                            onPressed: viewModel.isLoading
-                                                ? null
-                                                : () => _handleLogin(context),
-                                            child: viewModel.isLoading
-                                                ? const SizedBox(
-                                                    width: 20,
-                                                    height: 20,
-                                                    child: CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                                    ),
+                                            onPressed: widget.viewModel.isLoading
+                                              ? null
+                                              : () => _handleLogin(context),
+                                            child: widget.viewModel.isLoading
+                                              ? const SizedBox(
+                                                  width: 20,
+                                                  height: 20,
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                                   )
-                                                : const Text('Login'),
+                                                )
+                                              : const Text("Login")
                                           );
-                                        },
+                                        }
                                       ),
                                     ),
                                   ],
@@ -456,5 +440,30 @@ class _LoginViewState extends State<LoginView> {
         ),
       ),
     );
+  }
+
+  void _onResult() {
+    if (widget.viewModel.login.completed) {
+      widget.viewModel.login.clearResult();
+      context.go(Routes.home);
+    }
+
+    if (widget.viewModel.login.error) {
+      widget.viewModel.login.clearResult();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error while logging in"),
+          action: SnackBarAction(
+            label: "Try Again",
+            onPressed: () => widget.viewModel.login.execute((
+              _employeeCodeController.text.trim(),
+              _passwordController.text,
+              _userRoleController.first,
+              _rememberMe
+            )),
+          ),
+        ),
+      );
+    }
   }
 }

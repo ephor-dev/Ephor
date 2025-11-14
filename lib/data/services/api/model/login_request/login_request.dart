@@ -1,4 +1,4 @@
-import 'package:ephor/domain/models/login/user_role.dart';
+import 'package:ephor/data/services/api/model/user_role/user_role.dart';
 
 /// Model representing login request credentials
 class LoginRequest {
