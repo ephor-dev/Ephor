@@ -1,8 +1,6 @@
 name: ephor
 description: "AI-powered CATNA processing and LDP generation"
-description: "AI-powered CATNA processing and LDP generation"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 0.0.1
 version: 0.0.1
 
 environment:
