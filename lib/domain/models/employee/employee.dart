@@ -2,7 +2,9 @@
 
 import 'package:flutter/foundation.dart';
 
-enum EmployeeType {
+enum EmployeeRole {
+  supervisor,
+  humanResource,
   personnel,
   faculty,
   jobOrder,
@@ -10,84 +12,107 @@ enum EmployeeType {
 
 @immutable
 class EmployeeModel {
-  final String id;
-  final String lastName;
-  final String firstName;
+  // Field remains non-nullable, but initialized with a placeholder if not provided
+  final String id; 
+  final String employeeCode; 
+  final String email;
+  final EmployeeRole role; 
+  final String department; 
+  
+  final String firstName; 
+  final String lastName; 
   final String? middleName;
-  final EmployeeType employeeType;
-  final String? department;
-  final List<String> extraTags;
+  final List<String> extraTags; 
   final String? photoUrl;
-  final DateTime createdAt;
 
   const EmployeeModel({
-    required this.id,
-    required this.lastName,
+    String? id, // Allows null/omission during creation
+    required this.employeeCode,
+    required this.email,
+    required this.role,
     required this.firstName,
+    required this.lastName,
+    required this.department, 
     this.middleName,
-    required this.employeeType,
-    this.department,
     this.extraTags = const [],
     this.photoUrl,
-    required this.createdAt,
-  });
+  }) : this.id = id ?? ''; // Use empty string placeholder if null
 
   String get fullName {
-    if (middleName != null && middleName!.isNotEmpty) {
-      return '$lastName, $firstName $middleName.';
-    }
-    return '$lastName, $firstName';
+    final middle = (middleName != null && middleName!.isNotEmpty) ? '$middleName.' : '';
+    return '$lastName, $firstName $middle'.trim();
   }
 
   EmployeeModel copyWith({
     String? id,
-    String? lastName,
+    String? employeeCode,
+    String? email,
+    EmployeeRole? role,
     String? firstName,
-    String? middleName,
-    EmployeeType? employeeType,
+    String? lastName,
     String? department,
+    String? middleName,
     List<String>? extraTags,
     String? photoUrl,
-    DateTime? createdAt,
   }) {
     return EmployeeModel(
       id: id ?? this.id,
-      lastName: lastName ?? this.lastName,
+      employeeCode: employeeCode ?? this.employeeCode,
+      email: email ?? this.email,
+      role: role ?? this.role,
       firstName: firstName ?? this.firstName,
-      middleName: middleName ?? this.middleName,
-      employeeType: employeeType ?? this.employeeType,
+      lastName: lastName ?? this.lastName,
       department: department ?? this.department,
+      middleName: middleName ?? this.middleName,
       extraTags: extraTags ?? this.extraTags,
       photoUrl: photoUrl ?? this.photoUrl,
-      createdAt: createdAt ?? this.createdAt,
     );
   }
 
+  // CRITICAL FIX: Only include 'id' if it's set and not the placeholder.
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'id': id,
-      'last_name': lastName,
+    final map = <String, dynamic>{
+      'employee_code': employeeCode,
+      'email': email,
       'first_name': firstName,
-      'middle_name': middleName,
-      'employee_type': employeeType.name,
+      'last_name': lastName,
+      'tags': extraTags.join(','), 
       'department': department,
-      'extra_tags': extraTags,
+      'role': role.name, 
       'photo_url': photoUrl,
-      'created_at': createdAt.toIso8601String(),
     };
+    if (id.isNotEmpty) {
+      map['id'] = id;
+    }
+    return map;
   }
 
   factory EmployeeModel.fromJson(Map<String, dynamic> map) {
+    EmployeeRole parseRole(String roleName) {
+      return EmployeeRole.values.firstWhere(
+        (e) => e.name.toLowerCase() == roleName.toLowerCase(),
+        orElse: () => EmployeeRole.personnel,
+      );
+    }
+    
+    List<String> parseTags(dynamic tags) {
+      if (tags is String && tags.isNotEmpty) {
+        return tags.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      }
+      return const [];
+    }
+
     return EmployeeModel(
       id: map['id'] as String,
-      lastName: map['last_name'] as String,
+      employeeCode: map['employee_code'] as String,
+      email: map['email'] as String,
+      role: parseRole(map['role'] as String),
       firstName: map['first_name'] as String,
-      middleName: map['middle_name'] as String?,
-      employeeType: EmployeeType.values.firstWhere((e) => e.name == map['employee_type']),
-      department: map['department'] as String?,
-      extraTags: List<String>.from((map['extra_tags'] as List<dynamic>? ?? []).map((e) => e.toString())),
+      lastName: map['last_name'] as String,
+      department: map['department'] as String,
+      middleName: map['middle_name'] as String?, 
+      extraTags: parseTags(map['tags']), 
       photoUrl: map['photo_url'] as String?,
-      createdAt: DateTime.parse(map['created_at'] as String),
     );
   }
 }

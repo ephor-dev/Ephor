@@ -1,5 +1,3 @@
-// data/services/supabase/employee_supabase_service.dart
-
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 
@@ -9,11 +7,7 @@ class EmployeeSupabaseService {
   static SupabaseClient? _staticClient; 
   
   SupabaseClient get _client {
-    if (_staticClient == null) {
-      throw Exception(
-        'Supabase not initialized. Call SupabaseService.initialize() first.',
-      );
-    }
+    _staticClient ??= Supabase.instance.client;
     return _staticClient!;
   }
 

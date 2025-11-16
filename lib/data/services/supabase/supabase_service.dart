@@ -4,9 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Supabase service for handling low-level database and auth calls.
 class SupabaseService {
-  
+ 
   static SupabaseClient? _staticClient; 
-  
+ 
   SupabaseClient get _client {
     if (_staticClient == null) {
       throw Exception(
@@ -16,7 +16,7 @@ class SupabaseService {
     return _staticClient!;
   }
 
-  // --- Static Initialization (Kept for pragmatic Flutter setup) ---
+ // --- Static Initialization (Kept for pragmatic Flutter setup) ---
 
   static Future<void> initialize({
     required String supabaseUrl,
@@ -61,14 +61,9 @@ class SupabaseService {
 
     return response;
   }
-
-  Future<void> updateLastLogin(String userId) async {
-    await _client
-        .from('employees')
-        .update({'last_login': DateTime.now().toIso8601String()})
-        .eq('id', userId);
-  }
-
+  
+  // Removed: updateLastLogin method
+  
   Future<void> signOut() async {
     await _client.auth.signOut();
   }

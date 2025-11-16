@@ -1,5 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ephor/domain/models/login/employee.dart';
+import 'package:ephor/domain/models/employee/employee.dart';
 
 
 /// Model representing login response

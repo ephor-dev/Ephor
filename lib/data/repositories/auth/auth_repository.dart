@@ -1,11 +1,9 @@
-// data/repositories/auth/auth_repository.dart
-
 import 'dart:async';
 import 'package:ephor/data/services/supabase/supabase_service.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ephor/domain/enums/auth_status.dart'; // NEW IMPORT
+import 'package:ephor/domain/enums/auth_status.dart';
 import 'abstract_auth_repository.dart';
 
 class AuthRepository extends AbstractAuthRepository {
@@ -14,19 +12,18 @@ class AuthRepository extends AbstractAuthRepository {
 
   // --- State Streams ---
   final _isLoadingController = StreamController<bool>.broadcast();
-  final _authStateController = StreamController<AuthStatus>.broadcast(); // NEW CONTROLLER
+  final _authStateController = StreamController<AuthStatus>.broadcast();
   
   Stream<bool> get isLoadingStream => _isLoadingController.stream;
-  Stream<AuthStatus> get authStatusStream => _authStateController.stream; // NEW STREAM
+  Stream<AuthStatus> get authStatusStream => _authStateController.stream;
 
   AuthRepository({required SupabaseService supabaseService}) 
     : _supabaseService = supabaseService {
-    _startAuthStatusListener(); // Start listening when the Repository is created
+    _startAuthStatusListener();
   }
 
   // --- Session Listener Implementation ---
   void _startAuthStatusListener() {
-    // Listens to the low-level Supabase client and translates events
     SupabaseService.auth.onAuthStateChange.listen((data) {
       final event = data.event;
 
@@ -41,7 +38,7 @@ class AuthRepository extends AbstractAuthRepository {
   @override
   void dispose() {
     _isLoadingController.close();
-    _authStateController.close(); // Dispose the new controller
+    _authStateController.close();
     super.dispose();
   }
 
@@ -79,7 +76,7 @@ class AuthRepository extends AbstractAuthRepository {
       final authResponse = await _supabaseService.loginWithEmail(email, password);
 
       if (authResponse.user != null && authResponse.session != null) {
-        await _supabaseService.updateLastLogin(authResponse.user!.id);
+        // The problematic updateLastLogin call is permanently removed.
         return Result.ok(null);
       }
       
@@ -108,10 +105,7 @@ class AuthRepository extends AbstractAuthRepository {
   
   @override
   Future<bool> get isAuthenticated async {
-      // Use the low-level SupabaseService to check the current session status
       final currentUser = SupabaseService.auth.currentUser;
-      
-      // Return true if a user object exists in the Supabase session, false otherwise.
       return currentUser != null; 
   }
   

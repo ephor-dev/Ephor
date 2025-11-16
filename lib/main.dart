@@ -13,8 +13,6 @@ void main() async {
     await SupabaseConfig.initialize();
   } catch (e) {
     debugPrint('Error initializing Supabase: $e');
-    // You can handle the error here - maybe show an error screen
-    // or continue without Supabase (not recommended for production)
   }
 
   runApp(
@@ -22,15 +20,6 @@ void main() async {
       providers: providers,
       child: MyApp(),
     )
-
-// void main() {
-//   runApp(
-//     // 3. Wrap the app with ChangeNotifierProvider
-//     ChangeNotifierProvider(
-//       create: (context) => UserProfileViewModel(),
-//       child: const MyApp(),
-//     ),
-// >>>>>>> c50384a (Implement dashboard feature panels and User Profile Status)
   );
 }
 
@@ -51,6 +40,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-// Set your DashboardWidget as the default screen
-// // FIX: Removed 'const' keyword to resolve the "Not a constant expression" error.
-// home: Widgets(),
