@@ -48,9 +48,6 @@ class SupabaseService {
         .select('email, role, employee_code, id, first_name, last_name')
         .eq('employee_code', employeeCode)
         .maybeSingle();
-
-    final employee_list = await _client.from("employees").select();
-    print(employee_list);
     
     return employeeResponse;
   }

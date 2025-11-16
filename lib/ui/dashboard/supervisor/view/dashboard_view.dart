@@ -1,4 +1,5 @@
 import 'package:ephor/routing/routes.dart';
+import 'package:ephor/ui/add_employee/view/add_employee_view.dart';
 import 'package:ephor/ui/dashboard/supervisor/view_model/dashboard_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -146,6 +147,10 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
+  void _showAddEmployeeModal(BuildContext context) {
+    AddEmployeeView.show(context);
+  }
+
   void _handleLogout(BuildContext context) {
     // Call the ViewModel's logout function
     widget.viewModel.logout.execute();
@@ -156,7 +161,6 @@ class _DashboardViewState extends State<DashboardView> {
         duration: Duration(seconds: 2),
       ),
     );
-    // TODO: Navigate to the login screen after logout.
   }
 
   void _handleEditProfile(BuildContext context) {
@@ -275,6 +279,11 @@ class _DashboardViewState extends State<DashboardView> {
             const SizedBox(width: 48.0),
             Row(
               children: [
+                IconButton(
+                  icon: const Icon(Icons.person_add_alt_1_outlined, color: Colors.black, size: 25), 
+                  tooltip: 'Add Personnel',
+                  onPressed: () => _showAddEmployeeModal(context), 
+                ),
                 IconButton(icon: const Icon(Icons.info_outline, color: Colors.black, size: 25), onPressed: _showInfoPlaceholder),
                 IconButton(icon: const Icon(Icons.notifications_none, color: Colors.black, size: 25), onPressed: _showNotificationsPlaceholder),
                 const SizedBox(width: 15.0), 
