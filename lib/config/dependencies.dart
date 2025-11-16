@@ -19,9 +19,6 @@ List<SingleChildWidget> get providers {
       create: (context) =>
           AuthRepository(
             supabaseService: context.read(),
-                // authApiClient: context.read(),
-                // apiClient: context.read(),
-                // sharedPreferencesService: context.read(),
           ),
     ),
   ];
