@@ -84,6 +84,8 @@ class EmployeeModel {
     if (id.isNotEmpty) {
       map['id'] = id;
     }
+
+    print(role.name);
     return map;
   }
 

@@ -26,7 +26,7 @@ class EmployeeRepository implements AbstractEmployeeRepository {
           message.contains('new row violates row-level security policy')) {
         return Result.error(CustomMessageException(
           'RLS Policy Violation: The current user is not authorized to add this employee. '
-          'Please ensure you are logged in as an HR Manager or Admin.\n'+message,
+          'Please ensure you are logged in as an HR Manager or Admin.',
         ));
       }
       // --- End RLS Check ---
