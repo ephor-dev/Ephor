@@ -1,12 +1,12 @@
 // presentation/viewmodels/login_view_model.dart
 
 import 'dart:async';
+import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Keep only for generic User type
 import 'package:ephor/data/services/supabase/supabase_service.dart';
-import 'package:ephor/domain/models/login/employee.dart';
 import 'package:ephor/data/repositories/auth/auth_repository.dart';
 import 'package:ephor/utils/command.dart';
 import 'package:ephor/domain/enums/auth_status.dart'; // NEW IMPORT
@@ -144,6 +144,8 @@ class LoginViewModel extends ChangeNotifier {
         }
         break;
     }
+
+    print(_errorMessage);
     
     notifyListeners(); 
     return result;
