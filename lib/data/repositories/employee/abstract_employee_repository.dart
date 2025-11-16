@@ -1,0 +1,18 @@
+// domain/repositories/employee/abstract_employee_repository.dart
+
+import 'package:ephor/domain/models/employee/employee.dart';
+import 'package:ephor/utils/results.dart';
+
+abstract interface class AbstractEmployeeRepository {
+  /// Fetches all employees, returning a Result to handle potential errors.
+  Future<Result<List<EmployeeModel>>> fetchAllEmployees();
+  
+  /// Adds a new employee entry.
+  Future<Result<EmployeeModel>> addEmployee(EmployeeModel employee);
+  
+  /// Removes employee by ID.
+  Future<Result<void>> removeEmployee(String id);
+  
+  /// Fetches employee by ID.
+  Future<Result<EmployeeModel?>> getEmployeeById(String id);
+}
