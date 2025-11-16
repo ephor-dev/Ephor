@@ -20,6 +20,16 @@ class EmployeeRepository implements AbstractEmployeeRepository {
       final addedEmployee = await _employeeService.add(employee);
       return Result.ok(addedEmployee);
     } on PostgrestException catch (e) {
+      // --- RLS Violation Check Added Here ---
+      final message = e.message.toLowerCase();
+      if (message.contains('violates row-level security policy') || 
+          message.contains('new row violates row-level security policy')) {
+        return Result.error(CustomMessageException(
+          'RLS Policy Violation: The current user is not authorized to add this employee. '
+          'Please ensure you are logged in as an HR Manager or Admin.\n'+message,
+        ));
+      }
+      // --- End RLS Check ---
       return Result.error(CustomMessageException('Database error while adding employee: ${e.message}'));
     } catch (e) {
       return Result.error(CustomMessageException('An unexpected error occurred: ${e.toString()}'));

@@ -11,9 +11,7 @@ class EmployeeSupabaseService {
     return _staticClient!;
   }
 
-  /// Adds a new employee entry to the 'employees' table.
   Future<EmployeeModel> add(EmployeeModel employee) async {
-    // Note: Assuming Supabase table name is 'employees'
     final List<Map<String, dynamic>> response = await _client
         .from('employees')
         .insert(employee.toJson())

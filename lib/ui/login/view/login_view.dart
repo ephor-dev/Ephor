@@ -85,8 +85,8 @@ class _LoginViewState extends State<LoginView> {
           icon: Icon(Icons.person),
         ),
         ButtonSegment<String>(
-          value: 'Human Resources',
-          label: Text('Human Resources'),
+          value: 'Human Resource',
+          label: Text('Human Resource'),
           icon: Icon(Icons.business_center),
         ),
       ],
