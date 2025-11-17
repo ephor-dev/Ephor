@@ -1,3 +1,5 @@
+import 'package:ephor/utils/custom_message_exception.dart';
+import 'package:ephor/utils/results.dart';
 import 'package:flutter/material.dart';
 import 'package:ephor/ui/login/view_model/login_viewmodel.dart';
 import 'package:go_router/go_router.dart';
@@ -449,10 +451,12 @@ class _LoginViewState extends State<LoginView> {
     }
 
     if (widget.viewModel.login.error) {
+      Error error = widget.viewModel.login.result as Error;
+      CustomMessageException messageException = error.error as CustomMessageException;
       widget.viewModel.login.clearResult();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Error while logging in"),
+          content: Text("Login Error: ${messageException.message}"),
           action: SnackBarAction(
             label: "Try Again",
             onPressed: () => widget.viewModel.login.execute((
