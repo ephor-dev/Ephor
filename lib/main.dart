@@ -18,13 +18,35 @@ void main() async {
   runApp(
     MultiProvider(
       providers: providers,
-      child: MyApp(),
+      child: EphorApp(),
     )
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class EphorApp extends StatefulWidget {
+  @override
+  State<EphorApp> createState() => _EphorState();
+}
+
+class _EphorState extends State<EphorApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.detached || state == AppLifecycleState.inactive) {
+      SupabaseConfig.forceLogOut();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

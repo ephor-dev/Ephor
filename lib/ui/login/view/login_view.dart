@@ -122,8 +122,8 @@ class _LoginViewState extends State<LoginView> {
                     maxHeight: isNarrowScreen ? double.infinity : 527,
                     maxWidth: 946,
                   ),
-                  margin: const EdgeInsets.symmetric(vertical: 32.0),
-                  padding: const EdgeInsets.all(32),
+                  margin: isNarrowScreen ? EdgeInsets.zero : EdgeInsets.symmetric(vertical: 32.0),
+                  padding: isNarrowScreen ? EdgeInsets.zero : EdgeInsets.symmetric(vertical: 32.0),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(45),
@@ -145,7 +145,7 @@ class _LoginViewState extends State<LoginView> {
                               width: 150,
                               height: 150,
                               child: Image(
-                                image: AssetImage('assets/ephor_logo.jpg'),
+                                image: AssetImage('assets/images/logo.png'),
                               ),
                             ),
                             const Text(
@@ -232,18 +232,6 @@ class _LoginViewState extends State<LoginView> {
                               ],
                             ),
                             verticalSpace,
-                            // Error message display
-                            if (widget.viewModel.errorMessage != null)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: Text(
-                                  widget.viewModel.errorMessage!,
-                                  style: const TextStyle(
-                                    color: Colors.red,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
                             Align(
                               alignment: Alignment.centerRight,
                               child: ListenableBuilder(
@@ -282,7 +270,7 @@ class _LoginViewState extends State<LoginView> {
                                       height: 150,
                                       child: Image(
                                         image: AssetImage(
-                                          'assets/ephor_logo.jpg',
+                                          'assets/images/logo.png',
                                         ),
                                       ),
                                     ),
@@ -393,18 +381,6 @@ class _LoginViewState extends State<LoginView> {
                                       ],
                                     ),
                                     verticalSpace,
-                                    // Error message display
-                                    if (widget.viewModel.errorMessage != null)
-                                      Padding(
-                                        padding: const EdgeInsets.only(bottom: 8.0),
-                                        child: Text(
-                                          widget.viewModel.errorMessage!,
-                                          style: const TextStyle(
-                                            color: Colors.red,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
                                     Align(
                                       alignment: Alignment.centerRight,
                                       child: ListenableBuilder(

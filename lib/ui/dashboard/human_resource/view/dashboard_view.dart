@@ -100,7 +100,7 @@ class _HRDashboardViewState extends State<HRDashboardView> {
                       onPressed: () => Navigator.pop(context), // Closes the drawer
                     ),
                     const SizedBox(width: 15.0), 
-                    Image.asset('assets/ephor_logo.jpg', height: 30, width: 30),
+                    Image.asset('assets/images/logo.png', height: 30, width: 30),
                     const SizedBox(width: 8.0),
                     const Text('EPHOR', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18.0)),
                   ],
@@ -150,7 +150,7 @@ class _HRDashboardViewState extends State<HRDashboardView> {
 
             Row(
               children: [
-                Image.asset('assets/ephor_logo.jpg', height: 32, width: 32),
+                Image.asset('assets/images/logo.png', height: 32, width: 32),
                 const SizedBox(width: 8.0),
                 const Text('EPHOR', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18.0)),
               ],
