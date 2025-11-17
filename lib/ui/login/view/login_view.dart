@@ -423,7 +423,7 @@ class _LoginViewState extends State<LoginView> {
   void _onResult() {
     if (widget.viewModel.login.completed) {
       widget.viewModel.login.clearResult();
-      context.go(Routes.home);
+      context.go(Routes.dashboard);
     }
 
     if (widget.viewModel.login.error) {

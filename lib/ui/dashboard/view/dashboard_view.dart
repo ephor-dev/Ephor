@@ -1,12 +1,13 @@
 import 'package:ephor/routing/routes.dart';
 import 'package:ephor/ui/add_employee/view/add_employee_view.dart';
-import 'package:ephor/ui/dashboard/supervisor/view_model/dashboard_viewmodel.dart';
+import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class DashboardView extends StatefulWidget {
   final DashboardViewModel viewModel;
-  const DashboardView({super.key, required this.viewModel});
+  final Widget child;
+  const DashboardView({super.key, required this.viewModel, required this.child});
 
   @override
   State<DashboardView> createState() => _DashboardViewState();
@@ -14,25 +15,27 @@ class DashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<DashboardView> {
 
-  int _selectedIndex = 0;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final List<Map<String, dynamic>> menuItems = [
-    {'title': 'Overview', 'icon': Icons.description_outlined, 'selected': true},
-    {'title': 'Upcoming Schedules', 'icon': Icons.schedule_outlined, 'selected': false},
-    {'title': 'Finished Assessments', 'icon': Icons.check_box_outlined, 'selected': false},
-    {'title': 'Finished Trainings', 'icon': Icons.check_outlined, 'selected': false},
-    {'title': 'Recommended Trainings', 'icon': Icons.wb_sunny_outlined, 'selected': false},
-    {'title': 'Toggle Dark Mode', 'icon': Icons.dark_mode_outlined, 'selected': false},
+    {'title': 'Overview', 'icon': Icons.description_outlined, 'selected': true, 'path': Routes.dashboardOverview},
+    {'title': 'Upcoming Schedules', 'icon': Icons.schedule_outlined, 'selected': false, 'path': Routes.dashboardSchedules},
+    {'title': 'Finished Assessments', 'icon': Icons.check_box_outlined, 'selected': false, 'path': Routes.dashboardAssessments},
+    {'title': 'Finished Trainings', 'icon': Icons.check_outlined, 'selected': false, 'path': Routes.dashboardFinishedTrainings},
+    {'title': 'Recommended Trainings', 'icon': Icons.wb_sunny_outlined, 'selected': false, 'path': Routes.dashboardRecommendedTrainings},
+    {'title': 'Toggle Dark Mode', 'icon': Icons.dark_mode_outlined, 'selected': false, 'path': Routes.dashboardDarkMode},
   ];
 
-  final List<Widget> _screens = [
-    const OverviewScreen(), // Index 0
-    const UpcomingSchedulesScreen(), // Index 1
-    const FinishedAssessmentsScreen(), // Index 2
-    const FinishedTrainingsScreen(), // Index 3
-    const RecommendedTrainingsScreen(), // Index 4
-    const DarkModeToggleScreen(), // Index 5 - A placeholder screen
-  ];
+  int _getSelectedIndex() {
+    final location = GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
+  
+    final index = menuItems.indexWhere((item) {
+      final path = item['path'];
+      return path != null && location.contains(path);
+    });
+
+    return index != -1 ? index : 0; // Default to 0 (Overview)
+  }
 
   @override
   void initState() {
@@ -53,15 +56,9 @@ class _DashboardViewState extends State<DashboardView> {
     super.dispose();
   }
 
-  void _onSelectItem(int index) {
-    setState(() {
-      for (int i = 0; i < menuItems.length; i++) {
-        menuItems[i]['selected'] = false;
-      }
-      menuItems[index]['selected'] = true;
-
-      _selectedIndex = index;
-    });
+  void _onSelectItem(String pathSegment) {
+    final fullPath = '${Routes.dashboard}/$pathSegment';
+    context.go(fullPath); 
     
     // Close the drawer
     if (_scaffoldKey.currentState?.isDrawerOpen == true) {
@@ -70,13 +67,11 @@ class _DashboardViewState extends State<DashboardView> {
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Navigating to ${menuItems[index]['title']} Panel'),
+        content: Text('Navigating to $pathSegment Panel'),
         duration: const Duration(milliseconds: 500), 
       ),
     );
   }
-
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Helper function to build each menu item
   Widget _buildDrawerItem({
@@ -179,6 +174,7 @@ class _DashboardViewState extends State<DashboardView> {
   @override
   Widget build(BuildContext context) {
     const Color primaryRed = Color(0xFFAC312B);
+    final selectedIndex = _getSelectedIndex();
 
     Scaffold mainChild = Scaffold(
       key: _scaffoldKey,
@@ -221,8 +217,8 @@ class _DashboardViewState extends State<DashboardView> {
                   child: _buildDrawerItem(
                     title: item['title'],
                     icon: item['icon'],
-                    isSelected: item['selected'],
-                    onTap: () => _onSelectItem(index),
+                    isSelected: index == selectedIndex,
+                    onTap: () => _onSelectItem(item['path']),
                   ),
                 );
               },
@@ -364,7 +360,7 @@ class _DashboardViewState extends State<DashboardView> {
       ),
       
       // --- BODY CONTENT ---
-      body: _screens[_selectedIndex],
+      body: widget.child,
     );
 
     return ListenableBuilder(
@@ -393,146 +389,5 @@ class _DashboardViewState extends State<DashboardView> {
         ),
       );
     }
-  }
-}
-
-
-const Color _panelIconColor = Color(0xFFAC312B); // Primary Red color used for icons
-
-// Screen 1: Overview
-class OverviewScreen extends StatelessWidget {
-  const OverviewScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.description_outlined, size: 80, color: _panelIconColor),
-          SizedBox(height: 16),
-          Text(
-            'Overview Panel',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          Text('Your main dashboard metrics and summaries will be here.'),
-        ],
-      ),
-    );
-  }
-}
-
-// Screen 2: Upcoming Schedules
-class UpcomingSchedulesScreen extends StatelessWidget {
-  const UpcomingSchedulesScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.schedule_outlined, size: 80, color: _panelIconColor),
-          SizedBox(height: 16),
-          Text(
-            'Upcoming Schedules Panel',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          Text('Manage all your scheduled activities.'),
-        ],
-      ),
-    );
-  }
-}
-
-// Screen 3: Finished Assessments
-class FinishedAssessmentsScreen extends StatelessWidget {
-  const FinishedAssessmentsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.check_box_outlined, size: 80, color: _panelIconColor),
-          SizedBox(height: 16),
-          Text(
-            'Finished Assessments Panel',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          Text('Review your scores and assessment history.'),
-        ],
-      ),
-    );
-  }
-}
-
-// Screen 4: Finished Trainings
-class FinishedTrainingsScreen extends StatelessWidget {
-  const FinishedTrainingsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.check_outlined, size: 80, color: _panelIconColor),
-          SizedBox(height: 16),
-          Text(
-            'Finished Trainings Panel',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          Text('View your completed training courses and certificates.'),
-        ],
-      ),
-    );
-  }
-}
-
-// Screen 5: Recommended Trainings
-class RecommendedTrainingsScreen extends StatelessWidget {
-  const RecommendedTrainingsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.wb_sunny_outlined, size: 80, color: _panelIconColor),
-          SizedBox(height: 16),
-          Text(
-            'Recommended Trainings Panel',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          Text('Suggestions tailored to your development needs.'),
-        ],
-      ),
-    );
-  }
-}
-
-// Screen 6: Dark Mode Toggle Placeholder
-class DarkModeToggleScreen extends StatelessWidget {
-  const DarkModeToggleScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.dark_mode_outlined, size: 80, color: Colors.black54),
-          SizedBox(height: 16),
-          Text(
-            'Dark Mode Toggle Panel',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          Text('This screen confirms dark mode selection logic.'),
-        ],
-      ),
-    );
   }
 }
