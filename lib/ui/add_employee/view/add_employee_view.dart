@@ -1,72 +1,37 @@
+import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:ephor/ui/add_employee/view_model/add_employee_viewmodel.dart';
-import 'package:ephor/domain/models/employee/employee.dart';
-import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
 
 // 1. Root widget for showing the dialog and setting up the ViewModel scope
-class AddEmployeeView extends StatelessWidget {
-  const AddEmployeeView({super.key});
-
-  static Future<void> show(BuildContext context) {
-    // 1. Get the repository dependency from the nearest Provider scope
-    final AbstractEmployeeRepository repository = context.read<AbstractEmployeeRepository>();
-    
-    return showDialog<void>(
-      context: context,
-      barrierColor: Colors.black54,
-      barrierDismissible: true,
-      builder: (BuildContext dialogContext) {
-        // 2. Provide the ViewModel scoped ONLY to the dialog's lifecycle
-        return Provider<AddEmployeeViewModel>(
-          create: (_) {
-            final viewModel = AddEmployeeViewModel(repository: repository);
-            viewModel.initialize();
-            return viewModel;
-          },
-          child: const _AddEmployeeViewContent(), 
-        );
-      },
-    );
-  }
+class AddEmployeeView extends StatefulWidget {
+  final AddEmployeeViewModel viewModel;
+  const AddEmployeeView({super.key, required this.viewModel});
 
   @override
-  Widget build(BuildContext context) {
-    return const SizedBox.shrink(); 
-  }
+  State<AddEmployeeView> createState() => _AddEmployeeViewState();
 }
 
-// 2. Stateful container to manage ViewModel lifecycle and Command listener
-class _AddEmployeeViewContent extends StatefulWidget {
-  const _AddEmployeeViewContent();
-
-  @override
-  State<_AddEmployeeViewContent> createState() => _AddEmployeeViewContentState();
-}
-
-class _AddEmployeeViewContentState extends State<_AddEmployeeViewContent> {
-  late final AddEmployeeViewModel viewModel;
-  
+class _AddEmployeeViewState extends State<AddEmployeeView> {
   @override
   void initState() {
     super.initState();
-    viewModel = context.read<AddEmployeeViewModel>(); 
-    viewModel.addEmployee.addListener(_onCommandResult); 
+    widget.viewModel.addEmployee.addListener(_onCommandResult); 
   }
 
   @override
   void dispose() {
-    viewModel.addEmployee.removeListener(_onCommandResult);
-    viewModel.dispose(); // Dispose controllers
+    widget.viewModel.addEmployee.removeListener(_onCommandResult);
+    widget.viewModel.dispose(); // Dispose controllers
     super.dispose();
   }
 
   void _onCommandResult() {
     if (!context.mounted) return;
     
-    final command = viewModel.addEmployee;
+    final command = widget.viewModel.addEmployee;
     final result = command.result;
 
     if (command.completed && result != null) {
@@ -96,21 +61,36 @@ class _AddEmployeeViewContentState extends State<_AddEmployeeViewContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.all(24),
+    Container viewContent = Container(
+      alignment: Alignment.topCenter, // Center the content horizontally in the large view
+      padding: const EdgeInsets.all(24),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 900),
+        constraints: const BoxConstraints(maxWidth: 900), // Constraint remains for large screen layout
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: const [
             BoxShadow(color: Color(0x0D000000), blurRadius: 24, offset: Offset(0, 8), spreadRadius: 0),
-            BoxShadow(color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 2), spreadRadius: 0),
           ],
         ),
-        child: _AddEmployeeContent(viewModel: viewModel),
+        // 💡 Use the main content widget directly
+        child: _AddEmployeeContent(viewModel: widget.viewModel),
       ),
+    );
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 1.0,
+        title: const Text('Add New Employee', style: TextStyle(color: Colors.black)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => context.pop(),
+          tooltip: 'Back to Employee List',
+        ),
+      ),
+      // The main content is now the body of the Scaffold
+      body: viewContent,
     );
   }
 }
@@ -140,7 +120,6 @@ class _AddEmployeeContent extends StatelessWidget {
                     Expanded(
                       child: Text('Add Employee', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600, color: Colors.black)),
                     ),
-                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop(), tooltip: 'Close'),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -151,7 +130,7 @@ class _AddEmployeeContent extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
                     OutlinedButton(
-                      onPressed: () => Navigator.of(context).maybePop(),
+                      onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.black87, side: const BorderSide(color: Color(0xFFE0E0E0)),
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),

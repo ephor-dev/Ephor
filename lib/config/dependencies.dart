@@ -11,15 +11,16 @@ List<SingleChildWidget> get providers {
     Provider(create: (context) => SupabaseService()),
     Provider(create: (context) => EmployeeSupabaseService()),
     Provider<AbstractEmployeeRepository>(
-      create: (context) => EmployeeRepository(
-        employeeService: context.read<EmployeeSupabaseService>(), 
-      ),
+      create: (context) => 
+        EmployeeRepository(
+          employeeService: context.read<EmployeeSupabaseService>(), 
+        ),
     ),
     ChangeNotifierProvider(
       create: (context) =>
-          AuthRepository(
-            supabaseService: context.read(),
-          ),
+        AuthRepository(
+          supabaseService: context.read(),
+        ),
     ),
   ];
 }

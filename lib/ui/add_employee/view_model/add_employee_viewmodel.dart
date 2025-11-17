@@ -19,11 +19,15 @@ typedef AddEmployeeParams = ({
   String? photoUrl,
 });
 
-class AddEmployeeViewModel { 
+class AddEmployeeViewModel extends ChangeNotifier { 
   
-  final AbstractEmployeeRepository repository; 
+  final AbstractEmployeeRepository _repository;
+  late CommandWithArgs addEmployee;
 
-  AddEmployeeViewModel({required this.repository});
+  AddEmployeeViewModel({required AbstractEmployeeRepository repository})
+    : _repository = repository {
+    addEmployee = CommandWithArgs<void, AddEmployeeParams>(_addEmployee);
+  }
 
   // --- UI State (Text Controllers) ---
   final TextEditingController lastNameController = TextEditingController();
@@ -41,21 +45,15 @@ class AddEmployeeViewModel {
     'EE Department', 'CE Department', 'ChE Department', 'ECE Department',
     'IE Department', 'ME Department', 'IT Department',
   ];
-
-  // --- Reactive Command ---
-  late final CommandWithArgs<void, AddEmployeeParams> addEmployee;
-
-  // --- Initializer and Command Setup ---
-  void initialize() {
-    addEmployee = CommandWithArgs<void, AddEmployeeParams>(_addEmployee);
-  }
   
   // --- Disposable Resources ---
+  @override
   void dispose() {
     lastNameController.dispose();
     firstNameController.dispose();
     middleNameController.dispose();
     tagsController.dispose();
+    super.dispose();
   }
   
   // --- Mutator Callbacks for UI interaction ---
@@ -84,8 +82,7 @@ class AddEmployeeViewModel {
     final EmployeeModel employeeToSave = _createEmployeeModel(params);
     
     try {
-      final result = await repository.addEmployee(employeeToSave);
-      print(result);
+      final result = await _repository.addEmployee(employeeToSave);
       return result;
     } catch (e) {
       debugPrint('Unexpected error in VM command: $e');

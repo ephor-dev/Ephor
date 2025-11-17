@@ -1,5 +1,4 @@
 import 'package:ephor/routing/routes.dart';
-import 'package:ephor/ui/add_employee/view/add_employee_view.dart';
 import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -19,11 +18,11 @@ class _DashboardViewState extends State<DashboardView> {
 
   final List<Map<String, dynamic>> menuItems = [
     {'title': 'Overview', 'icon': Icons.description_outlined, 'selected': true, 'path': Routes.dashboardOverview},
+    {'title': 'Employee List', 'icon': Icons.list_outlined, 'selected': false, 'path': Routes.dashboardEmployeeList},
     {'title': 'Upcoming Schedules', 'icon': Icons.schedule_outlined, 'selected': false, 'path': Routes.dashboardSchedules},
     {'title': 'Finished Assessments', 'icon': Icons.check_box_outlined, 'selected': false, 'path': Routes.dashboardAssessments},
     {'title': 'Finished Trainings', 'icon': Icons.check_outlined, 'selected': false, 'path': Routes.dashboardFinishedTrainings},
     {'title': 'Recommended Trainings', 'icon': Icons.wb_sunny_outlined, 'selected': false, 'path': Routes.dashboardRecommendedTrainings},
-    {'title': 'Toggle Dark Mode', 'icon': Icons.dark_mode_outlined, 'selected': false, 'path': Routes.dashboardDarkMode},
   ];
 
   int _getSelectedIndex() {
@@ -142,9 +141,6 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  void _showAddEmployeeModal(BuildContext context) {
-    AddEmployeeView.show(context);
-  }
 
   void _handleLogout(BuildContext context) {
     // Call the ViewModel's logout function
@@ -275,11 +271,6 @@ class _DashboardViewState extends State<DashboardView> {
             const SizedBox(width: 48.0),
             Row(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.person_add_alt_1_outlined, color: Colors.black, size: 25), 
-                  tooltip: 'Add Personnel',
-                  onPressed: () => _showAddEmployeeModal(context), 
-                ),
                 IconButton(icon: const Icon(Icons.info_outline, color: Colors.black, size: 25), onPressed: _showInfoPlaceholder),
                 IconButton(icon: const Icon(Icons.notifications_none, color: Colors.black, size: 25), onPressed: _showNotificationsPlaceholder),
                 const SizedBox(width: 15.0), 

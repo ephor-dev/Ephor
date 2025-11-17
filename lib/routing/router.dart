@@ -1,5 +1,5 @@
-import 'package:ephor/ui/dashboard/subviews/dark_mode/view/dark_mode_subview.dart';
-import 'package:ephor/ui/dashboard/subviews/dark_mode/view_model/dark_mode_viewmodel.dart';
+import 'package:ephor/ui/add_employee/view/add_employee_view.dart';
+import 'package:ephor/ui/add_employee/view_model/add_employee_viewmodel.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_assessment/view/finished_assessment_subview.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_assessment/view_model/finished_assessment_viewmodel.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_trainings/view/finished_trainings_subview.dart';
@@ -11,6 +11,8 @@ import 'package:ephor/ui/dashboard/subviews/recommended_trainings/view_model/rec
 import 'package:ephor/ui/dashboard/subviews/upcoming_schedules/view/upcoming_schedules_subview.dart';
 import 'package:ephor/ui/dashboard/subviews/upcoming_schedules/view_model/upcoming_schedules_viewmodel.dart';
 import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
+import 'package:ephor/ui/employee_management/view/employees_view.dart';
+import 'package:ephor/ui/employee_management/view_model/employees_viewmodel.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -54,6 +56,24 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           ),
         ),
         GoRoute(
+          path: Routes.getEmployeeListPath(),
+          builder: (context, state) => EmployeeListSubView(
+            viewModel: EmployeeListViewModel(
+              repository: context.read()
+            ),
+          ),
+          routes: [
+            GoRoute(
+              path: Routes.dashboardAddEmployee,
+              builder: (context, state) => AddEmployeeView(
+                viewModel: AddEmployeeViewModel(
+                  repository: context.read()
+                )
+              )
+            )
+          ]
+        ),
+        GoRoute(
           path: Routes.getSchedulesPath(),
           builder: (context, state) => UpcomingSchedulesSubView(
             viewModel: UpcomingSchedulesViewModel(),
@@ -75,12 +95,6 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: Routes.getRecommendedTrainingsPath(),
           builder: (context, state) => RecommendedTrainingsSubView(
             viewModel: RecommendedTrainingsViewModel(),
-          ),
-        ),
-        GoRoute(
-          path: Routes.getDarkModePath(),
-          builder: (context, state) => DarkModeToggleSubView(
-            viewModel: DarkModeToggleViewModel(),
           ),
         ),
       ]

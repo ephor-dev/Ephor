@@ -144,8 +144,6 @@ class LoginViewModel extends ChangeNotifier {
         }
         break;
     }
-
-    print(_errorMessage);
     
     notifyListeners(); 
     return result;
