@@ -1,5 +1,6 @@
 // presentation/subviews/employee_list/view/employee_list_subview.dart (Updated)
 
+import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/routing/routes.dart';
 import 'package:ephor/ui/employee_management/view_model/employees_viewmodel.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
@@ -103,7 +104,7 @@ class EmployeeListSubView extends StatelessWidget {
   }
 
   // Helper to show confirmation dialog
-  void _confirmDelete(BuildContext context, EmployeeListViewModel vm, employee) {
+  void _confirmDelete(BuildContext context, EmployeeListViewModel vm, EmployeeModel employee) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
