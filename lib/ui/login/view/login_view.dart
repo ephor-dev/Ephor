@@ -27,6 +27,11 @@ class _LoginViewState extends State<LoginView> {
   Set<String> _userRoleController = {'Supervisor'};
   final _formKey = GlobalKey<FormState>();
 
+  Map<String, String> roles = {
+    'Human Resource': 'humanResource',
+    'Supervisor': 'supervisor'
+  };
+
   @override
   void initState() {
     super.initState();
@@ -55,7 +60,7 @@ class _LoginViewState extends State<LoginView> {
       widget.viewModel.login.execute((
         _employeeCodeController.text.trim(),
         _passwordController.text,
-        _userRoleController.first,
+        roles[_userRoleController.first],
         _rememberMe
       ));
     }

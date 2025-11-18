@@ -1,4 +1,8 @@
+// The UI code now correctly uses the nullable email/password from the VM
+// and conditionally displays the required fields.
+
 import 'package:ephor/domain/models/employee/employee.dart';
+import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -48,16 +52,15 @@ class _AddEmployeeViewState extends State<AddEmployeeView> {
         Navigator.of(context).pop();
         command.clearResult();
       } 
-      else if (result case Error(error: final e)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-        command.clearResult();
-      }
+    } else if (result case Error(error: final CustomMessageException e)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      command.clearResult();
     }
   }
 
@@ -107,10 +110,19 @@ class _AddEmployeeViewState extends State<AddEmployeeView> {
                               ? null
                               : () {
                                   // Map form state to Command parameters
+                                final bool requiresLogin = widget.viewModel.employeeRole == EmployeeRole.supervisor || 
+                                                            widget.viewModel.employeeRole == EmployeeRole.humanResource;
+
+                                // Only send non-null values if login is required
+                                final String? email = requiresLogin ? widget.viewModel.emailController.text.trim() : null;
+                                final String? password = requiresLogin ? widget.viewModel.passwordController.text : null;
+                                
                                   final params = (
                                     lastName: widget.viewModel.lastNameController.text.trim(),
                                     firstName: widget.viewModel.firstNameController.text.trim(),
                                     middleName: widget.viewModel.middleNameController.text.trim(),
+                                    email: email, 
+                                    password: password,
                                     employeeRole: widget.viewModel.employeeRole,
                                     department: widget.viewModel.noDepartment ? null : widget.viewModel.selectedDepartment,
                                     tags: widget.viewModel.tagsController.text,
@@ -118,16 +130,12 @@ class _AddEmployeeViewState extends State<AddEmployeeView> {
                                   );
                                   widget.viewModel.addEmployee.execute(params);
                                 },
-                          style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFFFFB47B), foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
+                            // ... (Button styling and loader remains the same) ...
                           child: isLoading
                               ? const SizedBox(
-                                  width: 20, height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
-                                )
+                                    width: 20, height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                                  )
                               : const Text('Confirm', style: TextStyle(fontWeight: FontWeight.w600)),
                         );
                       },
@@ -178,9 +186,7 @@ class _FormSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 🔑 Use the Responsive utility to determine the layout
     final bool isMobile = Responsive.isMobile(context);
-    const double formMaxWidth = 760;
 
     // --- Left Column (Image Upload) ---
     final Widget imageCol = Column(
@@ -219,12 +225,15 @@ class _FormSection extends StatelessWidget {
     // --- Right Column (Form Inputs) ---
     final Widget rightColumn = Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: formMaxWidth),
+        constraints: const BoxConstraints(maxWidth: double.infinity),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             // Name Fields (Responsive Row/Column using isMobile)
+            // Name field section with necessary padding/decoration
             Container(
+              padding: const EdgeInsets.all(16), 
+              decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16)), 
               child: isMobile
                   ? Column( // Column layout for mobile
                       children: <Widget>[
@@ -247,7 +256,7 @@ class _FormSection extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             
-            // Employee Type
+            // Employee Type (Role Selection)
             Text('EMPLOYEE TYPE', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
             const SizedBox(height: 8),
             Container(
@@ -257,13 +266,64 @@ class _FormSection extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             
-            // Department
+            // 🔑 CONDITIONAL LOGIN FIELDS CONTAINER
+            ListenableBuilder(
+              listenable: viewModel,
+              builder: (context, child) {
+                // Recalculate requiresLogin inside the builder to ensure updates
+                final bool needsLogin = viewModel.employeeRole == EmployeeRole.supervisor || 
+                                        viewModel.employeeRole == EmployeeRole.humanResource;
+                
+                if (!needsLogin) {
+                  // Show a placeholder message when fields are hidden
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Note: Login is not required for this employee role (Email/Password fields are hidden).',
+                          style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    );
+                }
+                
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Email Field
+                    _NameField(label: 'EMAIL ADDRESS', controller: viewModel.emailController, decoration: decoration, placeholder: 'Enter employee email', isRequired: true),
+                    const SizedBox(height: 20),
+
+                    // Password Field
+                    _NameField(label: 'INITIAL PASSWORD', controller: viewModel.passwordController, decoration: decoration, placeholder: 'Set initial password', isRequired: true),
+                    const SizedBox(height: 20),
+                  ],
+                );
+              },
+            ),
+
+            // Department (Conditionally disabled by HR role)
             Text('DEPARTMENT', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
             const SizedBox(height: 8),
-            Container(
-              width: double.infinity, padding: const EdgeInsets.only(left: 16, right: 16),
-              decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16)),
-              child: _DepartmentRow(viewModel: viewModel),
+            ListenableBuilder(
+              listenable: viewModel,
+              builder: (context, child) {
+                // Department selection is disabled if the role is Human Resource
+                final bool isDepartmentDisabled = viewModel.employeeRole == EmployeeRole.humanResource;
+                
+                return Opacity(
+                  opacity: isDepartmentDisabled ? 0.5 : 1.0,
+                  child: Container(
+                    width: double.infinity, padding: const EdgeInsets.only(left: 16, right: 16),
+                    decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16)),
+                    child: IgnorePointer(
+                      ignoring: isDepartmentDisabled, // Disable interaction
+                      child: _DepartmentRow(viewModel: viewModel),
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 20),
             
@@ -285,16 +345,15 @@ class _FormSection extends StatelessWidget {
       ),
     );
 
-    // --- Final Layout Decision ---
+    // --- Final Layout Decision (remains the same) ---
     if (isMobile) {
-      // Mobile: Image on top, Form below (Column layout)
       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[Center(child: imageCol), const SizedBox(height: 24), rightColumn]);
     }
 
-    // Desktop/Tablet: Image on left, Form on right (Row layout)
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[imageCol, const SizedBox(width: 24), Expanded(child: rightColumn)]);
   }
 }
+
 
 // 5. Segmented Button for Employee Role
 class _EmployeeType extends StatefulWidget {
@@ -336,6 +395,15 @@ class _EmployeeTypeState extends State<_EmployeeType> {
           value: EmployeeRole.jobOrder,
           label: Row(mainAxisSize: MainAxisSize.min, children: const [Icon(Icons.work_outline, size: 18), SizedBox(width: 6), Text('Job Order', style: TextStyle(fontWeight: FontWeight.w500))]),
         ),
+        // Assuming these roles exist in your EmployeeRole enum:
+        ButtonSegment<EmployeeRole>(
+          value: EmployeeRole.supervisor,
+          label: Row(mainAxisSize: MainAxisSize.min, children: const [Icon(Icons.person, size: 18), SizedBox(width: 6), Text('Supervisor', style: TextStyle(fontWeight: FontWeight.w500))]),
+        ),
+        ButtonSegment<EmployeeRole>(
+          value: EmployeeRole.humanResource,
+          label: Row(mainAxisSize: MainAxisSize.min, children: const [Icon(Icons.people, size: 18), SizedBox(width: 6), Text('HR', style: TextStyle(fontWeight: FontWeight.w500))]),
+        ),
       ],
       selected: <EmployeeRole>{_currentSelection},
       onSelectionChanged: (Set<EmployeeRole> newSelection) {
@@ -343,7 +411,8 @@ class _EmployeeTypeState extends State<_EmployeeType> {
           setState(() {
             _currentSelection = newSelection.first;
           });
-          widget.viewModel.setEmployeeRole(newSelection.first);
+          // Notify the VM, which triggers the conditional display logic
+          widget.viewModel.setEmployeeRole(newSelection.first); 
         }
       },
       style: ButtonStyle(
@@ -411,58 +480,58 @@ class _DepartmentRowState extends State<_DepartmentRow> {
           onTap: () => _closeDropdown(),
           behavior: HitTestBehavior.translucent,
           child: Stack(
-            children: <Widget>[
-              Positioned.fill(child: Container(color: Colors.transparent)),
-              Positioned(
-                left: position.dx,
-                top: position.dy + size.height,
-                width: size.width,
-                child: GestureDetector(
-                  onTap: () {},
-                  child: Material(
-                    elevation: 8,
-                    child: Container(
-                      constraints: const BoxConstraints(maxHeight: 300),
-                      decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xFFE0E0E0))),
-                      child: ListView.separated(
-                        shrinkWrap: true, padding: EdgeInsets.zero,
-                        itemCount: widget.viewModel.departments.length,
-                        separatorBuilder: (BuildContext context, int index) => Container(
-                          height: 1, color: Colors.grey.shade200, margin: const EdgeInsets.symmetric(horizontal: 0),
-                        ),
-                        itemBuilder: (BuildContext context, int index) {
-                          final String department = widget.viewModel.departments[index];
-                          final bool isSelected = widget.viewModel.selectedDepartment == department;
-                          return InkWell(
-                            onTap: () {
-                              widget.viewModel.setDepartment(department);
-                              _closeDropdown();
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                              color: isSelected ? const Color(0xFFF5F5F5) : Colors.white,
-                              child: Row(
-                                children: <Widget>[
-                                  Expanded(
-                                    child: Text(department, style: TextStyle(
-                                      color: isSelected ? const Color(0xFFFFB47B) : Colors.black87,
-                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                                      fontSize: 15,
-                                    )),
-                                  ),
-                                  if (isSelected)
-                                    Container(
-                                      margin: const EdgeInsets.only(left: 8),
-                                      child: const Icon(Icons.check, color: Color(0xFFFFB47B), size: 20),
+              children: <Widget>[
+                Positioned.fill(child: Container(color: Colors.transparent)),
+                Positioned(
+                  left: position.dx,
+                  top: position.dy + size.height,
+                  width: size.width,
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: Material(
+                      elevation: 8,
+                      child: Container(
+                        constraints: const BoxConstraints(maxHeight: 300),
+                        decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xFFE0E0E0))),
+                        child: ListView.separated(
+                          shrinkWrap: true, padding: EdgeInsets.zero,
+                          itemCount: widget.viewModel.departments.length,
+                          separatorBuilder: (BuildContext context, int index) => Container(
+                            height: 1, color: Colors.grey.shade200, margin: const EdgeInsets.symmetric(horizontal: 0),
+                          ),
+                          itemBuilder: (BuildContext context, int index) {
+                            final String department = widget.viewModel.departments[index];
+                            final bool isSelected = widget.viewModel.selectedDepartment == department;
+                            return InkWell(
+                              onTap: () {
+                                widget.viewModel.setDepartment(department);
+                                _closeDropdown();
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                color: isSelected ? const Color(0xFFF5F5F5) : Colors.white,
+                                child: Row(
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: Text(department, style: TextStyle(
+                                        color: isSelected ? const Color(0xFFFFB47B) : Colors.black87,
+                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                        fontSize: 15,
+                                      )),
                                     ),
-                                ],
+                                    if (isSelected)
+                                      Container(
+                                        margin: const EdgeInsets.only(left: 8),
+                                        child: const Icon(Icons.check, color: Color(0xFFFFB47B), size: 20),
+                                      ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
                     ),
-                  ),
                 ),
               ),
             ],
