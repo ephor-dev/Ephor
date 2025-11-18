@@ -22,7 +22,10 @@ class EmployeeListSubView extends StatelessWidget {
         builder: (context, viewModel, child) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Employee Directory'),
+              title: Text(
+                'Employees',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.person_add),

@@ -3,6 +3,8 @@ import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:ephor/utils/responsiveness.dart';
+
 class DashboardView extends StatefulWidget {
   final DashboardViewModel viewModel;
   final Widget child;
@@ -13,12 +15,13 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  
+  static const Color _primaryRed = Color(0xFFAC312B);
 
   final List<Map<String, dynamic>> menuItems = [
     {'title': 'Overview', 'icon': Icons.description_outlined, 'selected': true, 'path': Routes.dashboardOverview},
-    {'title': 'Employee List', 'icon': Icons.list_outlined, 'selected': false, 'path': Routes.dashboardEmployeeList},
+    {'title': 'Employee List', 'icon': Icons.list, 'selected': false, 'path': Routes.dashboardEmployeeList},
     {'title': 'Upcoming Schedules', 'icon': Icons.schedule_outlined, 'selected': false, 'path': Routes.dashboardSchedules},
     {'title': 'Finished Assessments', 'icon': Icons.check_box_outlined, 'selected': false, 'path': Routes.dashboardAssessments},
     {'title': 'Finished Trainings', 'icon': Icons.check_outlined, 'selected': false, 'path': Routes.dashboardFinishedTrainings},
@@ -33,7 +36,7 @@ class _DashboardViewState extends State<DashboardView> {
       return path != null && location.contains(path);
     });
 
-    return index != -1 ? index : 0; // Default to 0 (Overview)
+    return index != -1 ? index : 0;
   }
 
   @override
@@ -45,8 +48,10 @@ class _DashboardViewState extends State<DashboardView> {
   @override
   void didUpdateWidget(covariant DashboardView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    oldWidget.viewModel.logout.removeListener(_onResult);
-    widget.viewModel.logout.addListener(_onResult);
+    if (oldWidget.viewModel.logout != widget.viewModel.logout) {
+      oldWidget.viewModel.logout.removeListener(_onResult);
+      widget.viewModel.logout.addListener(_onResult);
+    }
   }
 
   @override
@@ -59,7 +64,7 @@ class _DashboardViewState extends State<DashboardView> {
     final fullPath = '${Routes.dashboard}/$pathSegment';
     context.go(fullPath); 
     
-    // Close the drawer
+    // Always close the drawer after selection
     if (_scaffoldKey.currentState?.isDrawerOpen == true) {
       Navigator.pop(context);
     }
@@ -73,13 +78,12 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   // Helper function to build each menu item
-  Widget _buildDrawerItem({
+  Widget _buildMenuItem({
     required String title,
     required IconData icon,
     required bool isSelected,
-    required VoidCallback onTap, // Changed to a simple callback
+    required VoidCallback onTap,
   }) {
-    // Gradient for the selected state (Overview)
     final BoxDecoration decoration = isSelected
         ? BoxDecoration(
             borderRadius: const BorderRadius.only(
@@ -104,9 +108,9 @@ class _DashboardViewState extends State<DashboardView> {
         ),
         title: Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.black,
-            fontWeight: isSelected ? FontWeight.normal : FontWeight.normal,
+            fontWeight: FontWeight.normal,
           ),
         ),
         onTap: onTap,
@@ -114,6 +118,63 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
+  // Helper to build the core menu list (used inside the Drawer)
+  Widget _buildMenuList(int selectedIndex) {
+    return ListView.builder(
+      shrinkWrap: true,
+      padding: const EdgeInsets.only(top: 20.0, left: 10, right: 10),
+      itemCount: menuItems.length,
+      itemBuilder: (context, index) {
+        final item = menuItems[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8.0), 
+          child: _buildMenuItem(
+            title: item['title'],
+            icon: item['icon'],
+            isSelected: index == selectedIndex,
+            onTap: () => _onSelectItem(item['path']),
+          ),
+        );
+      },
+    );
+  }
+
+  // Helper to build the Drawer content
+  Widget _buildDrawer() {
+    final selectedIndex = _getSelectedIndex();
+    return Drawer(
+      // Set max drawer width, but allow it to shrink on smaller screens
+      width: 300, 
+      backgroundColor: Colors.white, 
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 10.0),
+            child: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              automaticallyImplyLeading: false, 
+              title: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.black, size: 25),
+                    onPressed: () => Navigator.pop(context), // Closes the drawer
+                  ),
+                  const SizedBox(width: 15.0), 
+                  Image.asset('assets/images/logo.png', height: 30, width: 30),
+                  const SizedBox(width: 8.0),
+                  const Text('EPHOR', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18.0)),
+                ],
+              ),
+            ),
+          ),
+          _buildMenuList(selectedIndex),
+        ],
+      ),
+    );
+  }
+
+  // Placeholder functions
   void _showInfoPlaceholder() {
     showDialog(
       context: context,
@@ -131,7 +192,6 @@ class _DashboardViewState extends State<DashboardView> {
       },
     );
   }
-
   void _showNotificationsPlaceholder() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -140,12 +200,8 @@ class _DashboardViewState extends State<DashboardView> {
       ),
     );
   }
-
-
   void _handleLogout(BuildContext context) {
-    // Call the ViewModel's logout function
     widget.viewModel.logout.execute();
-    
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Logged out successfully!'),
@@ -153,105 +209,72 @@ class _DashboardViewState extends State<DashboardView> {
       ),
     );
   }
-
   void _handleEditProfile(BuildContext context) {
-    // Call the ViewModel's editProfile placeholder function
     widget.viewModel.editProfile();
-
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Navigating to Edit Profile...'),
         duration: Duration(seconds: 1),
       ),
     );
-    // TODO: Implement navigation to the user profile editing screen.
+  }
+  void _onResult() {
+    if (widget.viewModel.logout.completed) {
+      widget.viewModel.logout.clearResult();
+      context.go(Routes.login);
+    }
+
+    if (widget.viewModel.logout.error) {
+      widget.viewModel.logout.clearResult();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Error while logging out"),
+          action: SnackBarAction(
+            label: "Try Again",
+            onPressed: () => widget.viewModel.logout.execute(),
+          ),
+        ),
+      );
+    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    const Color primaryRed = Color(0xFFAC312B);
-    final selectedIndex = _getSelectedIndex();
 
-    Scaffold mainChild = Scaffold(
-      key: _scaffoldKey,
-      drawer: Drawer(
-        width: 300, 
-        backgroundColor: Colors.white, 
-        child: Column(
-          children: [
-            // Custom Drawer Header
-            Padding(
-              padding: const EdgeInsets.only(top: 10.0),
-              child: AppBar(
-                backgroundColor: Colors.white,
-                elevation: 0,
-                automaticallyImplyLeading: false, 
-                title: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.black, size: 25),
-                      onPressed: () => Navigator.pop(context), // Closes the drawer
-                    ),
-                    const SizedBox(width: 15.0), 
-                    Image.asset('assets/images/logo.png', height: 30, width: 30),
-                    const SizedBox(width: 8.0),
-                    const Text('EPHOR', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18.0)),
-                  ],
-                ),
-              ),
-            ),
+  PreferredSizeWidget _buildAppBar({required bool isMobile}) {
+    return AppBar(
+      backgroundColor: Colors.white, 
+      elevation: 1.0, 
+      automaticallyImplyLeading: false, 
 
-            // Navigation List Items
-            ListView.builder(
-              shrinkWrap: true,
-              padding: const EdgeInsets.only(top: 20.0, left: 10, right: 10),
-              itemCount: menuItems.length,
-              itemBuilder: (context, index) {
-                final item = menuItems[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0), 
-                  child: _buildDrawerItem(
-                    title: item['title'],
-                    icon: item['icon'],
-                    isSelected: index == selectedIndex,
-                    onTap: () => _onSelectItem(item['path']),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-      // --- END DRAWER ---
+      title: Row(
+        children: [
+          // Menu button is always visible to open the drawer
+          IconButton(
+            icon: const Icon(Icons.menu, color: Colors.black, size: 25), 
+            onPressed: () {
+              _scaffoldKey.currentState?.openDrawer();
+            }, 
+          ),
 
-      // --- APP BAR (Top Navigation) ---
-      appBar: AppBar(
-        backgroundColor: Colors.white, 
-        elevation: 1.0, 
-        automaticallyImplyLeading: false, 
-
-        title: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.menu, color: Colors.black, size: 25), 
-              onPressed: () {
-                _scaffoldKey.currentState?.openDrawer();
-              }, 
-            ),
-            // Spacing
-            const SizedBox(width: 15.0), 
-
-            Row(
-              children: [
-                Image.asset('assets/images/logo.png', height: 32, width: 32),
-                const SizedBox(width: 8.0),
-                const Text('EPHOR', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18.0)),
-              ],
-            ),
-            const SizedBox(width: 48.0),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0),
+          const SizedBox(width: 15.0), 
+          
+          // Logo and Title
+          Row(
+            children: [
+              Image.asset('assets/images/logo.png', height: 32, width: 32),
+              const SizedBox(width: 8.0),
+              const Text('EPHOR', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18.0)),
+            ],
+          ),
+          
+          const SizedBox(width: 48.0),
+          
+          // Search Bar: Takes up available space
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: ConstrainedBox(
+                // Max width ensures search bar doesn't look too wide on huge screens
+                constraints: const BoxConstraints(maxWidth: 500), 
                 child: TextField(
                   decoration: InputDecoration(
                     filled: true,
@@ -263,122 +286,88 @@ class _DashboardViewState extends State<DashboardView> {
                     contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
                     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20.0), borderSide: BorderSide(color: Colors.grey.shade400, width: 1.0)),
                   ),
-                  cursorColor: primaryRed, 
+                  cursorColor: _primaryRed, 
                   style: const TextStyle(fontSize: 16),
                 ),
               ),
             ),
-            const SizedBox(width: 48.0),
-            Row(
-              children: [
+          ),
+          
+          const SizedBox(width: 48.0),
+          
+          // Action Buttons (Info, Notifications, Profile)
+          Row(
+            // Use responsive checks here if you wanted to hide some buttons on mobile
+            children: [
+              // Use Responsive.isMobile to decide if to show or not
+              if (!isMobile || Responsive.isTablet(context))
                 IconButton(icon: const Icon(Icons.info_outline, color: Colors.black, size: 25), onPressed: _showInfoPlaceholder),
-                IconButton(icon: const Icon(Icons.notifications_none, color: Colors.black, size: 25), onPressed: _showNotificationsPlaceholder),
-                const SizedBox(width: 15.0), 
+              
+              IconButton(icon: const Icon(Icons.notifications_none, color: Colors.black, size: 25), onPressed: _showNotificationsPlaceholder),
+              
+              const SizedBox(width: 15.0), 
 
-                // User Profile/Avatar Icon
-                PopupMenuButton<String>(
-                  offset: const Offset(0, 50),
-                  color: const Color(0xFFF7F7F7),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  // Avatar button
-                  child: ClipOval(child: CircleAvatar(radius: 15, backgroundColor: primaryRed, child: const Icon(Icons.person, color: Colors.white, size: 20),),),
-                  
-                  // Menu Items 
-                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                    // 1. User Header (Uses ViewModel data)
-                    PopupMenuItem<String>(
-                      enabled: false,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              CircleAvatar(radius: 20, backgroundColor: primaryRed.withAlpha(204), child: const Icon(Icons.person, color: Colors.white)),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Accessing data from the ViewModel (userProfile object)
-                                  Text("Username", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                  Text("Email", style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const Divider(height: 15),
-                        ],
-                      ),
+              // User Profile/Avatar Icon
+              PopupMenuButton<String>(
+                offset: const Offset(0, 50),
+                color: const Color(0xFFF7F7F7),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                child: ClipOval(child: CircleAvatar(radius: 15, backgroundColor: _primaryRed, child: const Icon(Icons.person, color: Colors.white, size: 20),),),
+                
+                // Menu Items 
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    enabled: false,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Username", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text("Email", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        Divider(height: 15),
+                      ],
                     ),
-                    
-                    // 2. Edit Profile
-                    const PopupMenuItem<String>(
-                      value: 'edit_profile',
-                      child: Row(
-                        children: [
-                          Icon(Icons.settings_outlined, color: Colors.black87),
-                          SizedBox(width: 8),
-                          Text('Edit Profile'),
-                        ],
-                      ),
-                    ),
-                    
-                    // 3. Logout
-                    const PopupMenuItem<String>(
-                      value: 'logout',
-                      child: Row(
-                        children: [
-                          Icon(Icons.logout, color: Colors.black87),
-                          SizedBox(width: 8),
-                          Text('Logout'),
-                        ],
-                      ),
-                    ),
-                  ],
-                  // Calling the corresponding handler which, in turn, calls the ViewModel
-                  onSelected: (String result) {
-                    if (result == 'edit_profile') {
-                      _handleEditProfile(context);
-                    } else if (result == 'logout') {
-                      _handleLogout(context);
-                    }
-                  },
-                ),
-                const SizedBox(width: 8.0), 
-              ],
-            ),
-          ],
-        ),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'edit_profile',
+                    child: Row(children: [Icon(Icons.settings_outlined, color: Colors.black87), SizedBox(width: 8), Text('Edit Profile')]),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'logout',
+                    child: Row(children: [Icon(Icons.logout, color: Colors.black87), SizedBox(width: 8), Text('Logout')]),
+                  ),
+                ],
+                onSelected: (String result) {
+                  if (result == 'edit_profile') {
+                    _handleEditProfile(context);
+                  } else if (result == 'logout') {
+                    _handleLogout(context);
+                  }
+                },
+              ),
+              const SizedBox(width: 8.0), 
+            ],
+          ),
+        ],
       ),
-      
-      // --- BODY CONTENT ---
-      body: widget.child,
-    );
-
-    return ListenableBuilder(
-      listenable: widget.viewModel.logout, 
-      builder: (context, _) {
-        return mainChild;
-      }
     );
   }
 
-  void _onResult() {
-    if (widget.viewModel.logout.completed) {
-      widget.viewModel.logout.clearResult();
-      context.go(Routes.login);
-    }
-
-    if (widget.viewModel.logout.error) {
-      widget.viewModel.logout.clearResult();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error while logging out"),
-          action: SnackBarAction(
-            label: "Try Again",
-            onPressed: () => widget.viewModel.logout.execute(),
-          ),
-        ),
-      );
-    }
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: widget.viewModel.logout, 
+      builder: (context, _) {
+        final isMobile = Responsive.isMobile(context);
+        
+        // Use a single Scaffold for all views.
+        // The drawer width is flexible, and the body (widget.child) occupies the rest of the space responsively.
+        return Scaffold(
+          key: _scaffoldKey,
+          appBar: _buildAppBar(isMobile: isMobile),
+          drawer: _buildDrawer(), // Hidden drawer used for navigation
+          body: widget.child, // The main content area is now fully expanded
+        );
+      }
+    );
   }
 }

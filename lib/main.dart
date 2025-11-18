@@ -43,7 +43,7 @@ class _EphorState extends State<EphorApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.detached || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.detached) {
       SupabaseConfig.forceLogOut();
     }
   }
@@ -56,8 +56,8 @@ class _EphorState extends State<EphorApp> with WidgetsBindingObserver {
     return MaterialApp.router(
       scrollBehavior: MaterialScrollBehavior(),
       theme: ephorTheme.light(),
-      darkTheme: ephorTheme.light(),
-      themeMode: ThemeMode.system,
+      darkTheme: ephorTheme.dark(),
+      themeMode: ThemeMode.light,
       routerConfig: router(context.read()),
     );
   }
