@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:ephor/ui/login/view_model/login_viewmodel.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../routing/routes.dart';
+import 'package:ephor/routing/routes.dart';
+import 'package:ephor/utils/responsiveness.dart';
 
 class LoginView extends StatefulWidget {
   final LoginViewModel viewModel;
@@ -16,8 +17,10 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-  final double formSpacing = 16.0;
+  static const double _formSpacing = 16.0;
   bool _rememberMe = false;
+  bool _isPasswordVisible = false;
+  bool _isForgetPasswordHovered = false;
   final TextEditingController _employeeCodeController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -33,8 +36,10 @@ class _LoginViewState extends State<LoginView> {
   @override
   void didUpdateWidget(covariant LoginView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    oldWidget.viewModel.login.removeListener(_onResult);
-    widget.viewModel.login.addListener(_onResult);
+    if (oldWidget.viewModel.login != widget.viewModel.login) {
+      oldWidget.viewModel.login.removeListener(_onResult);
+      widget.viewModel.login.addListener(_onResult);
+    }
   }
 
   @override
@@ -58,28 +63,29 @@ class _LoginViewState extends State<LoginView> {
 
   Widget _buildRoleSegmentedButton() {
     return SegmentedButton<String>(
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.resolveWith<Color?>((
-          Set<WidgetState> states,
-        ) {
-          if (states.contains(WidgetState.selected)) {
-            return const Color.fromARGB(255, 214, 47, 32);
-          }
-          return Colors.grey.shade200;
-        }),
-        textStyle: WidgetStateProperty.resolveWith<TextStyle?>((
-          Set<WidgetState> states,
-        ) {
-          if (states.contains(WidgetState.selected)) {
-            return const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            );
-          }
-          return const TextStyle(color: Color.fromARGB(255, 214, 47, 32));
-        }),
-      ),
-
+      // style: ButtonStyle(
+      //   backgroundColor: WidgetStateProperty.resolveWith<Color?>((
+      //     Set<WidgetState> states,
+      //   ) {
+      //     if (states.contains(WidgetState.selected)) {
+      //       // return const Color.fromARGB(255, 214, 47, 32);
+      //       return Theme.of(context).colorScheme.primaryContainer;
+      //     }
+      //     return Colors.grey.shade200;
+      //   }),
+      //   textStyle: WidgetStateProperty.resolveWith<TextStyle?>((
+      //     Set<WidgetState> states,
+      //   ) {
+      //     if (states.contains(WidgetState.selected)) {
+      //       return const TextStyle(
+      //         color: Colors.white,
+      //         fontWeight: FontWeight.bold,
+      //       );
+      //     }
+      //     // return const TextStyle(color: Color.fromARGB(255, 214, 47, 32));
+      //     return TextStyle(color: Theme.of(context).);
+      //   }),
+      // ),
       segments: const <ButtonSegment<String>>[
         ButtonSegment<String>(
           value: 'Supervisor',
@@ -101,318 +107,304 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
+  /// Builds the left panel for the desktop layout (Logo and Title).
+  Widget _buildDesktopLogoPanel() {
+    return const Flexible(
+      flex: 1,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 200,
+              height: 200,
+              child: Image(
+                image: AssetImage('assets/images/logo_square.png'),
+              ),
+            ),
+            Text(
+              'Ephor',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds the core login form content, dynamically including/excluding the
+  /// logo block based on the screen size from the Responsive utility.
+  Widget _buildLoginForm() {
+    final isMobile = Responsive.isMobile(context);
+    final Widget verticalSpace = const SizedBox(height: _formSpacing);
+
+    final formContent = <Widget>[
+      // --- Mobile Logo/Title Block (Only appears on mobile) ---
+      if (isMobile) ...[
+        const SizedBox(
+          width: 150,
+          height: 150,
+          child: Image(
+            image: AssetImage('assets/images/logo.png'),
+          ),
+        ),
+        const Text(
+          'Ephor',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        verticalSpace,
+      ],
+
+      // --- Desktop Welcome Text (Only appears on desktop) ---
+      if (!isMobile) ...[
+        const Text(
+          'Welcome',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4),
+      ],
+
+      // --- Shared 'Sign In' Text ---
+      const Text(
+        'Sign in to your university account',
+        style: TextStyle(
+          fontSize: 14,
+          fontStyle: FontStyle.italic,
+        ),
+      ),
+      verticalSpace,
+      verticalSpace,
+
+      // --- Form Fields ---
+      TextFormField(
+        controller: _employeeCodeController,
+        keyboardType: TextInputType.text,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return 'Employee code is required';
+          }
+          return null;
+        },
+        decoration: const InputDecoration(
+          labelText: 'Employee Code',
+          hintText: 'Enter Employee Code',
+          border: OutlineInputBorder(),
+          suffixIcon: Icon(Icons.person),
+        ),
+      ),
+      verticalSpace,
+      TextFormField(
+        controller: _passwordController,
+        obscureText: !_isPasswordVisible,
+        keyboardType: TextInputType.text,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Password is required';
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          labelText: 'Password',
+          hintText: 'Enter your password',
+          border: OutlineInputBorder(),
+          suffixIcon: IconButton(
+          icon: Icon(
+            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+            // color: Colors.grey,
+          ),
+          onPressed: () {
+            setState(() {
+              _isPasswordVisible = !_isPasswordVisible;
+            });
+          },
+        ),
+        ),
+      ),
+      verticalSpace,
+
+      // --- Role Segmented Button ---
+      Row(
+        children: [
+          Expanded(child: _buildRoleSegmentedButton()),
+        ],
+      ),
+      verticalSpace,
+
+      // --- Remember Me / Forget Password ---
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Checkbox(
+                value: _rememberMe,
+                onChanged: (value) {
+                  setState(() {
+                    _rememberMe = value!;
+                  });
+                },
+              ),
+              const Text('Remember Me'),
+            ],
+          ),
+          InkWell(
+            onTap: () {
+              //INPUT LATER
+            },
+            onHover: (hovered) {
+              setState(() {
+                _isForgetPasswordHovered = hovered;
+              });
+            },
+            child: Text(
+              'Forget Password',
+              style: TextStyle(
+                decoration: _isForgetPasswordHovered
+                  ? TextDecoration.underline
+                  : TextDecoration.none,
+                decorationColor: _isForgetPasswordHovered
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurface,
+                color: _isForgetPasswordHovered
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurface
+              )
+            ),
+          ),
+        ],
+      ),
+      verticalSpace,
+
+      // --- Login Button ---
+      Align(
+        alignment: Alignment.centerRight,
+        child: ListenableBuilder(
+          listenable: widget.viewModel.login,
+          builder: (context, _) {
+            Color surfaceColor = Theme.of(context).colorScheme.surface;
+            return FilledButton(
+              onPressed: widget.viewModel.isLoading
+                  ? null
+                  : () => _handleLogin(context),
+              child: widget.viewModel.isLoading
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(surfaceColor),
+                      ),
+                    )
+                  : const Text("Login"),
+            );
+          },
+        ),
+      ),
+    ];
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        // Center for mobile, start for desktop (where it's on the right side)
+        crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: formContent,
+      ),
+    );
+  }
+
+  /// The main structure that wraps the form for all screen sizes,
+  /// with sizing determined by the Responsive utility.
+  Widget _buildLoginWrapper({required Widget child}) {
+    final isMobile = Responsive.isMobile(context);
+
+    // The logic for size constraints is determined here based on isMobile
+    final double width = isMobile ? MediaQuery.of(context).size.width * 0.9 : 946;
+    final BoxConstraints constraints = BoxConstraints(
+      minHeight: isMobile ? MediaQuery.of(context).size.height * 0.9 : 527,
+      maxHeight: isMobile ? double.infinity : 527,
+      maxWidth: 946,
+    );
+
+    Color centerColor = Theme.of(context).colorScheme.surface;
+
+    return Center(
+      child: SingleChildScrollView(
+        child: Center(
+          child: Container(
+            width: width,
+            constraints: constraints,
+            margin: const EdgeInsets.symmetric(vertical: 32.0),
+            padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 32.0),
+            decoration: BoxDecoration(
+              color: centerColor.withAlpha(127),
+              borderRadius: BorderRadius.circular(45),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 10,
+                  offset: Offset(0, 5),
+                ),
+              ],
+            ),
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final Widget verticalSpace = SizedBox(height: formSpacing);
-
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          child: Center(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isNarrowScreen = constraints.maxWidth < 600;
-
-                return Container(
-                  width: isNarrowScreen ? constraints.maxWidth * 0.9 : 946,
-                  constraints: BoxConstraints(
-                    minHeight: isNarrowScreen
-                        ? MediaQuery.of(context).size.height * 0.9
-                        : 527,
-                    maxHeight: isNarrowScreen ? double.infinity : 527,
-                    maxWidth: 946,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: AlignmentGeometry.bottomLeft,
+            end: AlignmentGeometry.topRight,
+            colors: [
+              Color(0xffac575d),
+              Color(0xffC68380),
+              Color(0xffE0B0A4),
+              Color(0xffC68380),
+              Color(0xffac575d),
+            ],
+            stops: [
+              0.00,
+              0.08,
+              0.50,
+              0.75,
+              1.00
+            ]
+          ),
+        ),
+        child: Responsive(
+          mobile: _buildLoginWrapper(
+            child: _buildLoginForm(),
+          ),
+          desktop: _buildLoginWrapper(
+            child: Row(
+              children: [
+                _buildDesktopLogoPanel(),
+                const SizedBox(width: 32),
+                Flexible(
+                  flex: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: _buildLoginForm(),
                   ),
-                  margin: isNarrowScreen ? EdgeInsets.zero : EdgeInsets.symmetric(vertical: 32.0),
-                  padding: isNarrowScreen ? EdgeInsets.zero : EdgeInsets.symmetric(vertical: 32.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(45),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 10,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Form(
-                    key: _formKey,
-                    child: isNarrowScreen
-                        ? Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                            const SizedBox(
-                              width: 150,
-                              height: 150,
-                              child: Image(
-                                image: AssetImage('assets/images/logo.png'),
-                              ),
-                            ),
-                            const Text(
-                              'Ephor',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            verticalSpace,
-                            const Text(
-                              'Sign in to your university account',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                            verticalSpace,
-                            verticalSpace,
-                            TextFormField(
-                              controller: _employeeCodeController,
-                              keyboardType: TextInputType.text,
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return 'Employee code is required';
-                                }
-                                return null;
-                              },
-                              decoration: const InputDecoration(
-                                labelText: 'Employee Code',
-                                hintText: 'Enter Employee Code',
-                                border: OutlineInputBorder(),
-                                suffixIcon: Icon(Icons.person),
-                              ),
-                            ),
-                            verticalSpace,
-                            TextFormField(
-                              controller: _passwordController,
-                              obscureText: true,
-                              keyboardType: TextInputType.text,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Password is required';
-                                }
-                                return null;
-                              },
-                              decoration: const InputDecoration(
-                                labelText: 'Password',
-                                hintText: 'Enter your password',
-                                border: OutlineInputBorder(),
-                                suffixIcon: Icon(Icons.lock),
-                              ),
-                            ),
-                            verticalSpace,
-                            Row(
-                              children: [
-                                Expanded(child: _buildRoleSegmentedButton()),
-                              ],
-                            ),
-                            verticalSpace,
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Checkbox(
-                                      value: _rememberMe,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _rememberMe = value!;
-                                        });
-                                      },
-                                    ),
-                                    const Text('Remember Me'),
-                                  ],
-                                ),
-                                InkWell(
-                                  onTap: () {
-                                    //INPUT LATER
-                                  },
-                                  child: const Text('Forget Password'),
-                                ),
-                              ],
-                            ),
-                            verticalSpace,
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: ListenableBuilder(
-                                listenable: widget.viewModel.login, 
-                                builder: (context, _) {
-                                  return ElevatedButton(
-                                    onPressed: widget.viewModel.isLoading
-                                      ? null
-                                      : () => _handleLogin(context), 
-                                    child: widget.viewModel.isLoading
-                                      ? const SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                          ),
-                                        )
-                                      : const Text("Login")
-                                  );
-                                }
-                              ),
-                            ),
-                          ],
-                        )
-                      : Row(
-                          children: [
-                            const Flexible(
-                              flex: 1,
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: 150,
-                                      height: 150,
-                                      child: Image(
-                                        image: AssetImage(
-                                          'assets/images/logo.png',
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      'Ephor',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 32),
-                            Flexible(
-                              flex: 2,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Text(
-                                      'Welcome',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    const Text(
-                                      'Sign in to your university account',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                    verticalSpace,
-                                    TextFormField(
-                                      controller: _employeeCodeController,
-                                      keyboardType: TextInputType.text,
-                                      validator: (value) {
-                                        if (value == null || value.trim().isEmpty) {
-                                          return 'Employee code is required';
-                                        }
-                                        return null;
-                                      },
-                                      decoration: const InputDecoration(
-                                        labelText: 'Employee Code',
-                                        hintText: 'Enter Employee Code',
-                                        border: OutlineInputBorder(),
-                                        suffixIcon: Icon(Icons.person),
-                                      ),
-                                    ),
-                                    verticalSpace,
-                                    TextFormField(
-                                      controller: _passwordController,
-                                      obscureText: true,
-                                      keyboardType: TextInputType.text,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Password is required';
-                                        }
-                                        return null;
-                                      },
-                                      decoration: const InputDecoration(
-                                        labelText: 'Password',
-                                        hintText: 'Enter your password',
-                                        border: OutlineInputBorder(),
-                                        suffixIcon: Icon(Icons.lock),
-                                      ),
-                                    ),
-                                    verticalSpace,
-                                    verticalSpace,
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: _buildRoleSegmentedButton(),
-                                        ),
-                                      ],
-                                    ),
-                                    verticalSpace,
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Checkbox(
-                                              value: _rememberMe,
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  _rememberMe = value!;
-                                                });
-                                              },
-                                            ),
-                                            const Text('Remember Me'),
-                                          ],
-                                        ),
-                                        InkWell(
-                                          onTap: () {
-                                            //INPUT LATER
-                                          },
-                                          child: const Text('Forget Password'),
-                                        ),
-                                      ],
-                                    ),
-                                    verticalSpace,
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: ListenableBuilder(
-                                        listenable: widget.viewModel.login, 
-                                        builder: (context, _) {
-                                          return ElevatedButton(
-                                            onPressed: widget.viewModel.isLoading
-                                              ? null
-                                              : () => _handleLogin(context),
-                                            child: widget.viewModel.isLoading
-                                              ? const SizedBox(
-                                                  width: 20,
-                                                  height: 20,
-                                                  child: CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                                  )
-                                                )
-                                              : const Text("Login")
-                                          );
-                                        }
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                    ),
-                );
-              },
+                ),
+              ],
             ),
           ),
         ),
@@ -424,6 +416,7 @@ class _LoginViewState extends State<LoginView> {
     if (widget.viewModel.login.completed) {
       widget.viewModel.login.clearResult();
       context.go(Routes.dashboard);
+      return;
     }
 
     if (widget.viewModel.login.error) {
