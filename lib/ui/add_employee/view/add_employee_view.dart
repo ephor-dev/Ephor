@@ -2,10 +2,10 @@ import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:ephor/ui/add_employee/view_model/add_employee_viewmodel.dart';
+import 'package:ephor/utils/responsiveness.dart'; 
 
-// 1. Root widget for showing the dialog and setting up the ViewModel scope
+// 1. Root widget for showing the form and setting up the ViewModel scope
 class AddEmployeeView extends StatefulWidget {
   final AddEmployeeViewModel viewModel;
   const AddEmployeeView({super.key, required this.viewModel});
@@ -15,6 +15,8 @@ class AddEmployeeView extends StatefulWidget {
 }
 
 class _AddEmployeeViewState extends State<AddEmployeeView> {
+  // --- Lifecyle and Command Handling ---
+
   @override
   void initState() {
     super.initState();
@@ -59,71 +61,26 @@ class _AddEmployeeViewState extends State<AddEmployeeView> {
     }
   }
 
+  // --- UI Build Logic (Flattened Content) ---
+
   @override
   Widget build(BuildContext context) {
+    final bool isMobile = Responsive.isMobile(context);
+    final EdgeInsets outerPadding = isMobile ? const EdgeInsets.all(16) : const EdgeInsets.all(24);
+    
     Container viewContent = Container(
-      alignment: Alignment.topCenter, // Center the content horizontally in the large view
-      padding: const EdgeInsets.all(24),
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 900), // Constraint remains for large screen layout
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: const [
-            BoxShadow(color: Color(0x0D000000), blurRadius: 24, offset: Offset(0, 8), spreadRadius: 0),
-          ],
-        ),
-        // 💡 Use the main content widget directly
-        child: _AddEmployeeContent(viewModel: widget.viewModel),
-      ),
-    );
-
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1.0,
-        title: const Text('Add New Employee', style: TextStyle(color: Colors.black)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => context.pop(),
-          tooltip: 'Back to Employee List',
-        ),
-      ),
-      // The main content is now the body of the Scaffold
-      body: viewContent,
-    );
-  }
-}
-
-// 3. Stateless main content builder
-class _AddEmployeeContent extends StatelessWidget {
-  const _AddEmployeeContent({required this.viewModel});
-  final AddEmployeeViewModel viewModel;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        final bool isNarrow = constraints.maxWidth < 700;
-        final EdgeInsets cardPadding = isNarrow ? const EdgeInsets.all(24) : const EdgeInsets.fromLTRB(28, 24, 28, 24);
-
-        return SingleChildScrollView(
+      alignment: Alignment.topCenter,
+      padding: outerPadding,
+      child: Center(
+        child: SingleChildScrollView(
           child: Padding(
-            padding: cardPadding,
+            padding: isMobile ? const EdgeInsets.all(20) : const EdgeInsets.fromLTRB(28, 24, 28, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Text('Add Employee', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600, color: Colors.black)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _FormSection(viewModel: viewModel, isNarrow: isNarrow),
+                // Form Section uses Responsive.isMobile internally
+                _FormSection(viewModel: widget.viewModel),
 
                 const SizedBox(height: 20),
                 Row(
@@ -139,26 +96,27 @@ class _AddEmployeeContent extends StatelessWidget {
                       child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w500)),
                     ),
                     const SizedBox(width: 12),
-                    // Use ListenableBuilder to rebuild ONLY the button/loader
+                    
+                    // Confirm Button (ListenableBuilder)
                     ListenableBuilder(
-                      listenable: viewModel.addEmployee,
+                      listenable: widget.viewModel.addEmployee,
                       builder: (context, child) {
-                        final bool isLoading = viewModel.addEmployee.running;
+                        final bool isLoading = widget.viewModel.addEmployee.running;
                         return FilledButton(
                           onPressed: isLoading
                               ? null
                               : () {
                                   // Map form state to Command parameters
                                   final params = (
-                                    lastName: viewModel.lastNameController.text.trim(),
-                                    firstName: viewModel.firstNameController.text.trim(),
-                                    middleName: viewModel.middleNameController.text.trim(),
-                                    employeeRole: viewModel.employeeRole,
-                                    department: viewModel.noDepartment ? null : viewModel.selectedDepartment,
-                                    tags: viewModel.tagsController.text,
-                                    photoUrl: viewModel.photoUrl,
+                                    lastName: widget.viewModel.lastNameController.text.trim(),
+                                    firstName: widget.viewModel.firstNameController.text.trim(),
+                                    middleName: widget.viewModel.middleNameController.text.trim(),
+                                    employeeRole: widget.viewModel.employeeRole,
+                                    department: widget.viewModel.noDepartment ? null : widget.viewModel.selectedDepartment,
+                                    tags: widget.viewModel.tagsController.text,
+                                    photoUrl: widget.viewModel.photoUrl,
                                   );
-                                  viewModel.addEmployee.execute(params);
+                                  widget.viewModel.addEmployee.execute(params);
                                 },
                           style: FilledButton.styleFrom(
                             backgroundColor: const Color(0xFFFFB47B), foregroundColor: Colors.white,
@@ -180,17 +138,34 @@ class _AddEmployeeContent extends StatelessWidget {
               ],
             ),
           ),
-        );
-      },
+        ),
+      ),
+    );
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 1.0,
+        title: const Text('Add New Employee', style: TextStyle(color: Colors.black)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => context.pop(),
+          tooltip: 'Back to Employee List',
+        ),
+      ),
+      body: viewContent,
     );
   }
 }
 
-// 4. Form Section (Handles responsiveness)
+// -----------------------------------------------------------------------------
+// --- SUPPORTING WIDGETS ---
+// -----------------------------------------------------------------------------
+
+// 4. Form Section (Handles responsiveness for internal layouts)
 class _FormSection extends StatelessWidget {
-  const _FormSection({required this.viewModel, required this.isNarrow});
+  const _FormSection({required this.viewModel});
   final AddEmployeeViewModel viewModel;
-  final bool isNarrow;
 
   final InputDecoration decoration = const InputDecoration(
     filled: true, fillColor: Colors.white,
@@ -203,7 +178,11 @@ class _FormSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 🔑 Use the Responsive utility to determine the layout
+    final bool isMobile = Responsive.isMobile(context);
     const double formMaxWidth = 760;
+
+    // --- Left Column (Image Upload) ---
     final Widget imageCol = Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
@@ -211,7 +190,7 @@ class _FormSection extends StatelessWidget {
           onTap: () {ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Image picker not implemented')));},
           borderRadius: BorderRadius.circular(16),
           child: Container(
-            width: 140, height: 140,
+            width: 200, height: 200,
             decoration: BoxDecoration(
               color: const Color(0xFFFFE8CC),
               borderRadius: BorderRadius.circular(16),
@@ -237,17 +216,17 @@ class _FormSection extends StatelessWidget {
       ],
     );
 
+    // --- Right Column (Form Inputs) ---
     final Widget rightColumn = Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: formMaxWidth),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
+            // Name Fields (Responsive Row/Column using isMobile)
             Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16)),
-              child: isNarrow
-                  ? Column(
+              child: isMobile
+                  ? Column( // Column layout for mobile
                       children: <Widget>[
                         _NameField(label: 'LAST NAME', controller: viewModel.lastNameController, decoration: decoration, placeholder: 'Enter last name', isRequired: true),
                         const SizedBox(height: 12),
@@ -256,7 +235,7 @@ class _FormSection extends StatelessWidget {
                         _NameField(label: 'MIDDLE NAME', controller: viewModel.middleNameController, decoration: decoration, placeholder: 'Enter middle name', isOptional: true),
                       ],
                     )
-                  : Row(
+                  : Row( // Row layout for Tablet/Desktop
                       children: <Widget>[
                         Expanded(child: _NameField(label: 'LAST NAME', controller: viewModel.lastNameController, decoration: decoration, placeholder: 'Enter last name', isRequired: true)),
                         const SizedBox(width: 8),
@@ -267,22 +246,28 @@ class _FormSection extends StatelessWidget {
                     ),
             ),
             const SizedBox(height: 20),
+            
+            // Employee Type
             Text('EMPLOYEE TYPE', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
             const SizedBox(height: 8),
             Container(
-              width: double.infinity, padding: const EdgeInsets.all(16),
+              width: double.infinity, padding: const EdgeInsets.only(left: 16, right: 16),
               decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16)),
               child: _EmployeeType(viewModel: viewModel),
             ),
             const SizedBox(height: 20),
+            
+            // Department
             Text('DEPARTMENT', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
             const SizedBox(height: 8),
             Container(
-              width: double.infinity, padding: const EdgeInsets.all(16),
+              width: double.infinity, padding: const EdgeInsets.only(left: 16, right: 16),
               decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16)),
               child: _DepartmentRow(viewModel: viewModel),
             ),
             const SizedBox(height: 20),
+            
+            // Tags
             Text('EXTRA TAGS (COMMA SEPARATED, IF APPLICABLE)', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
             const SizedBox(height: 8),
             TextFormField(
@@ -300,10 +285,13 @@ class _FormSection extends StatelessWidget {
       ),
     );
 
-    if (isNarrow) {
+    // --- Final Layout Decision ---
+    if (isMobile) {
+      // Mobile: Image on top, Form below (Column layout)
       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[Center(child: imageCol), const SizedBox(height: 24), rightColumn]);
     }
 
+    // Desktop/Tablet: Image on left, Form on right (Row layout)
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[imageCol, const SizedBox(width: 24), Expanded(child: rightColumn)]);
   }
 }
@@ -318,6 +306,7 @@ class _EmployeeType extends StatefulWidget {
 }
 
 class _EmployeeTypeState extends State<_EmployeeType> {
+  // Assuming EmployeeRole is an enum defined elsewhere
   EmployeeRole _currentSelection = EmployeeRole.personnel; 
   
   @override
@@ -490,69 +479,83 @@ class _DepartmentRowState extends State<_DepartmentRow> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.max, crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        Expanded(
-          child: GestureDetector(
-            key: _dropdownKey,
-            onTap: _toggleDropdown,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100, borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: _isDropdownOpen ? const Color(0xFFFFB47B) : const Color(0xFFE0E0E0),
-                  width: _isDropdownOpen ? 2 : 1,
-                ),
+
+    List<Widget> contents = <Widget>[
+      Expanded(
+        child: GestureDetector(
+          key: _dropdownKey,
+          onTap: _toggleDropdown,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100, borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: _isDropdownOpen ? const Color(0xFFFFB47B) : const Color(0xFFE0E0E0),
+                width: _isDropdownOpen ? 2 : 1,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      widget.viewModel.noDepartment ? 'Select Department' : (widget.viewModel.selectedDepartment ?? 'Select Department'),
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: widget.viewModel.noDepartment || widget.viewModel.selectedDepartment == null ? Colors.grey.shade600 : Colors.black,
-                        fontSize: 15,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    widget.viewModel.noDepartment ? 'Select Department' : (widget.viewModel.selectedDepartment ?? 'Select Department'),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: widget.viewModel.noDepartment || widget.viewModel.selectedDepartment == null ? Colors.grey.shade600 : Colors.black,
+                      fontSize: 15,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    _isDropdownOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                    color: Colors.black87, size: 24,
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  _isDropdownOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                  color: Colors.black87, size: 24,
+                ),
+              ],
             ),
           ),
         ),
-        const SizedBox(width: 12),
-        Flexible(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Checkbox(
-                value: widget.viewModel.noDepartment,
-                onChanged: (bool? v) {
-                  widget.viewModel.setNoDepartment(v ?? false);
-                  setState(() {
+      ),
+      const SizedBox(width: 12),
+      // Use ListenableBuilder here to update when the ViewModel state changes
+      ListenableBuilder(
+        listenable: widget.viewModel,
+        builder: (context, child) {
+          return Flexible(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Checkbox(
+                  value: widget.viewModel.noDepartment,
+                  onChanged: (bool? v) {
+                    widget.viewModel.setNoDepartment(v ?? false);
                     if (v == true && _isDropdownOpen) {
                       _closeDropdown();
                     }
-                  });
-                },
-                activeColor: const Color(0xFFFF6B9D),
-              ),
-              const SizedBox(width: 4),
-              const Text('Not part of any department.', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w400, fontSize: 14)),
-            ],
-          ),
-        ),
-      ],
+                  },
+                  activeColor: const Color(0xFFFF6B9D),
+                ),
+                const SizedBox(width: 4),
+                const Text(
+                  'Not part of any department.', 
+                  style: TextStyle(
+                    color: Colors.black87, 
+                    fontWeight: FontWeight.w400, 
+                    fontSize: 14
+                  )
+                ),
+              ],
+            ),
+          );
+        }
+      ),
+    ];
+
+    return Row(
+      mainAxisSize: MainAxisSize.max, crossAxisAlignment: CrossAxisAlignment.center,
+      children: contents
     );
   }
 }
