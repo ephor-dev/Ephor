@@ -431,15 +431,16 @@ class _LoginViewState extends State<LoginView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Login Error: ${messageException.message}"),
-          action: SnackBarAction(
-            label: "Try Again",
-            onPressed: () => widget.viewModel.login.execute((
-              _employeeCodeController.text.trim(),
-              _passwordController.text,
-              _userRoleController.first,
-              _rememberMe
-            )),
-          ),
+          duration: const Duration(seconds: 3),
+          // action: SnackBarAction(
+          //   label: "Try Again",
+          //   onPressed: () => widget.viewModel.login.execute((
+          //     _employeeCodeController.text.trim(),
+          //     _passwordController.text,
+          //     _userRoleController.first,
+          //     _rememberMe
+          //   )),
+          // ),
         ),
       );
     }

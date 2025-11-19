@@ -75,6 +75,11 @@ class AuthRepository extends AbstractAuthRepository {
         return Result.error(CustomMessageException('Employee code not found'));
       }
 
+      if (employeeResponse['role'] != 'humanResource'
+       && employeeResponse['role'] != 'supervisor') {
+        return Result.error(CustomMessageException("Only HR and Supervisor can use Ephor."));
+      }
+
       if (employeeResponse['role'] != userRole) {
         return Result.error(CustomMessageException('Invalid role for this employee'));
       }
