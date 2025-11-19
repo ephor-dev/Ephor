@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:ephor/data/services/supabase/supabase_service.dart';
+import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -17,6 +18,10 @@ class AuthRepository extends AbstractAuthRepository {
   Stream<bool> get isLoadingStream => _isLoadingController.stream;
   Stream<AuthStatus> get authStatusStream => _authStateController.stream;
 
+  EmployeeModel? _currentUser;
+  @override
+  EmployeeModel? get currentUser => _currentUser;
+
   AuthRepository({required SupabaseService supabaseService}) 
     : _supabaseService = supabaseService {
     _startAuthStatusListener();
@@ -24,13 +29,16 @@ class AuthRepository extends AbstractAuthRepository {
 
   // --- Session Listener Implementation ---
   void _startAuthStatusListener() {
-    SupabaseService.auth.onAuthStateChange.listen((data) {
+    SupabaseService.auth.onAuthStateChange.listen((data) async {
       final event = data.event;
 
       if (event == AuthChangeEvent.signedIn) {
         _authStateController.add(AuthStatus.signedIn);
+        _currentUser = await getAuthenticatedUserData();
       } else if (event == AuthChangeEvent.signedOut) {
         _authStateController.add(AuthStatus.signedOut);
+      } else if (event == AuthChangeEvent.userUpdated) {
+        _currentUser = await getAuthenticatedUserData();
       }
     });
   }
@@ -67,6 +75,11 @@ class AuthRepository extends AbstractAuthRepository {
         return Result.error(CustomMessageException('Employee code not found'));
       }
 
+      if (employeeResponse['role'] != 'humanResource'
+       && employeeResponse['role'] != 'supervisor') {
+        return Result.error(CustomMessageException("Only HR and Supervisor can use Ephor."));
+      }
+
       if (employeeResponse['role'] != userRole) {
         return Result.error(CustomMessageException('Invalid role for this employee'));
       }
@@ -76,7 +89,6 @@ class AuthRepository extends AbstractAuthRepository {
       final authResponse = await _supabaseService.loginWithEmail(email, password);
 
       if (authResponse.user != null && authResponse.session != null) {
-        // The problematic updateLastLogin call is permanently removed.
         return Result.ok(null);
       }
       
@@ -113,5 +125,15 @@ class AuthRepository extends AbstractAuthRepository {
   Future<Result<void>> logout() async {
     await _supabaseService.signOut();
     return Result.ok(null);
+  }
+  
+  Future<EmployeeModel?> getAuthenticatedUserData() async {
+    final currentUser = SupabaseService.auth.currentUser;
+    if (currentUser == null) {
+      return null;
+    }
+
+    EmployeeModel? employeeModel = await _supabaseService.getEmployeeByEmail(currentUser.email);
+    return employeeModel;
   }
 }

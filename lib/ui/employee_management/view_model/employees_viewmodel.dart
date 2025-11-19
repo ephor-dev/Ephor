@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:ephor/data/repositories/auth/abstract_auth_repository.dart';
 import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/command.dart';
@@ -5,29 +8,59 @@ import 'package:ephor/utils/results.dart';
 import 'package:flutter/foundation.dart';
 
 class EmployeeListViewModel extends ChangeNotifier {
-  final AbstractEmployeeRepository _repository;
+  final AbstractEmployeeRepository _employeeRepository;
+  final AbstractAuthRepository _authRepository;
+
+  EmployeeRole? _currentUserRole;
+  EmployeeRole? get currentUserRole => _currentUserRole;
+
+  StreamSubscription? _authSubscription;
   
   List<EmployeeModel> _employees = [];
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   late CommandWithArgs deleteEmployee;
   late CommandNoArgs loadEmployees;
 
-  EmployeeListViewModel({required AbstractEmployeeRepository repository}) 
-    : _repository = repository {
+  EmployeeListViewModel({
+    required AbstractEmployeeRepository employeeRepository,
+    required AbstractAuthRepository authRepository
+  }) : _employeeRepository = employeeRepository,
+      _authRepository = authRepository {
     _loadEmployees();
 
     loadEmployees = CommandNoArgs<void>(_loadEmployees);
     deleteEmployee = CommandWithArgs<void, String>(_deleteEmployee);
+
+    _getCurrentUser();
   }
 
   // Exposed State
   List<EmployeeModel> get employees => _employees;
   bool get isLoading => _isLoading;
 
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _getCurrentUser() {
+    EmployeeModel? currentUser = _authRepository.currentUser;
+    if (currentUser == null) {
+      _currentUserRole = null;
+    }
+
+    if (currentUser!.role == EmployeeRole.humanResource) {
+      _currentUserRole = EmployeeRole.humanResource;
+    } else {
+      _currentUserRole = null;
+    }
+    notifyListeners();
+  }
 
   Future<Result<void>> _loadEmployees() async {
-    final result = await _repository.fetchAllEmployees();
+    final result = await _employeeRepository.fetchAllEmployees();
 
     if (result case Ok(value: final list)) {
       _employees = list;
@@ -41,7 +74,7 @@ class EmployeeListViewModel extends ChangeNotifier {
 
   Future<Result<void>> _deleteEmployee(String employeeId) async {
     // 1. Call the Repository
-    final result = await _repository.removeEmployee(employeeId);
+    final result = await _employeeRepository.removeEmployee(employeeId);
     
     // 2. Update local state ONLY if successful
     if (result case Ok()) {

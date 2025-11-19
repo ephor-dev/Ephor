@@ -15,4 +15,6 @@ abstract interface class AbstractEmployeeRepository {
   
   /// Fetches employee by ID.
   Future<Result<EmployeeModel?>> getEmployeeById(String id);
+
+  Future<dynamic> signUpNewUser(String s, String t) async {}
 }

@@ -1,12 +1,44 @@
-// data/services/supabase/supabase_service.dart
-
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ephor/domain/models/employee/employee.dart'; // Ensure this model is available
 
-/// Supabase service for handling low-level database and auth calls.
+/// Supabase service for handling low-level database, auth, and application-specific
+/// data (like Employee CRUD) calls, serving as a single source of truth.
 class SupabaseService {
- 
+  
+  // Use a nullable static client, initialized only once.
   static SupabaseClient? _staticClient; 
- 
+  
+  // --- Static Initialization ---
+  
+  /// Initializes the Supabase client instance. Must be called once before use.
+  static Future<void> initialize({
+    required String supabaseUrl,
+    required String supabaseAnonKey,
+  }) async {
+    // Only initialize if not already done
+    if (_staticClient == null) {
+      await Supabase.initialize(
+        url: supabaseUrl,
+        anonKey: supabaseAnonKey,
+        authOptions: FlutterAuthClientOptions(
+          localStorage: EmptyLocalStorage()
+        )
+      );
+      _staticClient = Supabase.instance.client;
+    }
+  }
+
+  // Get the Supabase auth instance (used by the Repository for listening)
+  static GoTrueClient get auth {
+    if (_staticClient == null) {
+      throw Exception('Supabase not initialized. Call SupabaseService.initialize() first.');
+    }
+    return _staticClient!.auth;
+  }
+
+  // --- Client Access ---
+
+  /// Provides access to the initialized SupabaseClient instance.
   SupabaseClient get _client {
     if (_staticClient == null) {
       throw Exception(
@@ -16,23 +48,17 @@ class SupabaseService {
     return _staticClient!;
   }
 
- // --- Static Initialization (Kept for pragmatic Flutter setup) ---
+  // -----------------------------------------------------------
+  // --- Authentication/User Actions (from original SupabaseService) ---
+  // -----------------------------------------------------------
 
-  static Future<void> initialize({
-    required String supabaseUrl,
-    required String supabaseAnonKey,
-  }) async {
-    await Supabase.initialize(
-      url: supabaseUrl,
-      anonKey: supabaseAnonKey,
+  Future<AuthResponse> signUpWithEmail(String email, String password) async {
+    final authResponse = await _client.auth.signUp(
+      email: email,
+      password: password,
     );
-    _staticClient = Supabase.instance.client;
+    return authResponse;
   }
-
-  // Get the Supabase auth instance (used by the Repository for listening)
-  static GoTrueClient get auth => _staticClient!.auth; 
-
-  // --- Authentication/Database Actions (Instance methods) ---
 
   Future<AuthResponse> loginWithEmail(String email, String password) async {
     final authResponse = await _client.auth.signInWithPassword(
@@ -62,9 +88,66 @@ class SupabaseService {
     return response;
   }
   
-  // Removed: updateLastLogin method
-  
   Future<void> signOut() async {
     await _client.auth.signOut();
+  }
+
+  // -----------------------------------------------------------
+  // --- Employee CRUD Actions (from original EmployeeSupabaseService) ---
+  // -----------------------------------------------------------
+
+  /// Inserts a new employee record and returns the created model.
+  Future<EmployeeModel> addEmployee(EmployeeModel employee) async {
+    final List<Map<String, dynamic>> response = await _client
+        .from('employees')
+        .insert(employee.toJson())
+        .select()
+        .limit(1);
+
+    return EmployeeModel.fromJson(response.first);
+  }
+
+  /// Fetches all employees from the 'employees' table.
+  Future<List<EmployeeModel>> fetchAllEmployees() async {
+    final List<Map<String, dynamic>> response = await _client
+        .from('employees')
+        .select();
+
+    return response.map(EmployeeModel.fromJson).toList();
+  }
+
+  /// Removes employee by ID.
+  Future<void> removeEmployee(String id) async {
+    await _client
+        .from('employees')
+        .delete()
+        .eq('id', id);
+  }
+
+  /// Fetches employee by ID.
+  Future<EmployeeModel?> getEmployeeById(String id) async {
+    final Map<String, dynamic>? response = await _client
+        .from('employees')
+        .select()
+        .eq('id', id)
+        .maybeSingle();
+
+    if (response == null) return null;
+    return EmployeeModel.fromJson(response);
+  }
+
+  Future<EmployeeModel?> getEmployeeByEmail(String? email) async {
+    if (email == null) {
+      return null;
+    }
+
+    final Map<String, dynamic>? response = await _client
+        .from('employees')
+        .select()
+        .eq('email', email)
+        .maybeSingle();
+    
+    if (response == null) return null;
+    return EmployeeModel.fromJson(response);
   }
 }

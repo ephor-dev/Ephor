@@ -9,17 +9,45 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
-class EmployeeListSubView extends StatelessWidget {
+class EmployeeListSubView extends StatefulWidget {
   final EmployeeListViewModel viewModel;
   
   const EmployeeListSubView({super.key, required this.viewModel});
 
   @override
+  State<EmployeeListSubView> createState() => _EmployeeListSubViewState();
+}
+
+class _EmployeeListSubViewState extends State<EmployeeListSubView> {
+  @override
+  void initState() {
+    super.initState();
+    widget.viewModel.loadEmployees.addListener(_onResult);
+  }
+
+  @override
+  void didUpdateWidget(covariant EmployeeListSubView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.viewModel.loadEmployees != widget.viewModel.loadEmployees) {
+      oldWidget.viewModel.loadEmployees.removeListener(_onResult);
+      widget.viewModel.loadEmployees.addListener(_onResult);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.viewModel.loadEmployees.removeListener(_onResult);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
-      value: viewModel,
+      value: widget.viewModel,
       child: Consumer<EmployeeListViewModel>(
         builder: (context, viewModel, child) {
+          final bool canAddUsers = viewModel.currentUserRole == EmployeeRole.humanResource;
+
           return Scaffold(
             appBar: AppBar(
               title: Text(
@@ -27,10 +55,12 @@ class EmployeeListSubView extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               actions: [
-                IconButton(
-                  icon: const Icon(Icons.person_add),
-                  onPressed: () => context.go(Routes.getAddEmployeePath()), 
-                ),
+                canAddUsers
+                ? IconButton(
+                    icon: const Icon(Icons.person_add),
+                    onPressed: () => context.go(Routes.getAddEmployeePath()), 
+                )
+                : const SizedBox.shrink(),
                 IconButton(
                   icon: const Icon(Icons.refresh),
                   onPressed: viewModel.isLoading ? null : () => viewModel.loadEmployees.execute(),
@@ -129,4 +159,28 @@ class EmployeeListSubView extends StatelessWidget {
   
   // ... (Other helper methods like _buildEmptyState remain the same) ...
   Widget _buildEmptyState(BuildContext context) { /* ... */ return const Center(child: Text("Empty"));}
+  
+  void _onResult() {
+    if (widget.viewModel.loadEmployees.completed) {
+      widget.viewModel.loadEmployees.clearResult();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Successfully Loaded employees."),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
+    if (widget.viewModel.loadEmployees.error) {
+      widget.viewModel.loadEmployees.clearResult();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error loading employees."),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+  }
 }
