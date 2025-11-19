@@ -57,6 +57,11 @@ class DashboardViewModel extends ChangeNotifier {
 
   void _getUserImage() async {
     final currentUserLocal = await _authRepository.getAuthenticatedUserData();
+
+    if (currentUserLocal?.email == _currentUser.value?.email) { // DONT UPDATE PIC WHEN YOU DONT HAVE TO :>
+      return;
+    }
+
     if (currentUserLocal != null) {
       final result = await _authRepository.getAuthenticatedUserImage(currentUserLocal);
       if (result case Ok(value: final signedUrl)) {
