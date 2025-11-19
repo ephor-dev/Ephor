@@ -56,8 +56,7 @@ class AuthRepository extends AbstractAuthRepository {
   Future<Result<void>> login({
     required String employeeCode,
     required String password,
-    required String userRole,
-    required bool rememberMe
+    required String userRole
   }) async {
     _isLoadingController.add(true); 
 

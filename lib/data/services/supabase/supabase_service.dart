@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:ephor/data/services/shared_prefs/prefs_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ephor/domain/models/employee/employee.dart'; // Ensure this model is available
 
@@ -8,7 +9,7 @@ import 'package:ephor/domain/models/employee/employee.dart'; // Ensure this mode
 class SupabaseService {
   
   // Use a nullable static client, initialized only once.
-  static SupabaseClient? _staticClient; 
+  static SupabaseClient? _staticClient;
   
   // --- Static Initialization ---
   
@@ -17,13 +18,17 @@ class SupabaseService {
     required String supabaseUrl,
     required String supabaseAnonKey,
   }) async {
-    // Only initialize if not already done
+    final sharedPrefs = PrefsService.getInstance();
+    bool keepLoggedIn = sharedPrefs.getBool("keep_logged_in") ?? false;
+
     if (_staticClient == null) {
       await Supabase.initialize(
         url: supabaseUrl,
         anonKey: supabaseAnonKey,
         authOptions: FlutterAuthClientOptions(
-          localStorage: EmptyLocalStorage()
+          localStorage: keepLoggedIn
+            ? null
+            : EmptyLocalStorage()
         )
       );
       _staticClient = Supabase.instance.client;
