@@ -136,4 +136,25 @@ class AuthRepository extends AbstractAuthRepository {
     EmployeeModel? employeeModel = await _supabaseService.getEmployeeByEmail(currentUser.email);
     return employeeModel;
   }
+
+  @override
+  Future<Result<String>> signUpNewUser(String email, String password) async {
+    try {
+      final response = await _supabaseService.signUpWithEmail(email, password);
+      final userId = response.user?.id;
+      
+      if (userId == null) {
+        // This case usually means email confirmation is required, but no session was created.
+        if (response.session == null && response.user != null) {
+             return Result.error(CustomMessageException('User created, but requires email confirmation.'));
+        }
+        return Result.error(CustomMessageException('User signup failed.'));
+      }
+      return Result.ok(userId);
+    } on AuthException catch (e) {
+      return Result.error(CustomMessageException('Authentication error: ${e.message}'));
+    } catch (e) {
+      return Result.error(CustomMessageException('An unexpected error occurred during sign-up: ${e.toString()}'));
+    }
+  }
 }

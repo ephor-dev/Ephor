@@ -1,5 +1,7 @@
 // data/repositories/employee/employee_repository.dart
 
+import 'dart:io';
+
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
 import 'package:ephor/data/services/supabase/supabase_service.dart';
@@ -15,23 +17,17 @@ class EmployeeRepository implements AbstractEmployeeRepository {
       : _supabaseService = employeeService;
 
   @override
-  Future<Result<String>> signUpNewUser(String email, String password) async {
+  Future<Result<String>> uploadEmployeePhoto(File file) async {
     try {
-      final response = await _supabaseService.signUpWithEmail(email, password);
-      final userId = response.user?.id;
-      
-      if (userId == null) {
-        // This case usually means email confirmation is required, but no session was created.
-        if (response.session == null && response.user != null) {
-             return Result.error(CustomMessageException('User created, but requires email confirmation.'));
-        }
-        return Result.error(CustomMessageException('User signup failed.'));
-      }
-      return Result.ok(userId);
-    } on AuthException catch (e) {
-      return Result.error(CustomMessageException('Authentication error: ${e.message}'));
+        final fileBytes = await file.readAsBytes();
+        final uniqueId = 'employee-${DateTime.now().millisecondsSinceEpoch}-${file.uri.pathSegments.last}';
+        final publicUrl = await _supabaseService.uploadEmployeePhoto(uniqueId, fileBytes);
+        
+        return Result.ok(publicUrl);
+    } on StorageException catch (e) {
+      return Result.error(CustomMessageException('Image upload failed: ${e.message}'));
     } catch (e) {
-      return Result.error(CustomMessageException('An unexpected error occurred during sign-up: ${e.toString()}'));
+      return Result.error(CustomMessageException('An unexpected error occurred during photo upload: ${e.toString()}'));
     }
   }
 
@@ -61,7 +57,20 @@ class EmployeeRepository implements AbstractEmployeeRepository {
   Future<Result<List<EmployeeModel>>> fetchAllEmployees() async {
     try {
       final employeeList = await _supabaseService.fetchAllEmployees();
-      return Result.ok(employeeList);
+      final List<EmployeeModel> employeesWithSignedUrls = [];
+      for (var employee in employeeList) {
+        if (employee.photoUrl != null) {
+          final signedUrl = await _supabaseService.getSignedEmployeePhotoUrl(employee.photoUrl!);
+          
+          // Create a new model instance with the temporary signed URL
+          final updatedEmployee = employee.copyWith(photoUrl: signedUrl);
+          employeesWithSignedUrls.add(updatedEmployee);
+        } else {
+          employeesWithSignedUrls.add(employee);
+        }
+      }
+
+      return Result.ok(employeesWithSignedUrls);
     } on PostgrestException catch (e) {
       return Result.error(CustomMessageException('Database error while fetching employee list: ${e.message}'));
     } catch (e) {

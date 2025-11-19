@@ -1,5 +1,7 @@
 // domain/repositories/employee/abstract_employee_repository.dart
 
+import 'dart:io';
+
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/results.dart';
 
@@ -16,5 +18,5 @@ abstract interface class AbstractEmployeeRepository {
   /// Fetches employee by ID.
   Future<Result<EmployeeModel?>> getEmployeeById(String id);
 
-  Future<dynamic> signUpNewUser(String s, String t) async {}
+  Future<Result<String>> uploadEmployeePhoto(File file);
 }
