@@ -20,6 +20,9 @@ class SupabaseService {
       await Supabase.initialize(
         url: supabaseUrl,
         anonKey: supabaseAnonKey,
+        authOptions: FlutterAuthClientOptions(
+          localStorage: EmptyLocalStorage()
+        )
       );
       _staticClient = Supabase.instance.client;
     }
@@ -63,15 +66,6 @@ class SupabaseService {
       password: password,
     );
     return authResponse;
-  }
-
-  Future<UserResponse> changePassword(String newPassword) async {
-    final response = await _client.auth.updateUser(
-      UserAttributes(
-        password: newPassword,
-      ),
-    );
-    return response;
   }
   
   Future<Map<String, dynamic>?> validateEmployeeCode(String employeeCode) async {
@@ -138,6 +132,21 @@ class SupabaseService {
         .eq('id', id)
         .maybeSingle();
 
+    if (response == null) return null;
+    return EmployeeModel.fromJson(response);
+  }
+
+  Future<EmployeeModel?> getEmployeeByEmail(String? email) async {
+    if (email == null) {
+      return null;
+    }
+
+    final Map<String, dynamic>? response = await _client
+        .from('employees')
+        .select()
+        .eq('email', email)
+        .maybeSingle();
+    
     if (response == null) return null;
     return EmployeeModel.fromJson(response);
   }

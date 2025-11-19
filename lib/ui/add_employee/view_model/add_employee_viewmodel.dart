@@ -1,5 +1,6 @@
 // ui/add_employee/view_model/add_employee_viewmodel.dart
 
+import 'dart:async';
 import 'dart:math';
 
 import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
@@ -26,10 +27,12 @@ typedef AddEmployeeParams = ({
 class AddEmployeeViewModel extends ChangeNotifier { 
   
   final AbstractEmployeeRepository _repository;
+
   late CommandWithArgs addEmployee;
 
-  AddEmployeeViewModel({required AbstractEmployeeRepository repository})
-    : _repository = repository {
+  AddEmployeeViewModel({
+    required AbstractEmployeeRepository repository,
+  }) : _repository = repository{
     addEmployee = CommandWithArgs<void, AddEmployeeParams>(_addEmployee);
   }
 
@@ -60,7 +63,7 @@ class AddEmployeeViewModel extends ChangeNotifier {
     middleNameController.dispose();
     tagsController.dispose();
     emailController.dispose(); 
-    passwordController.dispose(); 
+    passwordController.dispose();
     super.dispose();
   }
   

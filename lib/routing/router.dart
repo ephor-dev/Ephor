@@ -59,7 +59,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: Routes.getEmployeeListPath(),
           builder: (context, state) => EmployeeListSubView(
             viewModel: EmployeeListViewModel(
-              repository: context.read()
+              employeeRepository: context.read(),
+              authRepository: authRepository
             ),
           ),
           routes: [

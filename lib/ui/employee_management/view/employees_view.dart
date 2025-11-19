@@ -20,6 +20,8 @@ class EmployeeListSubView extends StatelessWidget {
       value: viewModel,
       child: Consumer<EmployeeListViewModel>(
         builder: (context, viewModel, child) {
+          final bool canAddUsers = viewModel.currentUserRole == EmployeeRole.humanResource;
+
           return Scaffold(
             appBar: AppBar(
               title: Text(
@@ -27,10 +29,12 @@ class EmployeeListSubView extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               actions: [
-                IconButton(
-                  icon: const Icon(Icons.person_add),
-                  onPressed: () => context.go(Routes.getAddEmployeePath()), 
-                ),
+                canAddUsers
+                ? IconButton(
+                    icon: const Icon(Icons.person_add),
+                    onPressed: () => context.go(Routes.getAddEmployeePath()), 
+                )
+                : const SizedBox.shrink(),
                 IconButton(
                   icon: const Icon(Icons.refresh),
                   onPressed: viewModel.isLoading ? null : () => viewModel.loadEmployees.execute(),
