@@ -44,13 +44,6 @@ class _EphorState extends State<EphorApp> with WidgetsBindingObserver {
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.detached) {
-      SupabaseConfig.forceLogOut();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     TextTheme textTheme = createTextTheme(context, "Ubuntu", "Lato");
     EphorTheme ephorTheme = EphorTheme(textTheme);

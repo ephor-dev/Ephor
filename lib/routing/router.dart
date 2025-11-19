@@ -33,7 +33,10 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
       path: Routes.login,
       builder: (context, state) {
         return LoginView(
-          viewModel: LoginViewModel(authRepository: context.read()),
+          viewModel: LoginViewModel(
+            authRepository: context.read(),
+            prefsRepository: context.read()
+          ),
         );
       },
     ),

@@ -1,6 +1,7 @@
 // presentation/viewmodels/login_view_model.dart
 
 import 'dart:async';
+import 'package:ephor/data/repositories/shared_prefs/abstract_prefs_repository.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
@@ -15,6 +16,7 @@ import 'package:ephor/domain/enums/auth_status.dart'; // NEW IMPORT
 class LoginViewModel extends ChangeNotifier {
   
   final AuthRepository _authRepository;
+  final AbstractPrefsRepository _prefsRepository;
   
   // Subscriptions to the Repository streams
   late final StreamSubscription<bool> _loadingSubscription; 
@@ -37,15 +39,18 @@ class LoginViewModel extends ChangeNotifier {
   EmployeeModel? get employeeData => _employeeData;
 
   late CommandWithArgs login;
+  late CommandWithArgs setRememberMe;
 
-  LoginViewModel({required AuthRepository authRepository})
-    : _authRepository = authRepository {
+  LoginViewModel({required AuthRepository authRepository, required AbstractPrefsRepository prefsRepository})
+    : _authRepository = authRepository,
+      _prefsRepository = prefsRepository {
     // 1. Initialize and subscribe to ALL Repository streams
     _subscribeToLoadingStatus(); 
     _subscribeToAuthStatus();
     
     // Command setup
-    login = CommandWithArgs<void, (String employeeCode, String password, String userRole, bool rememberMe)>(_loginWithCode);
+    login = CommandWithArgs<void, (String employeeCode, String password, String userRole)>(_loginWithCode);
+    setRememberMe = CommandWithArgs<void, bool>(_setRememberMe);
   }
 
   // --- Subscription Management ---
@@ -115,15 +120,14 @@ class LoginViewModel extends ChangeNotifier {
 
   // --- Command Implementation (Clean Delegation) ---
 
-  Future<Result<void>> _loginWithCode((String, String, String, bool) p1) async {
-    final (employeeCode, password, userRole, rememberMe) = p1;
+  Future<Result<void>> _loginWithCode((String, String, String) p1) async {
+    final (employeeCode, password, userRole) = p1;
     _errorMessage = null; 
 
     final result = await _authRepository.login(
       employeeCode: employeeCode, 
       password: password, 
-      userRole: userRole, 
-      rememberMe: rememberMe
+      userRole: userRole
     );
     
     switch (result) {
@@ -147,5 +151,15 @@ class LoginViewModel extends ChangeNotifier {
     
     notifyListeners(); 
     return result;
+  }
+
+  Future<Result<void>> _setRememberMe(bool setRememberMe) async {
+    final result = await _prefsRepository.setKeepLoggedIn(setRememberMe);
+
+    if (result) {
+      return Result.ok(null);
+    }
+
+    return Result.error(CustomMessageException("Failed to set 'Remember Me'"));
   }
 }

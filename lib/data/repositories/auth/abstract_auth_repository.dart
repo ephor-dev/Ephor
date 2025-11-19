@@ -13,8 +13,7 @@ abstract class AbstractAuthRepository extends ChangeNotifier {
   Future<Result<void>> login({
     required String employeeCode,
     required String password,
-    required String userRole,
-    required bool rememberMe
+    required String userRole
   });
 
   /// Perform logout

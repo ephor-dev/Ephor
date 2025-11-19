@@ -60,37 +60,13 @@ class _LoginViewState extends State<LoginView> {
       widget.viewModel.login.execute((
         _employeeCodeController.text.trim(),
         _passwordController.text,
-        roles[_userRoleController.first],
-        _rememberMe
+        roles[_userRoleController.first]
       ));
     }
   }
 
   Widget _buildRoleSegmentedButton() {
     return SegmentedButton<String>(
-      // style: ButtonStyle(
-      //   backgroundColor: WidgetStateProperty.resolveWith<Color?>((
-      //     Set<WidgetState> states,
-      //   ) {
-      //     if (states.contains(WidgetState.selected)) {
-      //       // return const Color.fromARGB(255, 214, 47, 32);
-      //       return Theme.of(context).colorScheme.primaryContainer;
-      //     }
-      //     return Colors.grey.shade200;
-      //   }),
-      //   textStyle: WidgetStateProperty.resolveWith<TextStyle?>((
-      //     Set<WidgetState> states,
-      //   ) {
-      //     if (states.contains(WidgetState.selected)) {
-      //       return const TextStyle(
-      //         color: Colors.white,
-      //         fontWeight: FontWeight.bold,
-      //       );
-      //     }
-      //     // return const TextStyle(color: Color.fromARGB(255, 214, 47, 32));
-      //     return TextStyle(color: Theme.of(context).);
-      //   }),
-      // ),
       segments: const <ButtonSegment<String>>[
         ButtonSegment<String>(
           value: 'Supervisor',
@@ -257,6 +233,7 @@ class _LoginViewState extends State<LoginView> {
                   setState(() {
                     _rememberMe = value!;
                   });
+                  widget.viewModel.setRememberMe.execute(_rememberMe);
                 },
               ),
               const Text('Remember Me'),
