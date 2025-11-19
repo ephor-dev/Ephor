@@ -68,7 +68,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
               path: Routes.dashboardAddEmployee,
               builder: (context, state) => AddEmployeeView(
                 viewModel: AddEmployeeViewModel(
-                  repository: context.read()
+                  employeeRepository: context.read(),
+                  authRepository: authRepository
                 )
               )
             )

@@ -1,15 +1,18 @@
 // ui/add_employee/view_model/add_employee_viewmodel.dart
 
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
+import 'package:ephor/data/repositories/auth/abstract_auth_repository.dart';
 import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/command.dart';
-import 'package:ephor/utils/results.dart'; 
+import 'package:ephor/utils/results.dart';
+import 'package:image_picker/image_picker.dart'; 
 
 /// Parameter type for the Command: Email and Password are conditionally required.
 typedef AddEmployeeParams = ({
@@ -26,14 +29,21 @@ typedef AddEmployeeParams = ({
 
 class AddEmployeeViewModel extends ChangeNotifier { 
   
-  final AbstractEmployeeRepository _repository;
+  final AbstractEmployeeRepository _employeeRepository;
+  final AbstractAuthRepository _authRepository;
 
   late CommandWithArgs addEmployee;
+  late CommandNoArgs pickImage;
+  late CommandNoArgs clearImage;
 
   AddEmployeeViewModel({
-    required AbstractEmployeeRepository repository,
-  }) : _repository = repository{
+    required AbstractEmployeeRepository employeeRepository,
+    required AbstractAuthRepository authRepository
+  }) : _employeeRepository = employeeRepository,
+      _authRepository = authRepository{
     addEmployee = CommandWithArgs<void, AddEmployeeParams>(_addEmployee);
+    pickImage = CommandNoArgs(_pickImage);
+    clearImage = CommandNoArgs(_clearImage);
   }
 
   // --- UI State (Text Controllers) ---
@@ -54,6 +64,9 @@ class AddEmployeeViewModel extends ChangeNotifier {
     'EE Department', 'CE Department', 'ChE Department', 'ECE Department',
     'IE Department', 'ME Department', 'IT Department',
   ];
+
+  File? _localImageFile;
+  File? get localImageFile => _localImageFile;
   
   // --- Disposable Resources ---
   @override
@@ -104,6 +117,47 @@ class AddEmployeeViewModel extends ChangeNotifier {
     selectedDepartment = value;
     notifyListeners();
   }
+
+  Future<String?> uploadImage() async {
+    // 2. Call the Repository to handle the upload logic
+    if (_localImageFile != null) {
+      final result = await _employeeRepository.uploadEmployeePhoto(_localImageFile!);
+    
+      if (result case Ok(value: final publicUrl)) {
+        photoUrl = publicUrl;
+        return "Image uploaded successfully!";
+      } else if (result case Error(error: final e)) {
+        // Handle upload failure by clearing the image and showing a message
+        _clearImage();
+        return 'Image upload failed: $e';
+      }
+    }
+
+    return null;
+  }
+
+  Future<Result<File?>> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? xfile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (xfile != null) {
+      final File file = File(xfile.path);
+      
+      // 1. Update local UI state immediately (for display)
+      _localImageFile = file;
+      notifyListeners();
+      return Result.ok(file);
+    }
+
+    return Result.error(CustomMessageException("Cannot open the file selected"));
+  }
+
+  Future<Result<void>> _clearImage() async {
+    _localImageFile = null;
+    photoUrl = null;
+    notifyListeners();
+    return Result.ok(null);
+  }
   
   // --- Core Command Implementation ---
 
@@ -120,7 +174,7 @@ class AddEmployeeViewModel extends ChangeNotifier {
 
     if (requiresLogin) {
       // Use non-nullable fields here, as they were validated in _validateForm
-      final signUpResult = await _repository.signUpNewUser(
+      final signUpResult = await _authRepository.signUpNewUser(
         params.email!, 
         params.password!,
       );
@@ -134,10 +188,20 @@ class AddEmployeeViewModel extends ChangeNotifier {
       }
     }
 
-    final EmployeeModel employeeToSave = _createEmployeeModel(params, userId);
+    if (_localImageFile != null) {
+      final String? uploadResult = await uploadImage();
+    
+      if (uploadResult != null && uploadResult.contains("failed")) { 
+        return Result.error(CustomMessageException(uploadResult));
+      }
+    } else {
+        photoUrl = null; 
+    }
+
+    final EmployeeModel employeeToSave = _createEmployeeModel(params, userId, photoUrl);
     
     try {
-      final result = await _repository.addEmployee(employeeToSave);
+      final result = await _employeeRepository.addEmployee(employeeToSave);
       return result;
     } catch (e) {
       debugPrint('Unexpected error in VM command: $e');
@@ -147,7 +211,7 @@ class AddEmployeeViewModel extends ChangeNotifier {
 
   // --- Helper Methods ---
   
-  EmployeeModel _createEmployeeModel(AddEmployeeParams params, String? userId) {
+  EmployeeModel _createEmployeeModel(AddEmployeeParams params, String? userId, String? photoUrl) {
     final List<String> tagList = params.tags
         .split(',')
         .map((String e) => e.trim())
@@ -191,7 +255,7 @@ class AddEmployeeViewModel extends ChangeNotifier {
       middleName: params.middleName.isEmpty ? null : params.middleName,
       department: params.department ?? 'N/A', 
       extraTags: tagList,
-      photoUrl: params.photoUrl,
+      photoUrl: photoUrl,
     );
   }
   

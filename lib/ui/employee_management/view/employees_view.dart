@@ -110,6 +110,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
             // 1. Picture (using placeholder/initials)
             leading: CircleAvatar(
               // In a real app, use employee.photoUrl and NetworkImage
+              backgroundColor: employee.photoUrl != null ? Theme.of(context).colorScheme.tertiaryContainer : null,
               backgroundImage: employee.photoUrl != null ? NetworkImage(employee.photoUrl!) : null,
               child: employee.photoUrl == null ? Text(employee.fullName[0]) : null,
             ),

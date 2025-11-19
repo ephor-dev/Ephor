@@ -24,6 +24,8 @@ void main() async {
 }
 
 class EphorApp extends StatefulWidget {
+  const EphorApp({super.key});
+
   @override
   State<EphorApp> createState() => _EphorState();
 }
@@ -55,6 +57,7 @@ class _EphorState extends State<EphorApp> with WidgetsBindingObserver {
 
     return MaterialApp.router(
       scrollBehavior: MaterialScrollBehavior(),
+      debugShowCheckedModeBanner: false,
       theme: ephorTheme.light(),
       darkTheme: ephorTheme.dark(),
       themeMode: ThemeMode.light,

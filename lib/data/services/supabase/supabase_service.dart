@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ephor/domain/models/employee/employee.dart'; // Ensure this model is available
 
@@ -149,5 +151,45 @@ class SupabaseService {
     
     if (response == null) return null;
     return EmployeeModel.fromJson(response);
+  }
+
+  // Upload employee photos
+  Future<String> uploadEmployeePhoto(String path, Uint8List fileBytes) async {
+    final fileName = 'employee-photos/$path'; 
+    
+    // Upload the file
+    final _ = await _client.storage.from('employee-photos').uploadBinary(
+      fileName,
+      fileBytes,
+      fileOptions: const FileOptions(
+        upsert: true, // Overwrite if the file already exists
+        contentType: 'image/jpeg',
+      ),
+    );
+    
+    // Get the public URL for the uploaded file
+    final String publicUrl = _client.storage.from('employee-photos').getPublicUrl(fileName);
+    
+    return publicUrl;
+  }
+
+  Future<String?> getSignedEmployeePhotoUrl(String? path) async {
+    if (path != null) {
+      String correctRelativePath = Uri.parse(path)
+        .path 
+        .split('/')
+        .skipWhile((segment) => segment != "employee-photos")
+        .skip(1)
+        .join('/');
+
+      final response = await _client.storage.from('employee-photos').createSignedUrl(
+        correctRelativePath,
+        60,
+      );
+
+      return response; // response contains the full signed URL string
+    }
+
+    return null;
   }
 }

@@ -19,12 +19,19 @@ class AddEmployeeView extends StatefulWidget {
 }
 
 class _AddEmployeeViewState extends State<AddEmployeeView> {
-  // --- Lifecyle and Command Handling ---
-
   @override
   void initState() {
     super.initState();
     widget.viewModel.addEmployee.addListener(_onCommandResult); 
+  }
+
+  @override
+  void didUpdateWidget(covariant AddEmployeeView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.viewModel.addEmployee != widget.viewModel.addEmployee) {
+      oldWidget.viewModel.addEmployee.removeListener(_onCommandResult);
+      widget.viewModel.addEmployee.addListener(_onCommandResult);
+    }
   }
 
   @override
@@ -82,9 +89,7 @@ class _AddEmployeeViewState extends State<AddEmployeeView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                // Form Section uses Responsive.isMobile internally
                 _FormSection(viewModel: widget.viewModel),
-
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -171,9 +176,83 @@ class _AddEmployeeViewState extends State<AddEmployeeView> {
 // -----------------------------------------------------------------------------
 
 // 4. Form Section (Handles responsiveness for internal layouts)
-class _FormSection extends StatelessWidget {
+class _FormSection extends StatefulWidget {
   const _FormSection({required this.viewModel});
   final AddEmployeeViewModel viewModel;
+
+  @override
+  State<_FormSection> createState() => _FormSectionState();
+}
+
+class _FormSectionState extends State<_FormSection> {
+
+  @override
+  void initState() {
+    widget.viewModel.pickImage.addListener(_onImagePicked);
+    widget.viewModel.clearImage.addListener(_onImageCleared);
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant _FormSection oldWidget) {
+    if (oldWidget.viewModel.pickImage != widget.viewModel.pickImage) {
+      oldWidget.viewModel.pickImage.removeListener(_onImageCleared);
+      widget.viewModel.pickImage.addListener(_onImageCleared);
+    }
+
+    if (oldWidget.viewModel.clearImage != widget.viewModel.clearImage) {
+      oldWidget.viewModel.clearImage.removeListener(_onImageCleared);
+      widget.viewModel.clearImage.addListener(_onImageCleared);
+    }
+
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  void dispose() {
+    widget.viewModel.pickImage.removeListener(_onImagePicked);
+    widget.viewModel.clearImage.removeListener(_onImageCleared);
+    super.dispose();
+  }
+
+  void _onImagePicked() {
+    if (!context.mounted) return;
+
+    final command = widget.viewModel.pickImage;
+    final result = command.result;
+
+    if (command.completed && result != null) {
+      if (result case Ok(value: _)) {
+        setState(() {
+        });
+        command.clearResult();
+      }
+    } else if (result case Error(error: final CustomMessageException e)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      command.clearResult();
+    }
+  }
+
+  void _onImageCleared() {
+    if (!context.mounted) return;
+
+    final command = widget.viewModel.clearImage;
+    final result = command.result;
+
+    if (command.completed && result != null) {
+      if (result case Ok(value: _)) {
+        setState(() {
+        });
+        command.clearResult();
+      }
+    }
+  }
 
   final InputDecoration decoration = const InputDecoration(
     filled: true, fillColor: Colors.white,
@@ -193,32 +272,59 @@ class _FormSection extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         InkWell(
-          onTap: () {ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Image picker not implemented')));},
+          onTap: () => widget.viewModel.pickImage.execute(),
           borderRadius: BorderRadius.circular(16),
           child: Container(
             width: 200, height: 200,
+            padding: widget.viewModel.localImageFile != null
+              ? EdgeInsets.all(24)
+              : EdgeInsets.zero,
             decoration: BoxDecoration(
               color: const Color(0xFFFFE8CC),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFFE0E0E0), width: 2, style: BorderStyle.solid),
             ),
-            child: const Center(child: Icon(Icons.person_outline, size: 56, color: Color(0xFF9E9E9E))),
+            child: widget.viewModel.localImageFile != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.file(
+                      widget.viewModel.localImageFile!,
+                      fit: BoxFit.cover,
+                      width: 176,
+                      height: 176,
+
+                    ),
+                  )
+                : const Center(child: Icon(Icons.person_outline, size: 56, color: Color(0xFF9E9E9E))),
           ),
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          width: 160,
-          child: OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFFFB47B), side: const BorderSide(color: Color(0xFFFFB47B), width: 1.5),
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 130, // Adjusted width for two buttons
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFFFB47B), side: const BorderSide(color: Color(0xFFFFB47B), width: 1.5),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () => widget.viewModel.pickImage.execute(),
+                icon: const Icon(Icons.upload_file, size: 18),
+                label: const Text('Upload', style: TextStyle(fontWeight: FontWeight.w500)),
+              ),
             ),
-            onPressed: () {ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Image picker not implemented')));},
-            icon: const Icon(Icons.upload_file, size: 18),
-            label: const Text('Upload Photo', style: TextStyle(fontWeight: FontWeight.w500)),
-          ),
-        ),
+            if (widget.viewModel.localImageFile != null) ...[
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.red),
+                onPressed: () => widget.viewModel.clearImage.execute(),
+                tooltip: 'Clear image',
+              ),
+            ]
+          ],
+        )
       ],
     );
 
@@ -237,20 +343,20 @@ class _FormSection extends StatelessWidget {
               child: isMobile
                   ? Column( // Column layout for mobile
                       children: <Widget>[
-                        _NameField(label: 'LAST NAME', controller: viewModel.lastNameController, decoration: decoration, placeholder: 'Enter last name', isRequired: true),
+                        _NameField(label: 'LAST NAME', controller: widget.viewModel.lastNameController, decoration: decoration, placeholder: 'Enter last name', isRequired: true),
                         const SizedBox(height: 12),
-                        _NameField(label: 'FIRST NAME', controller: viewModel.firstNameController, decoration: decoration, placeholder: 'Enter first name', isRequired: true),
+                        _NameField(label: 'FIRST NAME', controller: widget.viewModel.firstNameController, decoration: decoration, placeholder: 'Enter first name', isRequired: true),
                         const SizedBox(height: 12),
-                        _NameField(label: 'MIDDLE NAME', controller: viewModel.middleNameController, decoration: decoration, placeholder: 'Enter middle name', isOptional: true),
+                        _NameField(label: 'MIDDLE NAME', controller: widget.viewModel.middleNameController, decoration: decoration, placeholder: 'Enter middle name', isOptional: true),
                       ],
                     )
                   : Row( // Row layout for Tablet/Desktop
                       children: <Widget>[
-                        Expanded(child: _NameField(label: 'LAST NAME', controller: viewModel.lastNameController, decoration: decoration, placeholder: 'Enter last name', isRequired: true)),
+                        Expanded(child: _NameField(label: 'LAST NAME', controller: widget.viewModel.lastNameController, decoration: decoration, placeholder: 'Enter last name', isRequired: true)),
                         const SizedBox(width: 8),
-                        Expanded(child: _NameField(label: 'FIRST NAME', controller: viewModel.firstNameController, decoration: decoration, placeholder: 'Enter first name', isRequired: true)),
+                        Expanded(child: _NameField(label: 'FIRST NAME', controller: widget.viewModel.firstNameController, decoration: decoration, placeholder: 'Enter first name', isRequired: true)),
                         const SizedBox(width: 8),
-                        Expanded(child: _NameField(label: 'MIDDLE NAME', controller: viewModel.middleNameController, decoration: decoration, placeholder: 'Enter middle name', isOptional: true)),
+                        Expanded(child: _NameField(label: 'MIDDLE NAME', controller: widget.viewModel.middleNameController, decoration: decoration, placeholder: 'Enter middle name', isOptional: true)),
                       ],
                     ),
             ),
@@ -262,17 +368,17 @@ class _FormSection extends StatelessWidget {
             Container(
               width: double.infinity, padding: const EdgeInsets.only(left: 16, right: 16),
               decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16)),
-              child: _EmployeeType(viewModel: viewModel),
+              child: _EmployeeType(viewModel: widget.viewModel),
             ),
             const SizedBox(height: 20),
             
             // 🔑 CONDITIONAL LOGIN FIELDS CONTAINER
             ListenableBuilder(
-              listenable: viewModel,
+              listenable: widget.viewModel,
               builder: (context, child) {
                 // Recalculate requiresLogin inside the builder to ensure updates
-                final bool needsLogin = viewModel.employeeRole == EmployeeRole.supervisor || 
-                                        viewModel.employeeRole == EmployeeRole.humanResource;
+                final bool needsLogin = widget.viewModel.employeeRole == EmployeeRole.supervisor || 
+                                        widget.viewModel.employeeRole == EmployeeRole.humanResource;
                 
                 if (!needsLogin) {
                   // Show a placeholder message when fields are hidden
@@ -292,11 +398,11 @@ class _FormSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Email Field
-                    _NameField(label: 'EMAIL ADDRESS', controller: viewModel.emailController, decoration: decoration, placeholder: 'Enter employee email', isRequired: true),
+                    _NameField(label: 'EMAIL ADDRESS', controller: widget.viewModel.emailController, decoration: decoration, placeholder: 'Enter employee email', isRequired: true),
                     const SizedBox(height: 20),
 
                     // Password Field
-                    _NameField(label: 'INITIAL PASSWORD', controller: viewModel.passwordController, decoration: decoration, placeholder: 'Set initial password', isRequired: true),
+                    _NameField(label: 'INITIAL PASSWORD', controller: widget.viewModel.passwordController, decoration: decoration, placeholder: 'Set initial password', isRequired: true),
                     const SizedBox(height: 20),
                   ],
                 );
@@ -307,10 +413,10 @@ class _FormSection extends StatelessWidget {
             Text('DEPARTMENT', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
             const SizedBox(height: 8),
             ListenableBuilder(
-              listenable: viewModel,
+              listenable: widget.viewModel,
               builder: (context, child) {
                 // Department selection is disabled if the role is Human Resource
-                final bool isDepartmentDisabled = viewModel.employeeRole == EmployeeRole.humanResource;
+                final bool isDepartmentDisabled = widget.viewModel.employeeRole == EmployeeRole.humanResource;
                 
                 return Opacity(
                   opacity: isDepartmentDisabled ? 0.5 : 1.0,
@@ -319,7 +425,7 @@ class _FormSection extends StatelessWidget {
                     decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16)),
                     child: IgnorePointer(
                       ignoring: isDepartmentDisabled, // Disable interaction
-                      child: _DepartmentRow(viewModel: viewModel),
+                      child: _DepartmentRow(viewModel: widget.viewModel),
                     ),
                   ),
                 );
@@ -331,7 +437,7 @@ class _FormSection extends StatelessWidget {
             Text('EXTRA TAGS (COMMA SEPARATED, IF APPLICABLE)', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
             const SizedBox(height: 8),
             TextFormField(
-              controller: viewModel.tagsController, maxLines: null, minLines: 1,
+              controller: widget.viewModel.tagsController, maxLines: null, minLines: 1,
               style: const TextStyle(fontWeight: FontWeight.w300, color: Colors.black),
               decoration: decoration.copyWith(
                 hintText: 'i.e. non-teaching',
