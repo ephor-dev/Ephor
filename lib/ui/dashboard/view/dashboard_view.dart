@@ -124,7 +124,7 @@ class _DashboardViewState extends State<DashboardView> {
   Widget _buildMenuList(int selectedIndex) {
     return ListView.builder(
       shrinkWrap: true,
-      padding: const EdgeInsets.only(top: 20.0, left: 10, right: 10),
+      padding: const EdgeInsets.only(top: 20.0, left: 0, right: 10),
       itemCount: menuItems.length,
       itemBuilder: (context, index) {
         final item = menuItems[index];
