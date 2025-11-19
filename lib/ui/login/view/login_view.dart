@@ -241,7 +241,7 @@ class _LoginViewState extends State<LoginView> {
           ),
           InkWell(
             onTap: () {
-              //INPUT LATER
+              context.go(Routes.forgotPassword);
             },
             onHover: (hovered) {
               setState(() {

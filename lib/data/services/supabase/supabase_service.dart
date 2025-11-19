@@ -26,6 +26,7 @@ class SupabaseService {
         url: supabaseUrl,
         anonKey: supabaseAnonKey,
         authOptions: FlutterAuthClientOptions(
+          authFlowType: AuthFlowType.implicit,
           localStorage: keepLoggedIn
             ? null
             : EmptyLocalStorage()
@@ -73,6 +74,22 @@ class SupabaseService {
       password: password,
     );
     return authResponse;
+  }
+
+  Future<UserResponse> changePassword(String password) async {
+    final userResponse = await _client.auth.updateUser(
+      UserAttributes(
+        password: password
+      )
+    );
+    return userResponse;
+  }
+
+  Future<void> resetPasswordForEmail(String email) async {
+    await _client.auth.resetPasswordForEmail(
+      email,
+      redirectTo: 'http://localhost:3000/', 
+    );
   }
   
   Future<Map<String, dynamic>?> validateEmployeeCode(String employeeCode) async {

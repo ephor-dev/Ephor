@@ -13,6 +13,10 @@ import 'package:ephor/ui/dashboard/subviews/upcoming_schedules/view_model/upcomi
 import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
 import 'package:ephor/ui/employee_management/view/employees_view.dart';
 import 'package:ephor/ui/employee_management/view_model/employees_viewmodel.dart';
+import 'package:ephor/ui/password_update/forgot_password/view/forgot_password_view.dart';
+import 'package:ephor/ui/password_update/forgot_password/view_model/forgot_password_viewmodel.dart';
+import 'package:ephor/ui/password_update/update_password/view/update_password_view.dart';
+import 'package:ephor/ui/password_update/update_password/view_model/update_password_viewmodel.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -37,6 +41,26 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
             authRepository: context.read(),
             prefsRepository: context.read()
           ),
+        );
+      },
+    ),
+    GoRoute(
+      path: Routes.forgotPassword,
+      builder: (context, state) {
+        return ForgotPasswordView(
+          viewModel: ForgotPasswordViewModel(
+            authRepository: context.read(),
+          )
+        );
+      }
+    ),
+    GoRoute(
+      path: Routes.updatePassword,
+      builder: (context, state) {
+        return UpdatePasswordView(
+          viewModel: UpdatePasswordViewModel(
+            authRepository: context.read()
+          )
         );
       },
     ),
@@ -108,14 +132,30 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
 );
 
 Future<String?> _redirect(BuildContext context, GoRouterState state) async {
-  // if the user is not logged in, they need to login
-  final loggedIn = await context.read<AuthRepository>().isAuthenticated;
+  final authRepo = context.read<AuthRepository>();
+  final loggedIn = await authRepo.isAuthenticated;
+
   final loggingIn = state.matchedLocation == Routes.login;
+  final recoveringPassword = state.matchedLocation == Routes.forgotPassword;
+  final updatingPassword = state.matchedLocation == Routes.updatePassword;
+
+  // 1. Not logged in → allow reset flow
   if (!loggedIn) {
+    if (loggingIn || recoveringPassword || updatingPassword) {
+      return null;
+    }
+
     return Routes.login;
   }
 
-  if (loggingIn) {
+  // 2. Logged in but clicked reset email → redirect to update screen
+  if (authRepo.isPasswordRecoveryMode) {
+    if (!updatingPassword) return Routes.updatePassword;
+    return null;
+  }
+
+  // 3. Logged in normally → prevent returning to login/reset pages
+  if (loggingIn || recoveringPassword || updatingPassword) {
     return Routes.dashboard;
   }
 

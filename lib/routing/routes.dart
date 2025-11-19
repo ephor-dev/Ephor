@@ -1,6 +1,8 @@
 abstract final class Routes {
   static const login = '/login';
   static const dashboard = '/dashboard';
+  static const forgotPassword = '/forgot-password';
+  static const updatePassword = '/update-password';
 
   static const dashboardOverview = 'overview';
   static const dashboardSchedules = 'schedules';

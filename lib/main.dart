@@ -8,6 +8,8 @@ import 'ui/core/themes/theme.dart';
 import 'routing/router.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   await dotenv.load(fileName: ".env");
   try {
     await SupabaseConfig.initialize();
