@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/routing/routes.dart';
 import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
@@ -319,13 +320,19 @@ class _DashboardViewState extends State<DashboardView> {
                     offset: const Offset(0, 50),
                     color: const Color(0xFFF7F7F7),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    child: ClipOval(
-                      child: CircleAvatar(
-                        radius: 16,
-                        backgroundColor: imageUrl != null ? Theme.of(context).colorScheme.tertiaryContainer : null,
-                        backgroundImage: imageUrl != null ? NetworkImage(imageUrl) : null,
-                        child: imageUrl == null ? Text(username[0]) : null,
-                      )
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl ?? 'Error',
+                      placeholder: (context, url) => CircularProgressIndicator(),
+                      errorWidget: (context, url, error) => CircleAvatar(
+                        child: Text(username[0]),
+                      ),
+                      imageBuilder: (context, imageProvider) {
+                        return CircleAvatar(
+                          backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
+                          backgroundImage: imageProvider,
+                          radius: 16,
+                        );
+                      },
                     ),
                     
                     // Menu Items 

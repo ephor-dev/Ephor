@@ -1,5 +1,6 @@
 // presentation/subviews/employee_list/view/employee_list_subview.dart (Updated)
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/routing/routes.dart';
 import 'package:ephor/ui/employee_management/view_model/employees_viewmodel.dart';
@@ -39,6 +40,15 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
     widget.viewModel.loadEmployees.removeListener(_onResult);
     super.dispose();
   }
+
+  Map<String?, String> textEquivalents = {
+    'humanResource': "Human Resource",
+    'supervisor': "Supervisor",
+    'personnel': 'University Personnel',
+    'faculty': 'Faculty Member',
+    'jobOrder': 'Job-Order Employee',
+    null: 'Not Applicable'
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +102,12 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
         Error error = viewModel.deleteEmployee.result as Error;
         CustomMessageException messageException = error.error as CustomMessageException;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(messageException.message), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(
+              messageException.message
+            ), 
+            backgroundColor: Theme.of(context).colorScheme.errorContainer
+          ),
         );
         viewModel.deleteEmployee.clearResult();
       }
@@ -107,18 +122,21 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
           elevation: 1,
           margin: const EdgeInsets.symmetric(vertical: 8.0),
           child: ListTile(
-            // 1. Picture (using placeholder/initials)
-            leading: CircleAvatar(
-              // In a real app, use employee.photoUrl and NetworkImage
-              backgroundColor: employee.photoUrl != null ? Theme.of(context).colorScheme.tertiaryContainer : null,
-              backgroundImage: employee.photoUrl != null ? NetworkImage(employee.photoUrl!) : null,
-              child: employee.photoUrl == null ? Text(employee.fullName[0]) : null,
+            leading: CachedNetworkImage(
+              imageUrl: employee.photoUrl ?? 'Error',
+              placeholder: (context, url) => CircularProgressIndicator(),
+              errorWidget: (context, url, error) => CircleAvatar(
+                child: Text(employee.fullName[0]),
+              ),
+              imageBuilder: (context, imageProvider) {
+                return CircleAvatar(
+                  backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
+                  backgroundImage: imageProvider,
+                );
+              },
             ),
-            // 2. Name
             title: Text(employee.fullName, style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: Text(employee.role.name),
-            
-            // 3. Remove Option
+            subtitle: Text(textEquivalents[employee.role.name]!),
             trailing: IconButton(
               icon: viewModel.deleteEmployee.running
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
@@ -159,7 +177,23 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
   }
   
   // ... (Other helper methods like _buildEmptyState remain the same) ...
-  Widget _buildEmptyState(BuildContext context) { /* ... */ return const Center(child: Text("Empty"));}
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.description_outlined, 
+            size: 80, 
+            color: Theme.of(context).colorScheme.primary
+          ),
+          SizedBox(height: 16),
+          Text('No Employees', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          Text('The list might still be loading. Please wait.'),
+        ],
+      ),
+    );
+  }
   
   void _onResult() {
     if (widget.viewModel.loadEmployees.completed) {
