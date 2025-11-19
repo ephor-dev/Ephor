@@ -157,4 +157,15 @@ class AuthRepository extends AbstractAuthRepository {
       return Result.error(CustomMessageException('An unexpected error occurred during sign-up: ${e.toString()}'));
     }
   }
+
+  @override
+  Future<Result<String?>> getAuthenticatedUserImage(EmployeeModel? currentUser) async {
+    String? signedUrl;
+    if (currentUser != null) {
+      signedUrl = await _supabaseService.getSignedEmployeePhotoUrl(currentUser.photoUrl);
+      return Result.ok(signedUrl);
+    }
+
+    return Result.error(CustomMessageException("Cannot get the User Image"));
+  }
 }

@@ -173,19 +173,23 @@ class SupabaseService {
     return publicUrl;
   }
 
-  Future<String> getSignedEmployeePhotoUrl(String path) async {
-    String correctRelativePath = Uri.parse(path)
-      .path 
-      .split('/')
-      .skipWhile((segment) => segment != "employee-photos")
-      .skip(1)
-      .join('/');
+  Future<String?> getSignedEmployeePhotoUrl(String? path) async {
+    if (path != null) {
+      String correctRelativePath = Uri.parse(path)
+        .path 
+        .split('/')
+        .skipWhile((segment) => segment != "employee-photos")
+        .skip(1)
+        .join('/');
 
-    final response = await _client.storage.from('employee-photos').createSignedUrl(
-      correctRelativePath,
-      60,
-    );
+      final response = await _client.storage.from('employee-photos').createSignedUrl(
+        correctRelativePath,
+        60,
+      );
 
-    return response; // response contains the full signed URL string
+      return response; // response contains the full signed URL string
+    }
+
+    return null;
   }
 }

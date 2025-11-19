@@ -21,4 +21,6 @@ abstract class AbstractAuthRepository extends ChangeNotifier {
   Future<Result<void>> logout();
 
   Future<dynamic> signUpNewUser(String s, String t) async {}
+
+  Future<Result<String?>> getAuthenticatedUserImage(EmployeeModel user);
 }

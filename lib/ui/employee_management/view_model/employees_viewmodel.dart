@@ -46,15 +46,13 @@ class EmployeeListViewModel extends ChangeNotifier {
   }
 
   void _getCurrentUser() {
-    EmployeeModel? currentUser = _authRepository.currentUser;
+    final currentUser = _authRepository.currentUser;
     if (currentUser == null) {
       _currentUserRole = null;
-    }
-
-    if (currentUser!.role == EmployeeRole.humanResource) {
+    } else if (currentUser.role == EmployeeRole.humanResource) {
       _currentUserRole = EmployeeRole.humanResource;
     } else {
-      _currentUserRole = null;
+      _currentUserRole = currentUser.role;
     }
     notifyListeners();
   }

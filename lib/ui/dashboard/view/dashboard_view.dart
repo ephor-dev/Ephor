@@ -1,3 +1,4 @@
+import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/routing/routes.dart';
 import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -243,112 +244,127 @@ class _DashboardViewState extends State<DashboardView> {
     return AppBar(
       backgroundColor: Colors.white, 
       elevation: 1.0, 
-      automaticallyImplyLeading: false, 
+      automaticallyImplyLeading: false,
+      title: ValueListenableBuilder<EmployeeModel?>(
+        valueListenable: widget.viewModel.currentUser,
+        builder: (context, currentUser, child) {
+          final String? imageUrl = currentUser?.photoUrl;
+          final String username = currentUser?.fullName ?? "Username";
+          final String email = currentUser?.email ?? "Email";
 
-      title: Row(
-        children: [
-          // Menu button is always visible to open the drawer
-          IconButton(
-            icon: const Icon(Icons.menu, color: Colors.black, size: 25), 
-            onPressed: () {
-              _scaffoldKey.currentState?.openDrawer();
-            }, 
-          ),
-
-          const SizedBox(width: 15.0), 
-          
-          // Logo and Title
-          Row(
+          return Row(
             children: [
-              Image.asset('assets/images/logo.png', height: 32, width: 32),
-              const SizedBox(width: 8.0),
-              const Text('EPHOR', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18.0)),
-            ],
-          ),
-          
-          const SizedBox(width: 48.0),
-          
-          // Search Bar: Takes up available space
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
-              child: ConstrainedBox(
-                // Max width ensures search bar doesn't look too wide on huge screens
-                constraints: const BoxConstraints(maxWidth: 500), 
-                child: TextField(
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.grey.shade100,
-                    hintText: 'Search',
-                    hintStyle: TextStyle(color: Colors.grey.shade600),
-                    prefixIcon: Icon(Icons.search, color: Colors.grey.shade600, size: 20),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(20.0), borderSide: BorderSide.none),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20.0), borderSide: BorderSide(color: Colors.grey.shade400, width: 1.0)),
-                  ),
-                  cursorColor: _primaryRed, 
-                  style: const TextStyle(fontSize: 16),
-                ),
+              // Menu button is always visible to open the drawer
+              IconButton(
+                icon: const Icon(Icons.menu, color: Colors.black, size: 25), 
+                onPressed: () {
+                  _scaffoldKey.currentState?.openDrawer();
+                }, 
               ),
-            ),
-          ),
-          
-          const SizedBox(width: 48.0),
-          
-          // Action Buttons (Info, Notifications, Profile)
-          Row(
-            // Use responsive checks here if you wanted to hide some buttons on mobile
-            children: [
-              // Use Responsive.isMobile to decide if to show or not
-              if (!isMobile || Responsive.isTablet(context))
-                IconButton(icon: const Icon(Icons.info_outline, color: Colors.black, size: 25), onPressed: _showInfoPlaceholder),
-              
-              IconButton(icon: const Icon(Icons.notifications_none, color: Colors.black, size: 25), onPressed: _showNotificationsPlaceholder),
-              
-              const SizedBox(width: 15.0), 
 
-              // User Profile/Avatar Icon
-              PopupMenuButton<String>(
-                offset: const Offset(0, 50),
-                color: const Color(0xFFF7F7F7),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                child: ClipOval(child: CircleAvatar(radius: 15, backgroundColor: _primaryRed, child: const Icon(Icons.person, color: Colors.white, size: 20),),),
-                
-                // Menu Items 
-                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                  const PopupMenuItem<String>(
-                    enabled: false,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Username", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text("Email", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                        Divider(height: 15),
-                      ],
+              const SizedBox(width: 15.0), 
+              
+              // Logo and Title
+              Row(
+                children: [
+                  Image.asset('assets/images/logo.png', height: 32, width: 32),
+                  const SizedBox(width: 8.0),
+                  const Text('EPHOR', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18.0)),
+                ],
+              ),
+              
+              const SizedBox(width: 48.0),
+              
+              // Search Bar: Takes up available space
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: ConstrainedBox(
+                    // Max width ensures search bar doesn't look too wide on huge screens
+                    constraints: const BoxConstraints(maxWidth: 500), 
+                    child: TextField(
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
+                        hintText: 'Search',
+                        hintStyle: TextStyle(color: Colors.grey.shade600),
+                        prefixIcon: Icon(Icons.search, color: Colors.grey.shade600, size: 20),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20.0), borderSide: BorderSide.none),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20.0), borderSide: BorderSide(color: Colors.grey.shade400, width: 1.0)),
+                      ),
+                      cursorColor: _primaryRed, 
+                      style: const TextStyle(fontSize: 16),
                     ),
                   ),
-                  const PopupMenuItem<String>(
-                    value: 'edit_profile',
-                    child: Row(children: [Icon(Icons.settings_outlined, color: Colors.black87), SizedBox(width: 8), Text('Edit Profile')]),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'logout',
-                    child: Row(children: [Icon(Icons.logout, color: Colors.black87), SizedBox(width: 8), Text('Logout')]),
-                  ),
-                ],
-                onSelected: (String result) {
-                  if (result == 'edit_profile') {
-                    _handleEditProfile(context);
-                  } else if (result == 'logout') {
-                    _handleLogout(context);
-                  }
-                },
+                ),
               ),
-              const SizedBox(width: 8.0), 
+              
+              const SizedBox(width: 48.0),
+              
+              // Action Buttons (Info, Notifications, Profile)
+              Row(
+                // Use responsive checks here if you wanted to hide some buttons on mobile
+                children: [
+                  // Use Responsive.isMobile to decide if to show or not
+                  if (!isMobile || Responsive.isTablet(context))
+                    IconButton(icon: const Icon(Icons.info_outline, color: Colors.black, size: 25), onPressed: _showInfoPlaceholder),
+                  
+                  IconButton(icon: const Icon(Icons.notifications_none, color: Colors.black, size: 25), onPressed: _showNotificationsPlaceholder),
+                  
+                  const SizedBox(width: 15.0), 
+
+                  // User Profile/Avatar Icon
+                  PopupMenuButton<String>(
+                    offset: const Offset(0, 50),
+                    color: const Color(0xFFF7F7F7),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    child: ClipOval(
+                      child: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: imageUrl != null ? Theme.of(context).colorScheme.tertiaryContainer : null,
+                        backgroundImage: imageUrl != null ? NetworkImage(imageUrl) : null,
+                        child: imageUrl == null ? Text(username[0]) : null,
+                      )
+                    ),
+                    
+                    // Menu Items 
+                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                      PopupMenuItem<String>(
+                        enabled: false,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(username, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            Text(email, style: TextStyle(color: Colors.grey, fontSize: 12)),
+                            Divider(height: 15),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'edit_profile',
+                        child: Row(children: [Icon(Icons.settings_outlined, color: Colors.black87), SizedBox(width: 8), Text('Edit Profile')]),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'logout',
+                        child: Row(children: [Icon(Icons.logout, color: Colors.black87), SizedBox(width: 8), Text('Logout')]),
+                      ),
+                    ],
+                    onSelected: (String result) {
+                      if (result == 'edit_profile') {
+                        _handleEditProfile(context);
+                      } else if (result == 'logout') {
+                        _handleLogout(context);
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 8.0), 
+                ],
+              ),
             ],
-          ),
-        ],
-      ),
+          );
+        }
+      )
     );
   }
 
