@@ -54,6 +54,28 @@ class EmployeeRepository implements AbstractEmployeeRepository {
   }
 
   @override
+  Future<Result<EmployeeModel>> editEmployee(EmployeeModel employee) async {
+    try {
+      final editedEmployee = await _supabaseService.editEmployee(employee);
+      return Result.ok(editedEmployee);
+    } on PostgrestException catch (e) {
+      // --- RLS Violation Check Added Here ---
+      final message = e.message.toLowerCase();
+      if (message.contains('violates row-level security policy') || 
+          message.contains('new row violates row-level security policy')) {
+        return Result.error(CustomMessageException(
+          'RLS Policy Violation: The current user is not authorized to edit this employee. '
+          'Please ensure you are logged in as an HR Manager or Admin.',
+        ));
+      }
+      // --- End RLS Check ---
+      return Result.error(CustomMessageException('Database error while editing employee: ${e.message}'));
+    } catch (e) {
+      return Result.error(CustomMessageException('An unexpected error occurred while editing: ${e.toString()}'));
+    }
+  }
+
+  @override
   Future<Result<List<EmployeeModel>>> fetchAllEmployees() async {
     try {
       final employeeList = await _supabaseService.fetchAllEmployees();
@@ -99,6 +121,18 @@ class EmployeeRepository implements AbstractEmployeeRepository {
       return Result.error(CustomMessageException('Database error while fetching employee: ${e.message}'));
     } catch (e) {
       return Result.error(CustomMessageException('An unexpected error occurred: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<EmployeeModel?>> getEmployeeByCode(String code) async {
+    try {
+      final employee = await _supabaseService.getEmployeeByCode(code);
+      return Result.ok(employee);
+    } on PostgrestException catch (e) {
+      return Result.error(CustomMessageException('Database error while fetching employee: ${e.message}'));
+    } catch (e) {
+      return Result.error(CustomMessageException('An unexpected error occurred in retrieving employee: ${e.toString()}'));
     }
   }
 }

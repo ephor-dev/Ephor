@@ -22,6 +22,8 @@ class AuthRepository extends AbstractAuthRepository {
   @override
   EmployeeModel? get currentUser => _currentUser;
 
+  bool isPasswordRecoveryMode = false;
+
   AuthRepository({required SupabaseService supabaseService}) 
     : _supabaseService = supabaseService {
     _startAuthStatusListener();
@@ -32,14 +34,21 @@ class AuthRepository extends AbstractAuthRepository {
     SupabaseService.auth.onAuthStateChange.listen((data) async {
       final event = data.event;
 
-      if (event == AuthChangeEvent.signedIn) {
+      if (event == AuthChangeEvent.passwordRecovery) {
+        isPasswordRecoveryMode = true;
+        _authStateController.add(AuthStatus.signedIn); 
+      } else if (event == AuthChangeEvent.signedIn) {
+        // 2. Standard Login
         _authStateController.add(AuthStatus.signedIn);
         _currentUser = await getAuthenticatedUserData();
       } else if (event == AuthChangeEvent.signedOut) {
+        isPasswordRecoveryMode = false; // Reset flag
         _authStateController.add(AuthStatus.signedOut);
       } else if (event == AuthChangeEvent.userUpdated) {
         _currentUser = await getAuthenticatedUserData();
       }
+
+      notifyListeners();
     });
   }
 
@@ -154,6 +163,85 @@ class AuthRepository extends AbstractAuthRepository {
       return Result.error(CustomMessageException('Authentication error: ${e.message}'));
     } catch (e) {
       return Result.error(CustomMessageException('An unexpected error occurred during sign-up: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<void>> changePassword(String newPassword) async {
+    _isLoadingController.add(true);
+    try {
+      await _supabaseService.changePassword(newPassword);
+      
+      // Reset the recovery flag since they successfully changed it
+      isPasswordRecoveryMode = false; 
+      
+      return Result.ok(null);
+    } on AuthException catch (e) {
+      return Result.error(CustomMessageException(e.message));
+    } catch (e) {
+      return Result.error(CustomMessageException('Error updating password: $e'));
+    } finally {
+      _isLoadingController.add(false);
+    }
+  }
+
+  @override
+  Future<Result<void>> changeEmail(String newEmail) async {
+    _isLoadingController.add(true);
+    try {
+      await _supabaseService.changeEmail(newEmail);   
+      return Result.ok(null);
+    } on AuthException catch (e) {
+      return Result.error(CustomMessageException(e.message));
+    } catch (e) {
+      return Result.error(CustomMessageException('Error updating email: $e'));
+    } finally {
+      _isLoadingController.add(false);
+    }
+  }
+
+  @override
+  Future<Result<void>> checkPassword(String password) async {
+    _isLoadingController.add(true);
+    try {
+      await _supabaseService.checkPassword(password);
+      
+      return Result.ok(null);
+    } on AuthException catch (e) {
+      return Result.error(CustomMessageException(e.message));
+    } catch (e) {
+      return Result.error(CustomMessageException('Password mismatch: $e'));
+    } finally {
+      _isLoadingController.add(false);
+    }
+  }
+
+  @override
+  Future<Result<void>> sendPasswordResetEmail(String passCode) async {
+    _isLoadingController.add(true);
+    try {
+      // 1. Find email from Employee Code
+      final employeeResponse = await _supabaseService.validateEmployeeCode(passCode);
+      
+      if (employeeResponse == null) {
+        return Result.error(CustomMessageException('Employee Code not found.'));
+      }
+
+      final email = employeeResponse['email'] as String?;
+      if (email == null || email.isEmpty) {
+        return Result.error(CustomMessageException('No email found for this employee.'));
+      }
+
+      // 2. Send Supabase Reset Email
+      await _supabaseService.resetPasswordForEmail(email);
+      return Result.ok(null);
+
+    } on AuthException catch (e) {
+      return Result.error(CustomMessageException(e.message));
+    } catch (e) {
+      return Result.error(CustomMessageException('Unknown error: $e'));
+    } finally {
+      _isLoadingController.add(false);
     }
   }
 

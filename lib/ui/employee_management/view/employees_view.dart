@@ -1,6 +1,7 @@
 // presentation/subviews/employee_list/view/employee_list_subview.dart (Updated)
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/routing/routes.dart';
 import 'package:ephor/ui/employee_management/view_model/employees_viewmodel.dart';
@@ -113,13 +114,15 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
       }
     });
 
+    final bool canEditUsers = viewModel.currentUserRole == EmployeeRole.humanResource;
+
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
       itemCount: viewModel.employees.length,
       itemBuilder: (context, index) {
         final employee = viewModel.employees[index];
         return Card(
-          elevation: 1,
+          elevation: 0.2,
           margin: const EdgeInsets.symmetric(vertical: 8.0),
           child: ListTile(
             leading: CachedNetworkImage(
@@ -137,14 +140,33 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
             ),
             title: Text(employee.fullName, style: const TextStyle(fontWeight: FontWeight.w600)),
             subtitle: Text(textEquivalents[employee.role.name]!),
-            trailing: IconButton(
-              icon: viewModel.deleteEmployee.running
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.delete_outline, color: Colors.red),
-              tooltip: 'Remove Employee',
-              onPressed: viewModel.deleteEmployee.running
-                  ? null 
-                  : () => _confirmDelete(context, viewModel, employee),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (canEditUsers) IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  tooltip: 'Edit Employee',
+                  onPressed: viewModel.deleteEmployee.running
+                      ? null 
+                      : () => context.goNamed(
+                        'edit_employee',
+                        queryParameters: {
+                          'fromUser': 'false',
+                          'code': employee.employeeCode
+                        }
+                      ),
+                ),
+                IconButton(
+                  icon: viewModel.deleteEmployee.running
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.delete_outline, color: Colors.red),
+                  tooltip: 'Remove Employee',
+                  onPressed: viewModel.deleteEmployee.running
+                      ? null 
+                      : () => _confirmDelete(context, viewModel, employee),
+                ),
+              ],
             ),
             onTap: () {
               // Action on tapping the list tile

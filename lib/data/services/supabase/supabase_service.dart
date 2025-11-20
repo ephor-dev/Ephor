@@ -26,6 +26,7 @@ class SupabaseService {
         url: supabaseUrl,
         anonKey: supabaseAnonKey,
         authOptions: FlutterAuthClientOptions(
+          authFlowType: AuthFlowType.implicit,
           localStorage: keepLoggedIn
             ? null
             : EmptyLocalStorage()
@@ -74,6 +75,37 @@ class SupabaseService {
     );
     return authResponse;
   }
+
+  Future<UserResponse> changePassword(String password) async {
+    final userResponse = await _client.auth.updateUser(
+      UserAttributes(
+        password: password
+      )
+    );
+    return userResponse;
+  }
+
+  Future<UserResponse> changeEmail(String email) async {
+    final userResponse = await _client.auth.updateUser(
+      UserAttributes(
+        email: email
+      )
+    );
+    return userResponse;
+  }
+
+  Future<AuthResponse> checkPassword(String password) async {
+    final email = _client.auth.currentUser?.email;
+    final response = await loginWithEmail(email!, password);
+    return response;
+  }
+
+  Future<void> resetPasswordForEmail(String email) async {
+    await _client.auth.resetPasswordForEmail(
+      email,
+      redirectTo: 'http://localhost:3000/', 
+    );
+  }
   
   Future<Map<String, dynamic>?> validateEmployeeCode(String employeeCode) async {
     final employeeResponse = await _client
@@ -114,6 +146,23 @@ class SupabaseService {
     return EmployeeModel.fromJson(response.first);
   }
 
+  Future<EmployeeModel> editEmployee(EmployeeModel employee) async {
+    final Map<String, dynamic> updates = employee.toJson();
+
+    updates.remove('id'); 
+    updates.remove('employee_code');
+
+    final List<Map<String, dynamic>> response = await _client
+        .from('employees')
+        .update(updates)        // Pass the map of fields to change
+        .eq('employee_code', employee.employeeCode)  // CRITICAL: WHERE id = employee.id
+        .select();              // Ask Supabase to return the updated row
+
+    print(response);
+
+    return EmployeeModel.fromJson(response.first);
+  }
+
   /// Fetches all employees from the 'employees' table.
   Future<List<EmployeeModel>> fetchAllEmployees() async {
     final List<Map<String, dynamic>> response = await _client
@@ -137,6 +186,17 @@ class SupabaseService {
         .from('employees')
         .select()
         .eq('id', id)
+        .maybeSingle();
+
+    if (response == null) return null;
+    return EmployeeModel.fromJson(response);
+  }
+
+  Future<EmployeeModel?> getEmployeeByCode(String code) async {
+    final Map<String, dynamic>? response = await _client
+        .from('employees')
+        .select()
+        .eq('employee_code', code)
         .maybeSingle();
 
     if (response == null) return null;
