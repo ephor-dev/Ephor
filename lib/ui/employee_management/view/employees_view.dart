@@ -119,7 +119,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
       itemBuilder: (context, index) {
         final employee = viewModel.employees[index];
         return Card(
-          elevation: 1,
+          elevation: 0.2,
           margin: const EdgeInsets.symmetric(vertical: 8.0),
           child: ListTile(
             leading: CachedNetworkImage(

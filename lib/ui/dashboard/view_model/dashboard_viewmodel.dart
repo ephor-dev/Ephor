@@ -29,12 +29,14 @@ class DashboardViewModel extends ChangeNotifier {
 
   final AuthRepository _authRepository;
   late CommandNoArgs logout;
+  late CommandWithArgs checkPassword;
 
   DashboardViewModel({required AuthRepository authRepository})
     : _authRepository = authRepository {
     _subscribeToLoadingStatus(); 
     _subscribeToAuthStatus();
     logout = CommandNoArgs<void>(_logout);
+    checkPassword = CommandWithArgs<void, String>(_checkPassword);
 
     _getUserImage();
   }
@@ -106,9 +108,9 @@ class DashboardViewModel extends ChangeNotifier {
     return result;
   }
 
-  // Placeholder for future 'Edit Profile' logic
-  void editProfile() {
-    // Logic to prepare for profile editing...
-    print("Edit profile initiated.");
+  Future<Result<void>> _checkPassword(String password) async {
+    final result = await _authRepository.checkPassword(password);
+
+    return result;
   }
 }

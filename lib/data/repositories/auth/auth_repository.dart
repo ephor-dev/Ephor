@@ -35,7 +35,6 @@ class AuthRepository extends AbstractAuthRepository {
       final event = data.event;
 
       if (event == AuthChangeEvent.passwordRecovery) {
-        // 1. User clicked the email link
         isPasswordRecoveryMode = true;
         _authStateController.add(AuthStatus.signedIn); 
       } else if (event == AuthChangeEvent.signedIn) {
@@ -181,6 +180,22 @@ class AuthRepository extends AbstractAuthRepository {
       return Result.error(CustomMessageException(e.message));
     } catch (e) {
       return Result.error(CustomMessageException('Error updating password: $e'));
+    } finally {
+      _isLoadingController.add(false);
+    }
+  }
+
+  @override
+  Future<Result<void>> checkPassword(String password) async {
+    _isLoadingController.add(true);
+    try {
+      await _supabaseService.checkPassword(password);
+      
+      return Result.ok(null);
+    } on AuthException catch (e) {
+      return Result.error(CustomMessageException(e.message));
+    } catch (e) {
+      return Result.error(CustomMessageException('Password mismatch: $e'));
     } finally {
       _isLoadingController.add(false);
     }

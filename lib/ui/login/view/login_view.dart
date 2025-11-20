@@ -198,16 +198,16 @@ class _LoginViewState extends State<LoginView> {
           hintText: 'Enter your password',
           border: OutlineInputBorder(),
           suffixIcon: IconButton(
-          icon: Icon(
-            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-            // color: Colors.grey,
+            icon: Icon(
+              _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+              // color: Colors.grey,
+            ),
+            onPressed: () {
+              setState(() {
+                _isPasswordVisible = !_isPasswordVisible;
+              });
+            },
           ),
-          onPressed: () {
-            setState(() {
-              _isPasswordVisible = !_isPasswordVisible;
-            });
-          },
-        ),
         ),
       ),
       verticalSpace,
@@ -409,15 +409,6 @@ class _LoginViewState extends State<LoginView> {
         SnackBar(
           content: Text("Login Error: ${messageException.message}"),
           duration: const Duration(seconds: 3),
-          // action: SnackBarAction(
-          //   label: "Try Again",
-          //   onPressed: () => widget.viewModel.login.execute((
-          //     _employeeCodeController.text.trim(),
-          //     _passwordController.text,
-          //     _userRoleController.first,
-          //     _rememberMe
-          //   )),
-          // ),
         ),
       );
     }

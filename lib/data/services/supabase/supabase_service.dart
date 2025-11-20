@@ -85,6 +85,12 @@ class SupabaseService {
     return userResponse;
   }
 
+  Future<AuthResponse> checkPassword(String password) async {
+    final email = _client.auth.currentUser?.email;
+    final response = await loginWithEmail(email!, password);
+    return response;
+  }
+
   Future<void> resetPasswordForEmail(String email) async {
     await _client.auth.resetPasswordForEmail(
       email,

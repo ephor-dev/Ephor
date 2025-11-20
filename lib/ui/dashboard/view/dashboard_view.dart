@@ -20,6 +20,8 @@ class _DashboardViewState extends State<DashboardView> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   
   static const Color _primaryRed = Color(0xFFAC312B);
+  bool _isPasswordVisible = false;
+  final TextEditingController _passwordController = TextEditingController();
 
   final List<Map<String, dynamic>> menuItems = [
     {'title': 'Overview', 'icon': Icons.description_outlined, 'selected': true, 'path': Routes.dashboardOverview},
@@ -45,6 +47,7 @@ class _DashboardViewState extends State<DashboardView> {
   void initState() {
     super.initState();
     widget.viewModel.logout.addListener(_onResult);
+    widget.viewModel.checkPassword.addListener(_onPasswordChecked);
   }
 
   @override
@@ -54,11 +57,17 @@ class _DashboardViewState extends State<DashboardView> {
       oldWidget.viewModel.logout.removeListener(_onResult);
       widget.viewModel.logout.addListener(_onResult);
     }
+
+    if (oldWidget.viewModel.checkPassword != widget.viewModel.checkPassword) {
+      oldWidget.viewModel.logout.removeListener(_onPasswordChecked);
+      widget.viewModel.checkPassword.addListener(_onPasswordChecked);
+    }
   }
 
   @override
   void dispose() {
     widget.viewModel.logout.removeListener(_onResult);
+    widget.viewModel.checkPassword.removeListener(_onPasswordChecked);
     super.dispose();
   }
 
@@ -194,6 +203,7 @@ class _DashboardViewState extends State<DashboardView> {
       },
     );
   }
+
   void _showNotificationsPlaceholder() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -202,6 +212,71 @@ class _DashboardViewState extends State<DashboardView> {
       ),
     );
   }
+
+  void _handleEditInfo(BuildContext context) {
+    context.pop();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Confirm it is You'),
+              constraints: BoxConstraints.tight(Size(540, 240)),
+              content: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Enter your password to proceed to update your user information'),
+                  const SizedBox(height: 16,),
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: !_isPasswordVisible,
+                    keyboardType: TextInputType.text,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Password is required';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      hintText: 'Enter your password',
+                      border: OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    widget.viewModel.checkPassword.execute(_passwordController.text);
+                  },
+                  child: const Text('Confirm'),
+                ),
+              ],
+            );
+          }
+        );
+      },
+    );
+  }
+
   void _handleLogout(BuildContext context) {
     widget.viewModel.logout.execute();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -211,15 +286,56 @@ class _DashboardViewState extends State<DashboardView> {
       ),
     );
   }
+
   void _handleEditProfile(BuildContext context) {
-    widget.viewModel.editProfile();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Navigating to Edit Profile...'),
-        duration: Duration(seconds: 1),
-      ),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Edit Profile'),
+          constraints: BoxConstraints.tight(Size(540, 350)),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('This section will provide you options to modify what you use in Ephor.'),
+              SizedBox.fromSize(size: Size.fromHeight(16),),
+              Card(
+                elevation: 1,
+                margin: const EdgeInsets.symmetric(vertical: 8.0),
+                child: ListTile(
+                  leading: Icon(Icons.verified_user),
+                  title: Text("Update your Information", style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text("Update your email, full name and/or image."),
+                  trailing: Icon(Icons.arrow_forward),
+                  onTap: () {_handleEditInfo(context);},
+                ),
+              ),
+              Card(
+                elevation: 1,
+                margin: const EdgeInsets.symmetric(vertical: 8.0),
+                child: ListTile(
+                  leading: Icon(Icons.password),
+                  title: Text("Change your Password", style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text("Keep your account secured by changing password."),
+                  trailing: Icon(Icons.arrow_forward),
+                  onTap: () {
+                    context.go(Routes.updatePassword);
+                  },
+                ),
+              )
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
+
   void _onResult() {
     if (widget.viewModel.logout.completed) {
       widget.viewModel.logout.clearResult();
@@ -240,6 +356,22 @@ class _DashboardViewState extends State<DashboardView> {
     }
   }
 
+  void _onPasswordChecked() {
+    if (widget.viewModel.checkPassword.completed) {
+      widget.viewModel.logout.clearResult();
+      context.pop();
+      context.go(Routes.getAddEmployeePath());
+    }
+
+    if (widget.viewModel.checkPassword.error) {
+      widget.viewModel.checkPassword.clearResult();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Enter your correct password to edit user information."),
+        ),
+      );
+    }
+  }
 
   PreferredSizeWidget _buildAppBar({required bool isMobile}) {
     return AppBar(

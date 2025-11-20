@@ -148,6 +148,10 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
     return Routes.login;
   }
 
+  if (loggedIn && updatingPassword) {
+    return null;
+  }
+
   // 2. Logged in but clicked reset email → redirect to update screen
   if (authRepo.isPasswordRecoveryMode) {
     if (!updatingPassword) return Routes.updatePassword;

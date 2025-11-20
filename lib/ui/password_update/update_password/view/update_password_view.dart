@@ -19,7 +19,8 @@ class _UpdatePasswordViewState extends State<UpdatePasswordView> {
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _obscureText = true;
+  bool _obscurePass = true;
+  bool _obscureConfirm = true;
 
   @override
   void initState() {
@@ -107,36 +108,73 @@ class _UpdatePasswordViewState extends State<UpdatePasswordView> {
                      
                      TextFormField(
                        controller: _passwordController,
-                       obscureText: _obscureText,
+                       obscureText: _obscurePass,
                        validator: (v) => (v?.length ?? 0) < 6 ? "Min 6 chars" : null,
-                       decoration: const InputDecoration(
-                         labelText: "New Password", border: OutlineInputBorder(), prefixIcon: Icon(Icons.lock)
+                       decoration: InputDecoration(
+                         labelText: "New Password", 
+                         border: OutlineInputBorder(), 
+                         prefixIcon: Icon(Icons.lock),
+                         suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _obscurePass = !_obscurePass;
+                            });
+                          }, 
+                          icon: Icon(
+                            _obscurePass ? Icons.visibility_off : Icons.visibility
+                          )
+                         ),
                        ),
                      ),
                      const SizedBox(height: 16),
                      TextFormField(
                        controller: _confirmController,
-                       obscureText: _obscureText,
+                       obscureText: _obscureConfirm,
                        validator: (v) => v != _passwordController.text ? "Passwords do not match" : null,
-                       decoration: const InputDecoration(
-                         labelText: "Confirm Password", border: OutlineInputBorder(), prefixIcon: Icon(Icons.lock_outline)
+                       decoration: InputDecoration(
+                         labelText: "Confirm Password", 
+                         border: OutlineInputBorder(), 
+                         prefixIcon: Icon(Icons.lock_outline),
+                         suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _obscureConfirm = !_obscureConfirm;
+                            });
+                          }, 
+                          icon: Icon(
+                            _obscureConfirm ? Icons.visibility_off : Icons.visibility
+                          )
+                         ),
                        ),
                      ),
-                     const SizedBox(height: 24),
-                     
-                     SizedBox(
-                       width: double.infinity,
-                       child: ListenableBuilder(
-                         listenable: widget.viewModel.updateCommand,
-                         builder: (context, _) {
-                           return FilledButton(
-                             onPressed: widget.viewModel.isLoading ? null : _handleUpdate,
-                             child: widget.viewModel.isLoading 
-                               ? const CircularProgressIndicator.adaptive() 
-                               : const Text("Set New Password"),
-                           );
-                         }
-                       ),
+                     const SizedBox(height: 24),     
+                     ListenableBuilder(
+                       listenable: widget.viewModel.updateCommand,
+                       builder: (context, _) {
+                         return Row(
+                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                           crossAxisAlignment: CrossAxisAlignment.center,
+                           children: [
+                             FilledButton(
+                               onPressed: widget.viewModel.isLoading ? null : () {context.go(Routes.dashboard);},
+                               style: FilledButton.styleFrom(
+                                backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
+                                foregroundColor: Theme.of(context).colorScheme.onTertiaryContainer
+                               ),
+                               child: widget.viewModel.isLoading 
+                                 ? const CircularProgressIndicator.adaptive() 
+                                 : const Text("Cancel"),
+                             ),
+
+                             FilledButton(
+                               onPressed: widget.viewModel.isLoading ? null : _handleUpdate,
+                               child: widget.viewModel.isLoading 
+                                 ? const CircularProgressIndicator.adaptive() 
+                                 : const Text("Set New Password"),
+                             ),
+                           ],
+                         );
+                       }
                      )
                    ],
                  ),
