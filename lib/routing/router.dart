@@ -158,6 +158,14 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final recoveringPassword = state.matchedLocation == Routes.forgotPassword;
   final updatingPassword = state.matchedLocation == Routes.updatePassword;
 
+  if (state.matchedLocation == '/') {
+    if (loggedIn) {
+      return Routes.dashboard;
+    }
+
+    return Routes.login;
+  }
+
   // 1. Not logged in → allow reset flow
   if (!loggedIn) {
     if (loggingIn || recoveringPassword || updatingPassword) {
