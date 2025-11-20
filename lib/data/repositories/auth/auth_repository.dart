@@ -186,6 +186,21 @@ class AuthRepository extends AbstractAuthRepository {
   }
 
   @override
+  Future<Result<void>> changeEmail(String newEmail) async {
+    _isLoadingController.add(true);
+    try {
+      await _supabaseService.changeEmail(newEmail);   
+      return Result.ok(null);
+    } on AuthException catch (e) {
+      return Result.error(CustomMessageException(e.message));
+    } catch (e) {
+      return Result.error(CustomMessageException('Error updating email: $e'));
+    } finally {
+      _isLoadingController.add(false);
+    }
+  }
+
+  @override
   Future<Result<void>> checkPassword(String password) async {
     _isLoadingController.add(true);
     try {

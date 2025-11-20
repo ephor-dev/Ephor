@@ -1,14 +1,7 @@
 // domain/models/employee/employee.dart
 
+import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:flutter/foundation.dart';
-
-enum EmployeeRole {
-  supervisor,
-  humanResource,
-  personnel,
-  faculty,
-  jobOrder,
-}
 
 @immutable
 class EmployeeModel {

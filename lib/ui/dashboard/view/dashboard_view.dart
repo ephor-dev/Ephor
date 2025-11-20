@@ -360,7 +360,13 @@ class _DashboardViewState extends State<DashboardView> {
     if (widget.viewModel.checkPassword.completed) {
       widget.viewModel.logout.clearResult();
       context.pop();
-      context.go(Routes.getAddEmployeePath());
+      context.goNamed(
+        'edit_employee',
+        queryParameters: {
+          'fromUser': 'true',
+          'code': widget.viewModel.currentUser.value?.employeeCode
+        } 
+      );
     }
 
     if (widget.viewModel.checkPassword.error) {

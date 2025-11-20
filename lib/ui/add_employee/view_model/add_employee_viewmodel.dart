@@ -6,6 +6,7 @@ import 'dart:math';
 
 import 'package:ephor/data/repositories/auth/abstract_auth_repository.dart';
 import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
+import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:flutter/material.dart';
 

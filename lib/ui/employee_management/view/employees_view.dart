@@ -1,6 +1,7 @@
 // presentation/subviews/employee_list/view/employee_list_subview.dart (Updated)
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/routing/routes.dart';
 import 'package:ephor/ui/employee_management/view_model/employees_viewmodel.dart';

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:ephor/data/repositories/auth/abstract_auth_repository.dart';
 import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
+import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/command.dart';
 import 'package:ephor/utils/results.dart';

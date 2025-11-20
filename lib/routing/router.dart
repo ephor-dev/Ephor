@@ -11,6 +11,8 @@ import 'package:ephor/ui/dashboard/subviews/recommended_trainings/view_model/rec
 import 'package:ephor/ui/dashboard/subviews/upcoming_schedules/view/upcoming_schedules_subview.dart';
 import 'package:ephor/ui/dashboard/subviews/upcoming_schedules/view_model/upcoming_schedules_viewmodel.dart';
 import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
+import 'package:ephor/ui/edit_employee/view/edit_employee_view.dart';
+import 'package:ephor/ui/edit_employee/view_model/edit_employee_viewmodel.dart';
 import 'package:ephor/ui/employee_management/view/employees_view.dart';
 import 'package:ephor/ui/employee_management/view_model/employees_viewmodel.dart';
 import 'package:ephor/ui/password_update/forgot_password/view/forgot_password_view.dart';
@@ -99,6 +101,23 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
                   authRepository: authRepository
                 )
               )
+            ),
+            GoRoute(
+              path: Routes.dashboardEditEmployee,
+              name: 'edit_employee',
+              builder: (context, state) {
+                final param = state.uri.queryParameters['fromUser'];
+                final isFromUser = param == 'true';
+                final code = state.uri.queryParameters['code'];
+
+                return EditEmployeeView(
+                  viewModel: EditEmployeeViewModel(
+                    employeeRepository: context.read(),
+                    fromUserQuery: isFromUser,
+                    targetEmployeeCode: code ?? 'Unknown'
+                  ),
+                );
+              },
             )
           ]
         ),

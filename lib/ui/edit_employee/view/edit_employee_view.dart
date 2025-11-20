@@ -1,57 +1,53 @@
-// The UI code now correctly uses the nullable email/password from the VM
-// and conditionally displays the required fields.
-
 import 'package:ephor/domain/enums/employee_role.dart';
+import 'package:ephor/ui/edit_employee/view_model/edit_employee_viewmodel.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ephor/ui/add_employee/view_model/add_employee_viewmodel.dart';
 import 'package:ephor/utils/responsiveness.dart'; 
 
-// 1. Root widget for showing the form and setting up the ViewModel scope
-class AddEmployeeView extends StatefulWidget {
-  final AddEmployeeViewModel viewModel;
-  const AddEmployeeView({super.key, required this.viewModel});
+class EditEmployeeView extends StatefulWidget {
+  final EditEmployeeViewModel viewModel;
+  const EditEmployeeView({super.key, required this.viewModel});
 
   @override
-  State<AddEmployeeView> createState() => _AddEmployeeViewState();
+  State<EditEmployeeView> createState() => _EditEmployeeViewState();
 }
 
-class _AddEmployeeViewState extends State<AddEmployeeView> {
+class _EditEmployeeViewState extends State<EditEmployeeView> {
   @override
   void initState() {
     super.initState();
-    widget.viewModel.addEmployee.addListener(_onCommandResult); 
+    widget.viewModel.editEmployee.addListener(_onCommandResult); 
   }
 
   @override
-  void didUpdateWidget(covariant AddEmployeeView oldWidget) {
+  void didUpdateWidget(covariant EditEmployeeView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.viewModel.addEmployee != widget.viewModel.addEmployee) {
-      oldWidget.viewModel.addEmployee.removeListener(_onCommandResult);
-      widget.viewModel.addEmployee.addListener(_onCommandResult);
+    if (oldWidget.viewModel.editEmployee != widget.viewModel.editEmployee) {
+      oldWidget.viewModel.editEmployee.removeListener(_onCommandResult);
+      widget.viewModel.editEmployee.addListener(_onCommandResult);
     }
   }
 
   @override
   void dispose() {
-    widget.viewModel.addEmployee.removeListener(_onCommandResult);
-    widget.viewModel.dispose(); // Dispose controllers
+    widget.viewModel.editEmployee.removeListener(_onCommandResult);
+    widget.viewModel.dispose();
     super.dispose();
   }
 
   void _onCommandResult() {
     if (!context.mounted) return;
     
-    final command = widget.viewModel.addEmployee;
+    final command = widget.viewModel.editEmployee;
     final result = command.result;
 
     if (command.completed && result != null) {
       if (result case Ok(value: final employee)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Employee added successfully: ${employee.fullName}'),
+            content: Text('Employee edited successfully: ${employee.fullName}'),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 2),
           ),
@@ -107,33 +103,23 @@ class _AddEmployeeViewState extends State<AddEmployeeView> {
                     
                     // Confirm Button (ListenableBuilder)
                     ListenableBuilder(
-                      listenable: widget.viewModel.addEmployee,
+                      listenable: widget.viewModel.editEmployee,
                       builder: (context, child) {
-                        final bool isLoading = widget.viewModel.addEmployee.running;
+                        final bool isLoading = widget.viewModel.editEmployee.running;
                         return FilledButton(
                           onPressed: isLoading
                               ? null
                               : () {
-                                  // Map form state to Command parameters
-                                final bool requiresLogin = widget.viewModel.employeeRole == EmployeeRole.supervisor || 
-                                                            widget.viewModel.employeeRole == EmployeeRole.humanResource;
-
-                                // Only send non-null values if login is required
-                                final String? email = requiresLogin ? widget.viewModel.emailController.text.trim() : null;
-                                final String? password = requiresLogin ? widget.viewModel.passwordController.text : null;
-                                
                                   final params = (
                                     lastName: widget.viewModel.lastNameController.text.trim(),
                                     firstName: widget.viewModel.firstNameController.text.trim(),
                                     middleName: widget.viewModel.middleNameController.text.trim(),
-                                    email: email, 
-                                    password: password,
                                     employeeRole: widget.viewModel.employeeRole,
                                     department: widget.viewModel.noDepartment ? null : widget.viewModel.selectedDepartment,
                                     tags: widget.viewModel.tagsController.text,
                                     photoUrl: widget.viewModel.photoUrl,
                                   );
-                                  widget.viewModel.addEmployee.execute(params);
+                                  widget.viewModel.editEmployee.execute(params);
                                 },
                             // ... (Button styling and loader remains the same) ...
                           child: isLoading
@@ -141,7 +127,7 @@ class _AddEmployeeViewState extends State<AddEmployeeView> {
                                     width: 20, height: 20,
                                     child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
                                   )
-                              : const Text('Confirm', style: TextStyle(fontWeight: FontWeight.w600)),
+                              : const Text('Confirm Edit', style: TextStyle(fontWeight: FontWeight.w600)),
                         );
                       },
                     ),
@@ -159,11 +145,11 @@ class _AddEmployeeViewState extends State<AddEmployeeView> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1.0,
-        title: const Text('Add New Employee', style: TextStyle(color: Colors.black)),
+        title: const Text('Edit Employee Information', style: TextStyle(color: Colors.black)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => context.pop(),
-          tooltip: 'Back to Employee List',
+          tooltip: 'Back to Previous',
         ),
       ),
       body: viewContent,
@@ -178,7 +164,7 @@ class _AddEmployeeViewState extends State<AddEmployeeView> {
 // 4. Form Section (Handles responsiveness for internal layouts)
 class _FormSection extends StatefulWidget {
   const _FormSection({required this.viewModel});
-  final AddEmployeeViewModel viewModel;
+  final EditEmployeeViewModel viewModel;
 
   @override
   State<_FormSection> createState() => _FormSectionState();
@@ -343,20 +329,20 @@ class _FormSectionState extends State<_FormSection> {
               child: isMobile
                   ? Column( // Column layout for mobile
                       children: <Widget>[
-                        _NameField(label: 'LAST NAME', controller: widget.viewModel.lastNameController, decoration: decoration, placeholder: 'Enter last name', isRequired: true),
+                        _NameField(label: 'LAST NAME', controller: widget.viewModel.lastNameController, decoration: decoration, placeholder: 'Enter last name (leave blank to keep as is.)', isOptional: true),
                         const SizedBox(height: 12),
-                        _NameField(label: 'FIRST NAME', controller: widget.viewModel.firstNameController, decoration: decoration, placeholder: 'Enter first name', isRequired: true),
+                        _NameField(label: 'FIRST NAME', controller: widget.viewModel.firstNameController, decoration: decoration, placeholder: 'Enter first name (leave blank to keep as is.)', isOptional: true),
                         const SizedBox(height: 12),
-                        _NameField(label: 'MIDDLE NAME', controller: widget.viewModel.middleNameController, decoration: decoration, placeholder: 'Enter middle name', isOptional: true),
+                        _NameField(label: 'MIDDLE NAME', controller: widget.viewModel.middleNameController, decoration: decoration, placeholder: 'Enter middle name (leave blank to keep as is.)', isOptional: true),
                       ],
                     )
                   : Row( // Row layout for Tablet/Desktop
                       children: <Widget>[
-                        Expanded(child: _NameField(label: 'LAST NAME', controller: widget.viewModel.lastNameController, decoration: decoration, placeholder: 'Enter last name', isRequired: true)),
+                        Expanded(child: _NameField(label: 'LAST NAME', controller: widget.viewModel.lastNameController, decoration: decoration, placeholder: 'Enter last name (leave blank to keep as is.)', isOptional: true)),
                         const SizedBox(width: 8),
-                        Expanded(child: _NameField(label: 'FIRST NAME', controller: widget.viewModel.firstNameController, decoration: decoration, placeholder: 'Enter first name', isRequired: true)),
+                        Expanded(child: _NameField(label: 'FIRST NAME', controller: widget.viewModel.firstNameController, decoration: decoration, placeholder: 'Enter first name (leave blank to keep as is.)', isOptional: true)),
                         const SizedBox(width: 8),
-                        Expanded(child: _NameField(label: 'MIDDLE NAME', controller: widget.viewModel.middleNameController, decoration: decoration, placeholder: 'Enter middle name', isOptional: true)),
+                        Expanded(child: _NameField(label: 'MIDDLE NAME', controller: widget.viewModel.middleNameController, decoration: decoration, placeholder: 'Enter middle name (leave blank to keep as is.)', isOptional: true)),
                       ],
                     ),
             ),
@@ -371,43 +357,6 @@ class _FormSectionState extends State<_FormSection> {
               child: _EmployeeType(viewModel: widget.viewModel),
             ),
             const SizedBox(height: 20),
-            
-            // 🔑 CONDITIONAL LOGIN FIELDS CONTAINER
-            ListenableBuilder(
-              listenable: widget.viewModel,
-              builder: (context, child) {
-                // Recalculate requiresLogin inside the builder to ensure updates
-                final bool needsLogin = widget.viewModel.employeeRole == EmployeeRole.supervisor || 
-                                        widget.viewModel.employeeRole == EmployeeRole.humanResource;
-                
-                if (!needsLogin) {
-                  // Show a placeholder message when fields are hidden
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Note: Login is not required for this employee role (Email/Password fields are hidden).',
-                          style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-                    );
-                }
-                
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Email Field
-                    _NameField(label: 'EMAIL ADDRESS', controller: widget.viewModel.emailController, decoration: decoration, placeholder: 'Enter employee email', isRequired: true),
-                    const SizedBox(height: 20),
-
-                    // Password Field
-                    _NameField(label: 'INITIAL PASSWORD', controller: widget.viewModel.passwordController, decoration: decoration, placeholder: 'Set initial password', isRequired: true),
-                    const SizedBox(height: 20),
-                  ],
-                );
-              },
-            ),
 
             // Department (Conditionally disabled by HR role)
             Text('DEPARTMENT', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
@@ -464,7 +413,7 @@ class _FormSectionState extends State<_FormSection> {
 // 5. Segmented Button for Employee Role
 class _EmployeeType extends StatefulWidget {
   const _EmployeeType({required this.viewModel});
-  final AddEmployeeViewModel viewModel;
+  final EditEmployeeViewModel viewModel;
 
   @override
   State<_EmployeeType> createState() => _EmployeeTypeState();
@@ -483,57 +432,65 @@ class _EmployeeTypeState extends State<_EmployeeType> {
   @override
   Widget build(BuildContext context) {
     final Color accentColor = const Color(0xFFFFB47B); 
-    final Color inactiveBg = const Color(0xFFF5F5F5); 
+    final Color inactiveBg = const Color(0xFFF5F5F5);
+
+    final bool isSelfEditing = widget.viewModel.fromUser; 
     
-    return SizedBox(
-      width: double.infinity,
-      child: SegmentedButton<EmployeeRole>(
-      segments: <ButtonSegment<EmployeeRole>>[
-        ButtonSegment<EmployeeRole>(
-          value: EmployeeRole.personnel,
-          label: Row(mainAxisSize: MainAxisSize.min, children: const [Icon(Icons.business_center, size: 18), SizedBox(width: 6), Text('Personnel', style: TextStyle(fontWeight: FontWeight.w500))]),
+    return Opacity(
+      opacity: isSelfEditing ? 0.5 : 1.0,
+      child: IgnorePointer(
+        ignoring: isSelfEditing,
+        child: SizedBox(
+          width: double.infinity,
+          child: SegmentedButton<EmployeeRole>(
+          segments: <ButtonSegment<EmployeeRole>>[
+            ButtonSegment<EmployeeRole>(
+              value: EmployeeRole.personnel,
+              label: Row(mainAxisSize: MainAxisSize.min, children: const [Icon(Icons.business_center, size: 18), SizedBox(width: 6), Text('Personnel', style: TextStyle(fontWeight: FontWeight.w500))]),
+            ),
+            ButtonSegment<EmployeeRole>(
+              value: EmployeeRole.faculty,
+              label: Row(mainAxisSize: MainAxisSize.min, children: const [Icon(Icons.school, size: 18), SizedBox(width: 6), Text('Faculty', style: TextStyle(fontWeight: FontWeight.w500))]),
+            ),
+            ButtonSegment<EmployeeRole>(
+              value: EmployeeRole.jobOrder,
+              label: Row(mainAxisSize: MainAxisSize.min, children: const [Icon(Icons.work_outline, size: 18), SizedBox(width: 6), Text('Job Order', style: TextStyle(fontWeight: FontWeight.w500))]),
+            ),
+            // Assuming these roles exist in your EmployeeRole enum:
+            ButtonSegment<EmployeeRole>(
+              value: EmployeeRole.supervisor,
+              label: Row(mainAxisSize: MainAxisSize.min, children: const [Icon(Icons.person, size: 18), SizedBox(width: 6), Text('Supervisor', style: TextStyle(fontWeight: FontWeight.w500))]),
+            ),
+            ButtonSegment<EmployeeRole>(
+              value: EmployeeRole.humanResource,
+              label: Row(mainAxisSize: MainAxisSize.min, children: const [Icon(Icons.people, size: 18), SizedBox(width: 6), Text('HR', style: TextStyle(fontWeight: FontWeight.w500))]),
+            ),
+          ],
+          selected: <EmployeeRole>{_currentSelection},
+          onSelectionChanged: (Set<EmployeeRole> newSelection) {
+            if (newSelection.isNotEmpty) {
+              setState(() {
+                _currentSelection = newSelection.first;
+              });
+              // Notify the VM, which triggers the conditional display logic
+              widget.viewModel.setEmployeeRole(newSelection.first); 
+            }
+          },
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+              return states.contains(WidgetState.selected) ? accentColor : inactiveBg;
+            }),
+            foregroundColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+              return states.contains(WidgetState.selected) ? Colors.white : Colors.black87;
+            }),
+            side: WidgetStateProperty.resolveWith<BorderSide?>((Set<WidgetState> states) {
+              return states.contains(WidgetState.selected) ? BorderSide(color: accentColor, width: 1.5) : const BorderSide(color: Color(0xFFE0E0E0), width: 1.5);
+            }),
+            shape: WidgetStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
+          ),
+          ),
         ),
-        ButtonSegment<EmployeeRole>(
-          value: EmployeeRole.faculty,
-          label: Row(mainAxisSize: MainAxisSize.min, children: const [Icon(Icons.school, size: 18), SizedBox(width: 6), Text('Faculty', style: TextStyle(fontWeight: FontWeight.w500))]),
-        ),
-        ButtonSegment<EmployeeRole>(
-          value: EmployeeRole.jobOrder,
-          label: Row(mainAxisSize: MainAxisSize.min, children: const [Icon(Icons.work_outline, size: 18), SizedBox(width: 6), Text('Job Order', style: TextStyle(fontWeight: FontWeight.w500))]),
-        ),
-        // Assuming these roles exist in your EmployeeRole enum:
-        ButtonSegment<EmployeeRole>(
-          value: EmployeeRole.supervisor,
-          label: Row(mainAxisSize: MainAxisSize.min, children: const [Icon(Icons.person, size: 18), SizedBox(width: 6), Text('Supervisor', style: TextStyle(fontWeight: FontWeight.w500))]),
-        ),
-        ButtonSegment<EmployeeRole>(
-          value: EmployeeRole.humanResource,
-          label: Row(mainAxisSize: MainAxisSize.min, children: const [Icon(Icons.people, size: 18), SizedBox(width: 6), Text('HR', style: TextStyle(fontWeight: FontWeight.w500))]),
-        ),
-      ],
-      selected: <EmployeeRole>{_currentSelection},
-      onSelectionChanged: (Set<EmployeeRole> newSelection) {
-        if (newSelection.isNotEmpty) {
-          setState(() {
-            _currentSelection = newSelection.first;
-          });
-          // Notify the VM, which triggers the conditional display logic
-          widget.viewModel.setEmployeeRole(newSelection.first); 
-        }
-      },
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-          return states.contains(WidgetState.selected) ? accentColor : inactiveBg;
-        }),
-        foregroundColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-          return states.contains(WidgetState.selected) ? Colors.white : Colors.black87;
-        }),
-        side: WidgetStateProperty.resolveWith<BorderSide?>((Set<WidgetState> states) {
-          return states.contains(WidgetState.selected) ? BorderSide(color: accentColor, width: 1.5) : const BorderSide(color: Color(0xFFE0E0E0), width: 1.5);
-        }),
-        shape: WidgetStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-        padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
-      ),
       ),
     );
   }
@@ -542,7 +499,7 @@ class _EmployeeTypeState extends State<_EmployeeType> {
 // 6. Custom Dropdown/Checkbox row for department selection
 class _DepartmentRow extends StatefulWidget {
   const _DepartmentRow({required this.viewModel});
-  final AddEmployeeViewModel viewModel;
+  final EditEmployeeViewModel viewModel;
 
   @override
   State<_DepartmentRow> createState() => _DepartmentRowState();
@@ -739,11 +696,11 @@ class _DepartmentRowState extends State<_DepartmentRow> {
 class _NameField extends StatelessWidget {
   const _NameField({
     required this.label, required this.controller, required this.decoration,
-    required this.placeholder, this.isRequired = false, this.isOptional = false,
+    required this.placeholder, this.isOptional = false,
   });
 
   final String label; final TextEditingController controller; final InputDecoration decoration;
-  final String placeholder; final bool isRequired; final bool isOptional;
+  final String placeholder; final bool isOptional;
 
   @override
   Widget build(BuildContext context) {
@@ -753,8 +710,6 @@ class _NameField extends StatelessWidget {
         Row(
           children: <Widget>[
             Text(label, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
-            if (isRequired)
-              const Padding(padding: EdgeInsets.only(left: 4), child: Text('*', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600, fontSize: 16))),
             if (isOptional)
               Padding(padding: const EdgeInsets.only(left: 4), child: Text('(OPTIONAL)', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w400, color: Colors.grey.shade600, letterSpacing: 0.3, fontSize: 14))),
           ],

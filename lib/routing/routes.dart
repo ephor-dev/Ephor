@@ -11,6 +11,7 @@ abstract final class Routes {
   static const dashboardRecommendedTrainings = 'recommended-trainings';
   static const dashboardEmployeeList = 'employee-list';
   static const dashboardAddEmployee = 'add';
+  static const dashboardEditEmployee = 'edit';
 
   static String getOverviewPath() => '$dashboard/$dashboardOverview';
   static String getSchedulesPath() => '$dashboard/$dashboardSchedules';
@@ -19,4 +20,5 @@ abstract final class Routes {
   static String getRecommendedTrainingsPath() => '$dashboard/$dashboardRecommendedTrainings';
   static String getEmployeeListPath() => '$dashboard/$dashboardEmployeeList';
   static String getAddEmployeePath() => '$dashboard/$dashboardEmployeeList/$dashboardAddEmployee';
+  static String getEditEmployeePath() => '$dashboard/$dashboardEmployeeList/$dashboardEditEmployee';
 }

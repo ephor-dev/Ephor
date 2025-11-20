@@ -11,12 +11,14 @@ abstract interface class AbstractEmployeeRepository {
   
   /// Adds a new employee entry.
   Future<Result<EmployeeModel>> addEmployee(EmployeeModel employee);
+  Future<Result<EmployeeModel>> editEmployee(EmployeeModel employee);
   
   /// Removes employee by ID.
   Future<Result<void>> removeEmployee(String id);
   
   /// Fetches employee by ID.
   Future<Result<EmployeeModel?>> getEmployeeById(String id);
+  Future<Result<EmployeeModel?>> getEmployeeByCode(String code);
 
   Future<Result<String>> uploadEmployeePhoto(File file);
 }
