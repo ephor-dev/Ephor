@@ -103,7 +103,7 @@ class SupabaseService {
   Future<void> resetPasswordForEmail(String email) async {
     await _client.auth.resetPasswordForEmail(
       email,
-      redirectTo: 'http://localhost:3000/', 
+      redirectTo: 'https://ephor.vercel.app/',
     );
   }
   
