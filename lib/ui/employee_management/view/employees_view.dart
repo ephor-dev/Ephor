@@ -114,6 +114,8 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
       }
     });
 
+    final bool canEditUsers = viewModel.currentUserRole == EmployeeRole.humanResource;
+
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
       itemCount: viewModel.employees.length,
@@ -138,14 +140,33 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
             ),
             title: Text(employee.fullName, style: const TextStyle(fontWeight: FontWeight.w600)),
             subtitle: Text(textEquivalents[employee.role.name]!),
-            trailing: IconButton(
-              icon: viewModel.deleteEmployee.running
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.delete_outline, color: Colors.red),
-              tooltip: 'Remove Employee',
-              onPressed: viewModel.deleteEmployee.running
-                  ? null 
-                  : () => _confirmDelete(context, viewModel, employee),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (canEditUsers) IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  tooltip: 'Edit Employee',
+                  onPressed: viewModel.deleteEmployee.running
+                      ? null 
+                      : () => context.goNamed(
+                        'edit_employee',
+                        queryParameters: {
+                          'fromUser': 'false',
+                          'code': employee.employeeCode
+                        }
+                      ),
+                ),
+                IconButton(
+                  icon: viewModel.deleteEmployee.running
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.delete_outline, color: Colors.red),
+                  tooltip: 'Remove Employee',
+                  onPressed: viewModel.deleteEmployee.running
+                      ? null 
+                      : () => _confirmDelete(context, viewModel, employee),
+                ),
+              ],
             ),
             onTap: () {
               // Action on tapping the list tile

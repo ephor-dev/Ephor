@@ -1,4 +1,5 @@
 import 'package:ephor/domain/enums/employee_role.dart';
+import 'package:ephor/routing/routes.dart';
 import 'package:ephor/ui/edit_employee/view_model/edit_employee_viewmodel.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
@@ -148,7 +149,13 @@ class _EditEmployeeViewState extends State<EditEmployeeView> {
         title: const Text('Edit Employee Information', style: TextStyle(color: Colors.black)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (widget.viewModel.fromUser) {
+              context.go(Routes.dashboard);
+            } else {
+              context.go(Routes.getEmployeeListPath());
+            }
+          },
           tooltip: 'Back to Previous',
         ),
       ),
