@@ -1,7 +1,6 @@
 // ui/add_employee/view_model/add_employee_viewmodel.dart
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
 import 'package:ephor/domain/enums/employee_role.dart';
@@ -67,8 +66,8 @@ class EditEmployeeViewModel extends ChangeNotifier {
     'IE Department', 'ME Department', 'IT Department',
   ];
 
-  File? _localImageFile;
-  File? get localImageFile => _localImageFile;
+  XFile? _localImageFile;
+  XFile? get localImageFile => _localImageFile;
   
   // --- Disposable Resources ---
   @override
@@ -144,15 +143,14 @@ class EditEmployeeViewModel extends ChangeNotifier {
     return null;
   }
 
-  Future<Result<File?>> _pickImage() async {
+  Future<Result<XFile?>> _pickImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? xfile = await picker.pickImage(source: ImageSource.gallery);
 
     if (xfile != null) {
-      final File file = File(xfile.path);
-      _localImageFile = file;
+      _localImageFile = xfile;
       notifyListeners();
-      return Result.ok(file);
+      return Result.ok(xfile);
     }
 
     return Result.error(CustomMessageException("Cannot open the file selected"));

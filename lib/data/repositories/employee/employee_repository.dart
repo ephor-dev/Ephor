@@ -1,12 +1,9 @@
-// data/repositories/employee/employee_repository.dart
-
-import 'dart:io';
-
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
 import 'package:ephor/data/services/supabase/supabase_service.dart';
 import 'package:ephor/utils/results.dart';
-import 'package:ephor/utils/custom_message_exception.dart'; 
+import 'package:ephor/utils/custom_message_exception.dart';
+import 'package:image_picker/image_picker.dart'; 
 import 'package:supabase_flutter/supabase_flutter.dart'; 
 
 class EmployeeRepository implements AbstractEmployeeRepository {
@@ -17,10 +14,10 @@ class EmployeeRepository implements AbstractEmployeeRepository {
       : _supabaseService = employeeService;
 
   @override
-  Future<Result<String>> uploadEmployeePhoto(File file) async {
+  Future<Result<String>> uploadEmployeePhoto(XFile file) async {
     try {
         final fileBytes = await file.readAsBytes();
-        final uniqueId = 'employee-${DateTime.now().millisecondsSinceEpoch}-${file.uri.pathSegments.last}';
+        final uniqueId = 'employee-${DateTime.now().millisecondsSinceEpoch}-${file.name}';
         final publicUrl = await _supabaseService.uploadEmployeePhoto(uniqueId, fileBytes);
         
         return Result.ok(publicUrl);
