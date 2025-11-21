@@ -1,6 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/routing/routes.dart';
+import 'package:ephor/ui/core/ui/confirm_identity_dialog/confirm_identity_dialog.dart';
+import 'package:ephor/ui/core/ui/dashboard_menu_item/dashboard_menu_item.dart';
+import 'package:ephor/ui/core/ui/edit_profile_dialog/edit_profile_dialog.dart';
 import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -20,8 +23,6 @@ class _DashboardViewState extends State<DashboardView> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   
   static const Color _primaryRed = Color(0xFFAC312B);
-  bool _isPasswordVisible = false;
-  final TextEditingController _passwordController = TextEditingController();
 
   final List<Map<String, dynamic>> menuItems = [
     {'title': 'Overview', 'icon': Icons.description_outlined, 'selected': true, 'path': Routes.dashboardOverview},
@@ -79,54 +80,6 @@ class _DashboardViewState extends State<DashboardView> {
     if (_scaffoldKey.currentState?.isDrawerOpen == true) {
       Navigator.pop(context);
     }
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Navigating to $pathSegment Panel'),
-        duration: const Duration(milliseconds: 500), 
-      ),
-    );
-  }
-
-  // Helper function to build each menu item
-  Widget _buildMenuItem({
-    required String title,
-    required IconData icon,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    final BoxDecoration decoration = isSelected
-        ? BoxDecoration(
-            borderRadius: const BorderRadius.only(
-              topRight: Radius.circular(30.0),
-              bottomRight: Radius.circular(30.0),
-            ),
-            gradient: LinearGradient(
-              colors: [const Color(0xFFE0B0A4).withAlpha(204), const Color(0xFFDE3535).withAlpha(204)],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-          )
-        : const BoxDecoration();
-
-    return Container(
-      decoration: decoration,
-      child: ListTile(
-        leading: Icon(
-          icon,
-          color: Colors.black,
-          size: 25,
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.normal,
-          ),
-        ),
-        onTap: onTap,
-      ),
-    );
   }
 
   // Helper to build the core menu list (used inside the Drawer)
@@ -138,12 +91,12 @@ class _DashboardViewState extends State<DashboardView> {
       itemBuilder: (context, index) {
         final item = menuItems[index];
         return Padding(
-          padding: const EdgeInsets.only(bottom: 8.0), 
-          child: _buildMenuItem(
-            title: item['title'],
-            icon: item['icon'],
-            isSelected: index == selectedIndex,
-            onTap: () => _onSelectItem(item['path']),
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: DashboardMenuItem(
+            title: item['title'], 
+            icon: item['icon'], 
+            isSelected: index == selectedIndex, 
+            onTap: () => _onSelectItem(item['path'])
           ),
         );
       },
@@ -187,20 +140,16 @@ class _DashboardViewState extends State<DashboardView> {
 
   // Placeholder functions
   void _showInfoPlaceholder() {
-    showDialog(
+    showAboutDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Info/About'),
-          content: const Text('This section will provide information about the app or an "About Us" page.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
+      applicationName: 'Ephor',
+      applicationVersion: 'v. 0.1.0',
+      applicationIcon: Image.asset(
+        'assets/images/logo.png',
+        width: 96,
+        height: 96,
+      ),
+      applicationLegalese: "© Copyright Ephor-Dev 2025",
     );
   }
 
@@ -213,67 +162,13 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  void _handleEditInfo(BuildContext context) {
+  void _handleEditUserInfo(BuildContext context) {
     context.pop();
-
     showDialog(
-      context: context,
+      context: context, 
       builder: (BuildContext context) {
-
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('Confirm it is You'),
-              constraints: BoxConstraints.tight(Size(540, 240)),
-              content: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Enter your password to proceed to update your user information'),
-                  const SizedBox(height: 16,),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: !_isPasswordVisible,
-                    keyboardType: TextInputType.text,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Password is required';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      hintText: 'Enter your password',
-                      border: OutlineInputBorder(),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isPasswordVisible = !_isPasswordVisible;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    widget.viewModel.checkPassword.execute(_passwordController.text);
-                  },
-                  child: const Text('Confirm'),
-                ),
-              ],
-            );
-          }
-        );
-      },
+        return ConfirmIdentityDialog(viewModel: widget.viewModel);
+      }
     );
   }
 
@@ -291,46 +186,10 @@ class _DashboardViewState extends State<DashboardView> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Edit Profile'),
-          constraints: BoxConstraints.tight(Size(540, 350)),
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('This section will provide you options to modify what you use in Ephor.'),
-              SizedBox.fromSize(size: Size.fromHeight(16),),
-              Card(
-                elevation: 1,
-                margin: const EdgeInsets.symmetric(vertical: 8.0),
-                child: ListTile(
-                  leading: Icon(Icons.verified_user),
-                  title: Text("Update your Information", style: const TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text("Update your email, full name and/or image."),
-                  trailing: Icon(Icons.arrow_forward),
-                  onTap: () {_handleEditInfo(context);},
-                ),
-              ),
-              Card(
-                elevation: 1,
-                margin: const EdgeInsets.symmetric(vertical: 8.0),
-                child: ListTile(
-                  leading: Icon(Icons.password),
-                  title: Text("Change your Password", style: const TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text("Keep your account secured by changing password."),
-                  trailing: Icon(Icons.arrow_forward),
-                  onTap: () {
-                    context.go(Routes.updatePassword);
-                  },
-                ),
-              )
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
+        return EditProfileDialog(
+          updateInfoCallback: () => {
+            _handleEditUserInfo(context)
+          }
         );
       },
     );
