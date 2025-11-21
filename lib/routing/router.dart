@@ -168,7 +168,14 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   
   // 1. Not logged in → allow reset flow
   if (!loggedIn) {
-    if (loggingIn || recoveringPassword || updatingPassword) {
+    if (loggingIn || recoveringPassword) {
+      return null;
+    } else if (updatingPassword) {
+      final token = state.uri.queryParameters['token'];
+      if (token == null) {
+        return Routes.login;
+      }
+
       return null;
     }
 

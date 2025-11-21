@@ -162,14 +162,18 @@ class _UpdatePasswordViewState extends State<UpdatePasswordView> {
                                 foregroundColor: Theme.of(context).colorScheme.onTertiaryContainer
                                ),
                                child: widget.viewModel.isLoading 
-                                 ? const CircularProgressIndicator.adaptive() 
+                                 ? CircularProgressIndicator(
+                                  backgroundColor: Theme.of(context).colorScheme.onTertiaryContainer,
+                                 ) 
                                  : const Text("Cancel"),
                              ),
 
                              FilledButton(
                                onPressed: widget.viewModel.isLoading ? null : _handleUpdate,
                                child: widget.viewModel.isLoading 
-                                 ? const CircularProgressIndicator.adaptive() 
+                                 ? CircularProgressIndicator(
+                                    backgroundColor: Theme.of(context).colorScheme.onPrimaryContainer
+                                 ) 
                                  : const Text("Set New Password"),
                              ),
                            ],
