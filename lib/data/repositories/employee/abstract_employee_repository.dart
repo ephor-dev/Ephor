@@ -1,9 +1,6 @@
-// domain/repositories/employee/abstract_employee_repository.dart
-
-import 'dart:io';
-
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/results.dart';
+import 'package:image_picker/image_picker.dart';
 
 abstract interface class AbstractEmployeeRepository {
   /// Fetches all employees, returning a Result to handle potential errors.
@@ -20,5 +17,5 @@ abstract interface class AbstractEmployeeRepository {
   Future<Result<EmployeeModel?>> getEmployeeById(String id);
   Future<Result<EmployeeModel?>> getEmployeeByCode(String code);
 
-  Future<Result<String>> uploadEmployeePhoto(File file);
+  Future<Result<String>> uploadEmployeePhoto(XFile file);
 }

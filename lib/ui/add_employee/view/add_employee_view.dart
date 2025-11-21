@@ -1,9 +1,12 @@
 // The UI code now correctly uses the nullable email/password from the VM
 // and conditionally displays the required fields.
 
+import 'dart:io';
+
 import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ephor/ui/add_employee/view_model/add_employee_viewmodel.dart';
@@ -287,13 +290,19 @@ class _FormSectionState extends State<_FormSection> {
             child: widget.viewModel.localImageFile != null
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: Image.file(
-                      widget.viewModel.localImageFile!,
-                      fit: BoxFit.cover,
-                      width: 176,
-                      height: 176,
-
-                    ),
+                    child: kIsWeb
+                      ? Image.network(
+                          widget.viewModel.localImageFile!.path,
+                          fit: BoxFit.cover,
+                          width: 176,
+                          height: 176,
+                        )
+                      : Image.file(
+                          File(widget.viewModel.localImageFile!.path),
+                            fit: BoxFit.cover,
+                            width: 176,
+                            height: 176,
+                          ),
                   )
                 : const Center(child: Icon(Icons.person_outline, size: 56, color: Color(0xFF9E9E9E))),
           ),
