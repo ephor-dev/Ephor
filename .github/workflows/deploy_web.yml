@@ -1,0 +1,42 @@
+name: Flutter Web Build & Deploy
+
+# Trigger the workflow on push to main
+on:
+  push:
+    branches:
+      - main
+
+# Permissions needed to write to the other branch
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Check out the code from main
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Install Flutter environment
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.38.1' # Optional: Pin a specific version
+
+      # 3. Get dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 4. Build the web application
+      - name: Build Web
+        run: flutter build web --release
+
+      # 5. Deploy (Commit the 'build/web' folder to the target branch)
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
+          publish_branch: vercel_runnable  # The branch where the build lands
