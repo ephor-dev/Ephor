@@ -165,6 +165,14 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
 
     return Routes.login;
   }
+
+  if (state.matchedLocation == '/') {
+    if (loggedIn) {
+      return Routes.dashboard;
+    }
+
+    return Routes.login;
+  }
   
   // 1. Not logged in → allow reset flow
   if (!loggedIn) {
