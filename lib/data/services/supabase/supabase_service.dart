@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:ephor/data/services/shared_prefs/prefs_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ephor/domain/models/employee/employee.dart'; // Ensure this model is available
 
@@ -103,7 +104,7 @@ class SupabaseService {
   Future<void> resetPasswordForEmail(String email) async {
     await _client.auth.resetPasswordForEmail(
       email,
-      redirectTo: 'http://localhost:3000/', 
+      redirectTo: dotenv.env['REDIRECT_URL'] ?? 'http://localhost:3000/', 
     );
   }
   
@@ -157,8 +158,6 @@ class SupabaseService {
         .update(updates)        // Pass the map of fields to change
         .eq('employee_code', employee.employeeCode)  // CRITICAL: WHERE id = employee.id
         .select();              // Ask Supabase to return the updated row
-
-    print(response);
 
     return EmployeeModel.fromJson(response.first);
   }
