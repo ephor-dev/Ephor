@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "ephor",
+      "package_name": "com.ephor_dev.ephor",
+      "sha256_cert_fingerprints": [
+        "SHA256: BF:0A:DD:89:D1:EB:0E:F9:71:D4:E8:EC:6E:79:A8:A8:06:13:8C:15:B4:D0:E8:FE:5A:2D:75:1A:B5:FC:CA:77"
+      ]
+    }
+  }
+]
