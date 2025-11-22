@@ -122,69 +122,87 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
       itemCount: viewModel.employees.length,
       itemBuilder: (context, index) {
         final employee = viewModel.employees[index];
+
+        // 1. Define the Fallback Avatar (Used if URL is invalid OR if network fails)
+        final Widget fallbackAvatar = CircleAvatar(
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+          child: Text(
+            employee.fullName.isNotEmpty ? employee.fullName[0] : '?',
+            style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
+          ),
+        );
+
+        // 2. Check if the URL is valid (Not null AND starts with http/https)
+        final bool hasValidUrl = employee.photoUrl != null && 
+                                employee.photoUrl!.startsWith('http');
+
         return Card(
-          elevation: 0.2,
+          elevation: 1,
           margin: const EdgeInsets.symmetric(vertical: 8.0),
           child: GestureDetector(
             child: ListTile(
-              leading: CachedNetworkImage(
-                imageUrl: employee.photoUrl ?? 'Error',
-                placeholder: (context, url) => CircularProgressIndicator(),
-                errorWidget: (context, url, error) => CircleAvatar(
-                  child: Text(employee.fullName[0]),
-                ),
-                imageBuilder: (context, imageProvider) {
-                  return CircleAvatar(
-                    backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
-                    backgroundImage: imageProvider,
-                  );
-                },
+              leading: hasValidUrl
+                  ? CachedNetworkImage(
+                      imageUrl: employee.photoUrl!,
+                      placeholder: (context, url) => const CircularProgressIndicator(),
+                      errorWidget: (context, url, error) => fallbackAvatar,
+                      imageBuilder: (context, imageProvider) {
+                        return CircleAvatar(
+                          backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
+                          backgroundImage: imageProvider,
+                        );
+                      },
+                    )
+                  : fallbackAvatar, // Render fallback immediately if URL is bad
+              title: Text(
+                employee.fullName, 
+                style: const TextStyle(fontWeight: FontWeight.w600)
               ),
-              title: Text(employee.fullName, style: const TextStyle(fontWeight: FontWeight.w600)),
-              subtitle: Text(textEquivalents[employee.role.name]!),
+              subtitle: Text(textEquivalents[employee.role.name] ?? employee.role.name),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  if (canEditUsers) IconButton(
-                    icon: const Icon(Icons.edit_outlined),
-                    tooltip: 'Edit Employee',
-                    onPressed: viewModel.deleteEmployee.running
-                        ? null 
-                        : () => context.goNamed(
-                          'edit_employee',
-                          queryParameters: {
-                            'fromUser': 'false',
-                            'code': employee.employeeCode
-                          }
-                        ),
-                  ),
+                  if (canEditUsers)
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined),
+                      tooltip: 'Edit Employee',
+                      onPressed: viewModel.deleteEmployee.running
+                          ? null
+                          : () => context.goNamed(
+                                'edit_employee',
+                                queryParameters: {
+                                  'fromUser': 'false',
+                                  'code': employee.employeeCode
+                                },
+                              ),
+                    ),
                   IconButton(
                     icon: viewModel.deleteEmployee.running
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                         : const Icon(Icons.delete_outline, color: Colors.red),
                     tooltip: 'Remove Employee',
                     onPressed: viewModel.deleteEmployee.running
-                        ? null 
+                        ? null
                         : () => _confirmDelete(context, viewModel, employee),
                   ),
                 ],
               ),
               onTap: () {
                 showDialog(
-                  context: context, 
+                  context: context,
                   builder: (context) {
                     return AlertDialog(
                       content: EmployeeInfoPopover(employee: employee),
-                      constraints: BoxConstraints.tight(Size(350, 500)),
+                      constraints: BoxConstraints.tight(const Size(350, 500)),
                       contentPadding: EdgeInsets.zero,
                       titlePadding: EdgeInsets.zero,
                       iconPadding: EdgeInsets.zero,
                       actionsPadding: EdgeInsets.zero,
                       insetPadding: EdgeInsets.zero,
-                      backgroundColor: Color(0x00000000),
+                      backgroundColor: const Color(0x00000000),
                     );
-                  }
+                  },
                 );
               },
             ),
@@ -206,7 +224,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              vm.deleteEmployee.execute(employee.id); // Execute the command
+              vm.deleteEmployee.execute(employee); // Execute the command
             },
             child: const Text('Remove', style: TextStyle(color: Colors.red)),
           ),

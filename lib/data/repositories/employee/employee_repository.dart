@@ -132,4 +132,15 @@ class EmployeeRepository implements AbstractEmployeeRepository {
       return Result.error(CustomMessageException('An unexpected error occurred in retrieving employee: ${e.toString()}'));
     }
   }
+  
+  @override
+  Future<Result<String>> deleteOldPhoto(String path) async {
+    final result = await _supabaseService.deleteOldPhoto(path);
+    
+    if (result) {
+      return Result.ok("Successfully deleted $path");
+    }
+
+    return Result.error(CustomMessageException('Image delete failed'));
+  }
 }

@@ -146,12 +146,6 @@ class EmployeeInfoPopover extends StatelessWidget {
             ),
           ),
           child: Center(
-            // Optional Company Logo watermark effect
-            // child: Icon(
-            //   Icons.work_outline,
-            //   size: 60,
-            //   color: Colors.white.withAlpha(24),
-            // ),
             child: Image.asset(
               'assets/images/logo.png',
               width: 60,

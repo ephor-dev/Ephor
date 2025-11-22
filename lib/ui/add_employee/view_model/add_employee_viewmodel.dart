@@ -138,7 +138,14 @@ class AddEmployeeViewModel extends ChangeNotifier {
 
   Future<Result<XFile?>> _pickImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? xfile = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? xfile = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70
+    );
+
+    if ((await xfile?.length())! >= 1024 * 2000) {
+      return Result.error(CustomMessageException("File too large. Maximum size is 2 MB."));
+    }
 
     if (xfile != null) {
       _localImageFile = xfile;

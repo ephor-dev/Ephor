@@ -31,7 +31,7 @@ class EmployeeListViewModel extends ChangeNotifier {
     _loadEmployees();
 
     loadEmployees = CommandNoArgs<void>(_loadEmployees);
-    deleteEmployee = CommandWithArgs<void, String>(_deleteEmployee);
+    deleteEmployee = CommandWithArgs<void, EmployeeModel>(_deleteEmployee);
 
     _getCurrentUser();
   }
@@ -71,13 +71,21 @@ class EmployeeListViewModel extends ChangeNotifier {
     }
   }
 
-  Future<Result<void>> _deleteEmployee(String employeeId) async {
+  Future<Result<void>> _deleteEmployee(EmployeeModel employee) async {
     // 1. Call the Repository
-    final result = await _employeeRepository.removeEmployee(employeeId);
+    final result = await _employeeRepository.removeEmployee(employee.userId);
+
+    if (employee.photoUrl != null) {
+      final deleteResult = await _employeeRepository.deleteOldPhoto(employee.photoUrl!);
+
+      if (deleteResult case Error()) {
+        return deleteResult;
+      }
+    }
     
     // 2. Update local state ONLY if successful
     if (result case Ok()) {
-      _employees.removeWhere((e) => e.id == employeeId);
+      _employees.removeWhere((e) => e.userId == employee.userId);
       notifyListeners();
       return const Result.ok(null);
     } else {

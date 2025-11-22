@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 @immutable
 class EmployeeModel {
   // Field remains non-nullable, but initialized with a placeholder if not provided
-  final String id; 
+  final String userId; 
   final String employeeCode; 
   final String email;
   final EmployeeRole role; 
@@ -29,7 +29,7 @@ class EmployeeModel {
     this.middleName,
     this.extraTags = const [],
     this.photoUrl,
-  }) : this.id = id ?? ''; // Use empty string placeholder if null
+  }) : userId = id ?? ''; // Use empty string placeholder if null
 
   String get fullName {
     final middle = (middleName != null && middleName!.isNotEmpty) ? '$middleName.' : '';
@@ -49,7 +49,7 @@ class EmployeeModel {
     String? photoUrl,
   }) {
     return EmployeeModel(
-      id: id ?? this.id,
+      id: id ?? userId,
       employeeCode: employeeCode ?? this.employeeCode,
       email: email ?? this.email,
       role: role ?? this.role,
@@ -74,11 +74,9 @@ class EmployeeModel {
       'role': role.name, 
       'photo_url': photoUrl,
     };
-    if (id.isNotEmpty) {
-      map['id'] = id;
+    if (userId.isNotEmpty) {
+      map['id'] = userId;
     }
-
-    print(role.name);
     return map;
   }
 

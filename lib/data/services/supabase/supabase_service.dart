@@ -218,8 +218,7 @@ class SupabaseService {
   }
 
   // Upload employee photos
-  Future<String> uploadEmployeePhoto(String path, Uint8List fileBytes) async {
-    final fileName = 'employee-photos/$path'; 
+  Future<String> uploadEmployeePhoto(String fileName, Uint8List fileBytes) async {
     
     // Upload the file
     final _ = await _client.storage.from('employee-photos').uploadBinary(
@@ -235,6 +234,36 @@ class SupabaseService {
     final String publicUrl = _client.storage.from('employee-photos').getPublicUrl(fileName);
     
     return publicUrl;
+  }
+
+  Future<bool> deleteOldPhoto(String publicUrl) async {
+    try {
+      final uri = Uri.parse(publicUrl);
+
+      final String bucketName = 'employee-photos';
+      
+      final pathSegments = uri.pathSegments;
+      final bucketIndex = pathSegments.indexOf(bucketName);
+      
+      if (bucketIndex == -1) {
+        throw Exception('Invalid Supabase URL: Bucket not found');
+      }
+
+      final String filePath = pathSegments.sublist(bucketIndex + 1).join('/');
+
+      final List<FileObject> result = await _client.storage
+          .from(bucketName)
+          .remove([filePath]); // remove takes a List of strings
+
+      if (result.isEmpty) {
+        return false;
+      } else {
+        return true;
+      }
+
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<String?> getSignedEmployeePhotoUrl(String? path) async {
