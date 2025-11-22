@@ -30,7 +30,12 @@ class AuthRepository extends AbstractAuthRepository {
   }
 
   // --- Session Listener Implementation ---
-  void _startAuthStatusListener() {
+  void _startAuthStatusListener() async {
+    if (SupabaseService.auth.currentUser != null) {
+      _authStateController.add(AuthStatus.signedIn);
+      _currentUser = await getAuthenticatedUserData();
+    }
+
     SupabaseService.auth.onAuthStateChange.listen((data) async {
       final event = data.event;
 

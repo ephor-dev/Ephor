@@ -18,4 +18,5 @@ abstract interface class AbstractEmployeeRepository {
   Future<Result<EmployeeModel?>> getEmployeeByCode(String code);
 
   Future<Result<String>> uploadEmployeePhoto(XFile file);
+  Future<Result<String>> deleteOldPhoto(String path);
 }

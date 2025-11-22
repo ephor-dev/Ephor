@@ -174,6 +174,14 @@ class EditEmployeeViewModel extends ChangeNotifier {
     }
 
     final EmployeeModel employeeToSave = _createEmployeeModel(params, photoUrl);
+
+    if (photoUrl != null && _targetUser?.photoUrl != null && photoUrl != _targetUser?.photoUrl) {
+      var deleteResult = await deleteOldPhoto(_targetUser?.photoUrl);
+
+      if (deleteResult case Error(: final error)) {
+        return Result.error(error);
+      }
+    }
     
     try {
       final result = await _employeeRepository.editEmployee(employeeToSave);
@@ -200,8 +208,6 @@ class EditEmployeeViewModel extends ChangeNotifier {
       lastName: params.lastName.isEmpty ? _targetUser?.lastName : params.lastName,
       firstName: params.firstName.isEmpty ? _targetUser?.firstName : params.firstName,
       middleName: params.middleName.isEmpty ? _targetUser?.middleName : params.middleName,
-      
-      // CHANGED: Just use existing email. No logic needed from params.
       email: existingEmail,
       
       role: params.employeeRole,
@@ -213,5 +219,15 @@ class EditEmployeeViewModel extends ChangeNotifier {
     );
 
     return newModel!;
+  }
+
+  Future<Result> deleteOldPhoto(String? oldPhotoUrl) async {
+    try {
+      final result = await _employeeRepository.deleteOldPhoto(oldPhotoUrl!);
+      return result;
+    } catch (e) {
+      debugPrint('Unexpected error in VM command: $e');
+      return Result.error(CustomMessageException('Employee DB record failed to edit: ${e.toString()}'));
+    }
   }
 }
