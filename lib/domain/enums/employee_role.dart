@@ -1,6 +1,6 @@
 enum EmployeeRole {
-  supervisor,
   humanResource,
+  supervisor,
   personnel,
   faculty,
   jobOrder,

@@ -22,6 +22,8 @@ class EmployeeListSubView extends StatefulWidget {
 }
 
 class _EmployeeListSubViewState extends State<EmployeeListSubView> {
+  String sortMethodKey = 'name_ascending';
+
   @override
   void initState() {
     super.initState();
@@ -58,21 +60,51 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
       value: widget.viewModel,
       child: Consumer<EmployeeListViewModel>(
         builder: (context, viewModel, child) {
-          final bool canAddUsers = viewModel.currentUserRole == EmployeeRole.humanResource;
+          final bool isUserHR = viewModel.currentUser?.role == EmployeeRole.humanResource;
+          final String? department = viewModel.currentUser?.department;
 
           return Scaffold(
             appBar: AppBar(
               title: Text(
-                'Employees',
+                isUserHR ? 'Employees' : department != null ? '$department Employees' : 'Employees',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               actions: [
-                canAddUsers
+                isUserHR
                 ? IconButton(
                     icon: const Icon(Icons.person_add),
                     onPressed: () => context.go(Routes.getAddEmployeePath()), 
                 )
                 : const SizedBox.shrink(),
+                PopupMenuButton<String>(
+                  offset: const Offset(0, 50),
+                  // color: const Color(0xFFF7F7F7),
+                  child: Icon(Icons.sort),
+                  // Menu Items 
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    const PopupMenuItem<String>(
+                      value: 'name_ascending',
+                      child: Row(children: [Icon(Icons.arrow_upward, color: Colors.black87), SizedBox(width: 8), Text('Names (Ascending)')]),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'name_descending',
+                      child: Row(children: [Icon(Icons.arrow_downward, color: Colors.black87), SizedBox(width: 8), Text('Names (Descending)')]),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'role_ascending',
+                      child: Row(children: [Icon(Icons.keyboard_arrow_up, color: Colors.black87), SizedBox(width: 8), Text('Roles (Ascending)')]),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'role_descending',
+                      child: Row(children: [Icon(Icons.keyboard_arrow_down, color: Colors.black87), SizedBox(width: 8), Text('Roles (Descending)')]),
+                    ),
+                  ],
+                  onSelected: (String result) {
+                    setState(() {
+                      sortMethodKey = result;
+                    });
+                  },
+                ),
                 IconButton(
                   icon: const Icon(Icons.refresh),
                   onPressed: viewModel.isLoading ? null : () => viewModel.loadEmployees.execute(),
@@ -115,13 +147,49 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
       }
     });
 
-    final bool canEditUsers = viewModel.currentUserRole == EmployeeRole.humanResource;
+    final bool canEditUsers = viewModel.currentUser?.role == EmployeeRole.humanResource;
+    List<EmployeeModel> employeeList = viewModel.employees;
+
+    switch(sortMethodKey) {
+      case 'name_ascending':
+        employeeList.sort((a, b) => 
+          a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase()));
+        break;
+      case 'name_descending':
+        employeeList.sort((a, b) => 
+          b.fullName.toLowerCase().compareTo(a.fullName.toLowerCase()));
+        break;
+      case 'role_ascending':
+        employeeList.sort((a, b) {
+          int roleComparison = a.role.index.compareTo(b.role.index);
+          if (roleComparison != 0) return roleComparison;
+          
+          // Tie-breaker: If roles are same, sort by Name A-Z
+          return a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase());
+        });
+        break;
+      case 'role_descending':
+        employeeList.sort((a, b) {
+          int roleComparison = b.role.index.compareTo(a.role.index);
+          if (roleComparison != 0) return roleComparison;
+          
+          // Tie-breaker: If roles are same, still sort by Name A-Z (easier to read)
+          return a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase());
+        });
+        break;
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
-      itemCount: viewModel.employees.length,
+      itemCount: employeeList.length,
       itemBuilder: (context, index) {
-        final employee = viewModel.employees[index];
+        final employee = employeeList[index];
+
+        if (viewModel.currentUser?.role == EmployeeRole.supervisor && (
+          employee.role == EmployeeRole.humanResource 
+          || employee.department != viewModel.currentUser?.department)) {
+          return const SizedBox.shrink();
+        }
 
         // 1. Define the Fallback Avatar (Used if URL is invalid OR if network fails)
         final Widget fallbackAvatar = CircleAvatar(

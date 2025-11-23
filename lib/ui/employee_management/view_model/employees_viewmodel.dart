@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:ephor/data/repositories/auth/abstract_auth_repository.dart';
 import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
-import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/command.dart';
 import 'package:ephor/utils/results.dart';
@@ -12,8 +11,8 @@ class EmployeeListViewModel extends ChangeNotifier {
   final AbstractEmployeeRepository _employeeRepository;
   final AbstractAuthRepository _authRepository;
 
-  EmployeeRole? _currentUserRole;
-  EmployeeRole? get currentUserRole => _currentUserRole;
+  EmployeeModel? _currentUser;
+  EmployeeModel? get currentUser => _currentUser;
 
   StreamSubscription? _authSubscription;
   
@@ -49,11 +48,9 @@ class EmployeeListViewModel extends ChangeNotifier {
   void _getCurrentUser() {
     final currentUser = _authRepository.currentUser;
     if (currentUser == null) {
-      _currentUserRole = null;
-    } else if (currentUser.role == EmployeeRole.humanResource) {
-      _currentUserRole = EmployeeRole.humanResource;
+      _currentUser = null;
     } else {
-      _currentUserRole = currentUser.role;
+      _currentUser = currentUser;
     }
     notifyListeners();
   }

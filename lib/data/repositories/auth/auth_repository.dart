@@ -43,7 +43,6 @@ class AuthRepository extends AbstractAuthRepository {
         isPasswordRecoveryMode = true;
         _authStateController.add(AuthStatus.signedIn); 
       } else if (event == AuthChangeEvent.signedIn) {
-        // 2. Standard Login
         _authStateController.add(AuthStatus.signedIn);
         _currentUser = await getAuthenticatedUserData();
       } else if (event == AuthChangeEvent.signedOut) {
