@@ -207,6 +207,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
         return Card(
           elevation: 1,
           margin: const EdgeInsets.symmetric(vertical: 8.0),
+          color: Theme.of(context).colorScheme.surfaceContainer,
           child: GestureDetector(
             child: ListTile(
               leading: hasValidUrl
