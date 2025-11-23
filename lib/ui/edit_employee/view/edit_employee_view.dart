@@ -37,7 +37,6 @@ class _EditEmployeeViewState extends State<EditEmployeeView> {
   @override
   void dispose() {
     widget.viewModel.editEmployee.removeListener(_onCommandResult);
-    widget.viewModel.dispose();
     super.dispose();
   }
 

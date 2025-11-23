@@ -299,7 +299,7 @@ class _LoginViewState extends State<LoginView> {
       child: Column(
         // Center for mobile, start for desktop (where it's on the right side)
         crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: formContent,
       ),
     );
@@ -346,40 +346,26 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage("assets/images/school.jpg"),
             fit: BoxFit.fill,
-            opacity: 0.4,
+            opacity: isMobile ? 0.1 : 0.4,
             colorFilter: ColorFilter.mode(
-              Theme.of(context).colorScheme.primary.withAlpha(80), 
+              Theme.of(context).colorScheme.primary.withAlpha(
+                isMobile ? 20 : 80
+              ), 
               BlendMode.color
             )
           )
-          // gradient: LinearGradient(
-          //   begin: AlignmentGeometry.bottomLeft,
-          //   end: AlignmentGeometry.topRight,
-          //   colors: [
-          //     Color(0xffac575d),
-          //     Color(0xffC68380),
-          //     Color(0xffE0B0A4),
-          //     Color(0xffC68380),
-          //     Color(0xffac575d),
-          //   ],
-          //   stops: [
-          //     0.00,
-          //     0.08,
-          //     0.50,
-          //     0.75,
-          //     1.00
-          //   ]
-          // ),
         ),
         // color: Theme.of(context).colorScheme.surface,
         child: Responsive(
-          mobile: _buildLoginWrapper(
+          mobile: Padding(
+            padding: const EdgeInsets.all(16.0),
             child: _buildLoginForm(),
           ),
           desktop: _buildLoginWrapper(

@@ -267,16 +267,17 @@ class _DashboardViewState extends State<DashboardView> {
                 children: [
                   Image.asset('assets/images/logo.png', height: 32, width: 32),
                   const SizedBox(width: 8.0),
-                  const Text('EPHOR', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18.0)),
+                  if (!isMobile) Text('EPHOR', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18.0)),
                 ],
               ),
-              
-              const SizedBox(width: 48.0),
               
               // Search Bar: Takes up available space
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  padding: EdgeInsets.symmetric(
+                    vertical: 4.0, 
+                    horizontal: isMobile ? 16 : 48
+                  ),
                   child: ConstrainedBox(
                     // Max width ensures search bar doesn't look too wide on huge screens
                     constraints: const BoxConstraints(maxWidth: 500), 
@@ -298,15 +299,12 @@ class _DashboardViewState extends State<DashboardView> {
                 ),
               ),
               
-              const SizedBox(width: 48.0),
-              
               // Action Buttons (Info, Notifications, Profile)
               Row(
                 // Use responsive checks here if you wanted to hide some buttons on mobile
                 children: [
                   // Use Responsive.isMobile to decide if to show or not
-                  if (!isMobile || Responsive.isTablet(context))
-                    IconButton(icon: const Icon(Icons.info_outline, color: Colors.black, size: 25), onPressed: _showInfoPlaceholder),
+                  IconButton(icon: const Icon(Icons.info_outline, color: Colors.black, size: 25), onPressed: _showInfoPlaceholder),
                   
                   IconButton(icon: const Icon(Icons.notifications_none, color: Colors.black, size: 25), onPressed: _showNotificationsPlaceholder),
                   
