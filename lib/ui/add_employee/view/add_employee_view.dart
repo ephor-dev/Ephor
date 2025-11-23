@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ephor/ui/add_employee/view_model/add_employee_viewmodel.dart';
 import 'package:ephor/utils/responsiveness.dart'; 
+import 'package:flutter/services.dart';
 
 // 1. Root widget for showing the form and setting up the ViewModel scope
 class AddEmployeeView extends StatefulWidget {
@@ -769,7 +770,7 @@ class _NameField extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        TextFormField(controller: controller, style: const TextStyle(fontWeight: FontWeight.w300, color: Colors.black), decoration: decoration.copyWith(hintText: placeholder)),
+        TextFormField(controller: controller,style: const TextStyle(fontWeight: FontWeight.w300, color: Colors.black),decoration: decoration.copyWith(hintText: placeholder),keyboardType: TextInputType.name,textCapitalization: TextCapitalization.words,inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.allow(RegExp(r"[a-zA-ZñÑ.\- ]")),],),
       ],
     );
   }
