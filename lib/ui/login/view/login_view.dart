@@ -318,8 +318,6 @@ class _LoginViewState extends State<LoginView> {
       maxWidth: 946,
     );
 
-    Color centerColor = Theme.of(context).colorScheme.surface;
-
     return Center(
       child: SingleChildScrollView(
         child: Center(
@@ -329,7 +327,7 @@ class _LoginViewState extends State<LoginView> {
             margin: const EdgeInsets.symmetric(vertical: 32.0),
             padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 32.0),
             decoration: BoxDecoration(
-              color: centerColor.withAlpha(127),
+              color: Colors.white.withAlpha(224),
               borderRadius: BorderRadius.circular(45),
               boxShadow: const [
                 BoxShadow(
@@ -351,25 +349,35 @@ class _LoginViewState extends State<LoginView> {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: AlignmentGeometry.bottomLeft,
-            end: AlignmentGeometry.topRight,
-            colors: [
-              Color(0xffac575d),
-              Color(0xffC68380),
-              Color(0xffE0B0A4),
-              Color(0xffC68380),
-              Color(0xffac575d),
-            ],
-            stops: [
-              0.00,
-              0.08,
-              0.50,
-              0.75,
-              1.00
-            ]
-          ),
+          image: DecorationImage(
+            image: AssetImage("assets/images/school.jpg"),
+            fit: BoxFit.fill,
+            opacity: 0.4,
+            colorFilter: ColorFilter.mode(
+              Theme.of(context).colorScheme.primary.withAlpha(80), 
+              BlendMode.color
+            )
+          )
+          // gradient: LinearGradient(
+          //   begin: AlignmentGeometry.bottomLeft,
+          //   end: AlignmentGeometry.topRight,
+          //   colors: [
+          //     Color(0xffac575d),
+          //     Color(0xffC68380),
+          //     Color(0xffE0B0A4),
+          //     Color(0xffC68380),
+          //     Color(0xffac575d),
+          //   ],
+          //   stops: [
+          //     0.00,
+          //     0.08,
+          //     0.50,
+          //     0.75,
+          //     1.00
+          //   ]
+          // ),
         ),
+        // color: Theme.of(context).colorScheme.surface,
         child: Responsive(
           mobile: _buildLoginWrapper(
             child: _buildLoginForm(),
