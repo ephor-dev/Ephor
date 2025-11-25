@@ -1,4 +1,6 @@
+import 'package:ephor/routing/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CatnaForm3View extends StatefulWidget {
   const CatnaForm3View({super.key});
@@ -752,7 +754,9 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
 
                         const SizedBox(width: buttonSpacing),
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            context.go(Routes.dashboard);
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFDE3535),
                             foregroundColor: Colors.white,

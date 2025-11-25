@@ -1,5 +1,6 @@
-import 'package:ephor/ui/catna_form/catna_form2_view.dart';
+import 'package:ephor/routing/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CatnaForm1View extends StatefulWidget {
   const CatnaForm1View({super.key});
@@ -536,12 +537,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                     alignment: Alignment.centerLeft,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const CatnaForm2View(),
-                          ),
-                        );
+                        context.go(Routes.getCATNAForm2Path());
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
