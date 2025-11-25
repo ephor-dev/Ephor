@@ -1,4 +1,4 @@
-name: ephor_2169841543
+name: ephor
 description: A new Flutter project.
 publish_to: none
 version: 1.0.0+1
@@ -8,11 +8,20 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.6
-  ephor_2169841543_f2f:
-    git: https://f2f.bostonux.com/packages/ephor_2169841543_f2f
+  flutter_dotenv: ^5.1.0
+  supabase_flutter: ^2.5.0
+  provider: ^6.1.2
+  go_router: ^14.2.0
+  google_fonts: ^6.2.1
+  shared_preferences: ^2.2.3
+  image_picker: ^1.1.2
+  cached_network_image: ^3.3.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
 flutter:
   uses-material-design: true
+  assets:
+    - .env
+    - assets/images/
