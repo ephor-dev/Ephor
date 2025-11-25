@@ -12,6 +12,7 @@ abstract final class Routes {
   static const dashboardEmployeeList = 'employee-list';
   static const dashboardAddEmployee = 'add';
   static const dashboardEditEmployee = 'edit';
+  static const dashboardIAForm = 'impact-assessment-form';
 
   static String getOverviewPath() => '$dashboard/$dashboardOverview';
   static String getSchedulesPath() => '$dashboard/$dashboardSchedules';
@@ -21,4 +22,5 @@ abstract final class Routes {
   static String getEmployeeListPath() => '$dashboard/$dashboardEmployeeList';
   static String getAddEmployeePath() => '$dashboard/$dashboardEmployeeList/$dashboardAddEmployee';
   static String getEditEmployeePath() => '$dashboard/$dashboardEmployeeList/$dashboardEditEmployee';
+  static String getImpactAssessmentPath() => '$dashboard/$dashboardIAForm';
 }
