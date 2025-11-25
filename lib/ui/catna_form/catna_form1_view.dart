@@ -1,14 +1,14 @@
 import 'package:ephor/ui/catna_form/catna_form2_view.dart';
 import 'package:flutter/material.dart';
 
-class CatnaForm1_View extends StatefulWidget {
-  const CatnaForm1_View({super.key});
+class CatnaForm1View extends StatefulWidget {
+  const CatnaForm1View({super.key});
 
   @override
-  State<CatnaForm1_View> createState() => _CatnaForm1_ViewState();
+  State<CatnaForm1View> createState() => _CatnaForm1ViewState();
 }
 
-class _CatnaForm1_ViewState extends State<CatnaForm1_View> {
+class _CatnaForm1ViewState extends State<CatnaForm1View> {
   DateTime? _dateStarted;
   final TextEditingController _dateStartedController = TextEditingController();
 
@@ -84,22 +84,21 @@ class _CatnaForm1_ViewState extends State<CatnaForm1_View> {
     const double cornerRadius = 8;
     const double panelSpacing = 8;
     const double fontsizeSize1 = 14;
-    const double fontsizeSize2 = 8;
     const double spacing1 = 16;
     const double spacing2 = 8;
     const double spacing3 = 4;
-    final List<String> _designationChoices = [
+    final List<String> designationChoices = [
       'Software Engineer',
       'Product Manager',
       'UX Designer',
       'Data Scientist',
     ];
-    final List<String> _officeChoices = [
+    final List<String> officeChoices = [
       'College of Engineering (CoE)',
       'College of Informatics and Computing Sciences (CICS)',
     ];
-    final List<String> _operatingUnitChoices = ['Alangilan', 'Pablo Borbon'];
-    final List<String> _purposeChoices = ['Annual Review', 'Random Assessment'];
+    final List<String> operatingUnitChoices = ['Alangilan', 'Pablo Borbon'];
+    final List<String> purposeChoices = ['Annual Review', 'Random Assessment'];
     return Scaffold(
       backgroundColor: Colors.grey,
       body: SingleChildScrollView(
@@ -246,11 +245,11 @@ class _CatnaForm1_ViewState extends State<CatnaForm1_View> {
                                 child: Column(
                                   children: [
                                     DropdownButtonFormField<String>(
-                                      value: _selectedDesignation,
+                                      initialValue: _selectedDesignation,
                                       isExpanded: true,
                                       selectedItemBuilder:
                                           (BuildContext context) {
-                                            return _designationChoices
+                                            return designationChoices
                                                 .map<Widget>((String value) {
                                                   return Text(
                                                     value,
@@ -261,7 +260,7 @@ class _CatnaForm1_ViewState extends State<CatnaForm1_View> {
                                                 })
                                                 .toList();
                                           },
-                                      items: _designationChoices.map((
+                                      items: designationChoices.map((
                                         String value,
                                       ) {
                                         return DropdownMenuItem<String>(
@@ -281,11 +280,11 @@ class _CatnaForm1_ViewState extends State<CatnaForm1_View> {
                                     ),
                                     const SizedBox(height: spacing1),
                                     DropdownButtonFormField<String>(
-                                      value: _selectedOffice,
+                                      initialValue: _selectedOffice,
                                       isExpanded: true,
                                       selectedItemBuilder:
                                           (BuildContext context) {
-                                            return _officeChoices.map<Widget>((
+                                            return officeChoices.map<Widget>((
                                               String value,
                                             ) {
                                               return Text(
@@ -295,7 +294,7 @@ class _CatnaForm1_ViewState extends State<CatnaForm1_View> {
                                               );
                                             }).toList();
                                           },
-                                      items: _officeChoices.map((String value) {
+                                      items: officeChoices.map((String value) {
                                         return DropdownMenuItem<String>(
                                           value: value,
                                           child: Text(value),
@@ -393,11 +392,11 @@ class _CatnaForm1_ViewState extends State<CatnaForm1_View> {
                                   children: [
                                     const SizedBox(height: spacing2),
                                     DropdownButtonFormField<String>(
-                                      value: _selectedOperatingUnit,
+                                      initialValue: _selectedOperatingUnit,
                                       isExpanded: true,
                                       selectedItemBuilder:
                                           (BuildContext context) {
-                                            return _operatingUnitChoices
+                                            return operatingUnitChoices
                                                 .map<Widget>((String value) {
                                                   return Text(
                                                     value,
@@ -408,7 +407,7 @@ class _CatnaForm1_ViewState extends State<CatnaForm1_View> {
                                                 })
                                                 .toList();
                                           },
-                                      items: _operatingUnitChoices.map((
+                                      items: operatingUnitChoices.map((
                                         String value,
                                       ) {
                                         return DropdownMenuItem<String>(
@@ -488,10 +487,10 @@ class _CatnaForm1_ViewState extends State<CatnaForm1_View> {
                               ),
                               const SizedBox(height: spacing3),
                               DropdownButtonFormField<String>(
-                                value: _selectedPurpose,
+                                initialValue: _selectedPurpose,
                                 isExpanded: true,
                                 selectedItemBuilder: (BuildContext context) {
-                                  return _purposeChoices.map<Widget>((
+                                  return purposeChoices.map<Widget>((
                                     String value,
                                   ) {
                                     return Text(
@@ -501,7 +500,7 @@ class _CatnaForm1_ViewState extends State<CatnaForm1_View> {
                                     );
                                   }).toList();
                                 },
-                                items: _purposeChoices.map((String value) {
+                                items: purposeChoices.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
                                     child: Text(value),
@@ -540,7 +539,7 @@ class _CatnaForm1_ViewState extends State<CatnaForm1_View> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const CatnaForm2_View(),
+                            builder: (context) => const CatnaForm2View(),
                           ),
                         );
                       },

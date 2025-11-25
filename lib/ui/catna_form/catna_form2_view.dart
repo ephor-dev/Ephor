@@ -1,17 +1,16 @@
-import 'package:ephor/ui/catna_form/catna_form1_view.dart';
 import 'package:ephor/ui/catna_form/catna_form3_view.dart';
 import 'package:flutter/material.dart';
 
-class CatnaForm2_View extends StatefulWidget {
-  const CatnaForm2_View({super.key});
+class CatnaForm2View extends StatefulWidget {
+  const CatnaForm2View({super.key});
 
   @override
-  State<CatnaForm2_View> createState() => _CatnaForm2_ViewState();
+  State<CatnaForm2View> createState() => _CatnaForm2ViewState();
 }
 
-class _CatnaForm2_ViewState extends State<CatnaForm2_View> {
+class _CatnaForm2ViewState extends State<CatnaForm2View> {
   // 1. Declare state map without 'final' keyword
-  Map<String, int?> _assessmentResponse = {};
+  Map<String, int?> assessmentResponse = {};
 
   // 2. Define data lists as instance variables (can be final as they are constant data)
   final List<String> _knowledgeItems = [
@@ -53,7 +52,7 @@ class _CatnaForm2_ViewState extends State<CatnaForm2_View> {
     super.initState();
     final allItems = [..._knowledgeItems, ..._skillsItems, ..._attitudeItems];
     for (var item in allItems) {
-      _assessmentResponse[item] = null;
+      assessmentResponse[item] = null;
     }
   }
 
@@ -62,20 +61,19 @@ class _CatnaForm2_ViewState extends State<CatnaForm2_View> {
     const double cornerRadius = 8;
     const double panelSpacing = 8;
     const double fontsizeSize1 = 14;
-    const double fontsizeSize2 = 8;
     const double spacing1 = 16;
     const double spacing2 = 8;
     const double spacing3 = 4;
     const double buttonSpacing = 24;
 
-    final Map<String, int> _assessmentRatings = const {
+    final Map<String, int> assessmentRatings = const {
       '4(A)': 4,
       '3(P)': 3,
       '2(B)': 2,
       '1(N/L)': 1,
     };
 
-    List<Widget> _buildAssessmentItems(List<String> items) {
+    List<Widget> buildAssessmentItems(List<String> items) {
       return items.map((item) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,7 +92,7 @@ class _CatnaForm2_ViewState extends State<CatnaForm2_View> {
                 Expanded(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: _assessmentRatings.entries.map((entry) {
+                    children: assessmentRatings.entries.map((entry) {
                       return Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -102,17 +100,19 @@ class _CatnaForm2_ViewState extends State<CatnaForm2_View> {
                             entry.key,
                             style: TextStyle(fontSize: fontsizeSize1),
                           ),
-                          Radio<int>(
-                            value: entry.value,
-                            groupValue: _assessmentResponse[item],
+                          RadioGroup(
+                            groupValue: assessmentResponse[item],
                             onChanged: (int? value) {
                               setState(() {
-                                _assessmentResponse[item] = value;
+                                assessmentResponse[item] = value;
                               });
                             },
-                            activeColor: const Color(0xFFDE3535),
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
+                            child: Radio<int>(
+                              value: entry.value,
+                              activeColor: const Color(0xFFDE3535),
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                            ),
                           ),
                         ],
                       );
@@ -252,7 +252,7 @@ class _CatnaForm2_ViewState extends State<CatnaForm2_View> {
                           ),
                         ),
                         const SizedBox(height: spacing2),
-                        ..._buildAssessmentItems(_knowledgeItems),
+                        ...buildAssessmentItems(_knowledgeItems),
                         Container(
                           height: 4,
                           decoration: const BoxDecoration(
@@ -287,7 +287,7 @@ class _CatnaForm2_ViewState extends State<CatnaForm2_View> {
                           ),
                         ),
                         const SizedBox(height: spacing2),
-                        ..._buildAssessmentItems(_skillsItems),
+                        ...buildAssessmentItems(_skillsItems),
                         Container(
                           height: 4,
                           decoration: const BoxDecoration(
@@ -321,7 +321,7 @@ class _CatnaForm2_ViewState extends State<CatnaForm2_View> {
                           ),
                         ),
                         const SizedBox(height: spacing2),
-                        ..._buildAssessmentItems(_attitudeItems),
+                        ...buildAssessmentItems(_attitudeItems),
                       ],
                     ),
                   ),
@@ -365,7 +365,7 @@ class _CatnaForm2_ViewState extends State<CatnaForm2_View> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    const CatnaForm3_View(),
+                                    const CatnaForm3View(),
                               ),
                             );
                           },
