@@ -15,7 +15,6 @@ import 'package:ephor/ui/edit_employee/view/edit_employee_view.dart';
 import 'package:ephor/ui/edit_employee/view_model/edit_employee_viewmodel.dart';
 import 'package:ephor/ui/employee_management/view/employees_view.dart';
 import 'package:ephor/ui/employee_management/view_model/employees_viewmodel.dart';
-import 'package:ephor/ui/impact_assessment_form/view/impact_assessment_form_view.dart';
 import 'package:ephor/ui/password_update/forgot_password/view/forgot_password_view.dart';
 import 'package:ephor/ui/password_update/forgot_password/view_model/forgot_password_viewmodel.dart';
 import 'package:ephor/ui/password_update/update_password/view/update_password_view.dart';
@@ -28,7 +27,9 @@ import 'package:ephor/data/repositories/auth/auth_repository.dart';
 import 'package:ephor/ui/login/view_model/login_viewmodel.dart';
 import 'package:ephor/ui/login/view/login_view.dart';
 import 'package:ephor/ui/dashboard/view/dashboard_view.dart';
+import 'package:ephor/ui/dashboard/view/dashboard_view.dart';
 import 'routes.dart';
+import 'package:ephor/ui/catna/catna_form_creator_view.dart';
 
 GoRouter router(AuthRepository authRepository) => GoRouter(
   initialLocation: Routes.dashboard,
@@ -67,6 +68,10 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
         );
       },
     ),
+    GoRoute(
+      path: Routes.catnaFormCreator,
+      builder: (context, state) => const CatnaFormCreatorView(),
+    ),
     ShellRoute(
       builder: (BuildContext context, GoRouterState state, Widget child) {
         return DashboardView(
@@ -84,10 +89,6 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           builder: (context, state) => OverviewSubView(
             viewModel: OverviewViewModel(), 
           ),
-        ),
-        GoRoute(
-          path: Routes.getImpactAssessmentPath(),
-          builder: (context, state) => ImpactAssessmentForm(),
         ),
         GoRoute(
           path: Routes.getEmployeeListPath(),
