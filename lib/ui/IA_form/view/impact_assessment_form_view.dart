@@ -1,12 +1,5 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MaterialApp(
-    home: ImpactAssessmentForm(),
-    debugShowCheckedModeBanner: false,
-  ));
-}
-
 class ImpactAssessmentForm extends StatefulWidget {
   const ImpactAssessmentForm({super.key});
 
@@ -84,7 +77,7 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
         borderRadius: BorderRadius.circular(4.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha(13),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -129,7 +122,7 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
         borderRadius: BorderRadius.circular(4.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha(13),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -178,7 +171,7 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
         borderRadius: BorderRadius.circular(4.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha(13),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -199,7 +192,7 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
         borderRadius: BorderRadius.circular(4.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha(13),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -331,7 +324,7 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
           itemHeight: 48.0,
           menuMaxHeight: 300,
           alignment: AlignmentDirectional.centerStart,
-          value: _selectedInterventionType,
+          initialValue: _selectedInterventionType,
           isExpanded: true,
           icon: const Icon(Icons.arrow_drop_down),
           iconSize: 28,
@@ -361,11 +354,13 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
           SizedBox(
             width: 24,
             height: 24,
-            child: Radio<int>(
-              value: value,
+            child: RadioGroup(
               groupValue: groupValue,
               onChanged: onChanged,
-              activeColor: const Color(0xFF8F3237),
+              child: Radio<int>(
+                value: value,
+                activeColor: const Color(0xFF8F3237),
+              ),
             ),
           ),
           const SizedBox(width: 8),
