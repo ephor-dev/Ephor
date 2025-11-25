@@ -736,19 +736,15 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                             Navigator.pop(context);
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFFDE3535),
+                            backgroundColor: Theme.of(context).colorScheme.surface,
+                            foregroundColor: Theme.of(context).colorScheme.primary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(cornerRadius),
-                              side: const BorderSide(
-                                color: Colors.black,
-                                width: 1,
-                              ),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Back',
-                            style: TextStyle(color: Color(0xFFDE3535)),
+                            style: TextStyle(color: Theme.of(context).colorScheme.primary),
                           ),
                         ),
 
@@ -758,19 +754,15 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                             context.go(Routes.dashboard);
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFDE3535),
+                            backgroundColor: Theme.of(context).colorScheme.primary,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(cornerRadius),
-                              side: const BorderSide(
-                                color: Colors.black,
-                                width: 1,
-                              ),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Submit',
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
                           ),
                         ),
                       ],

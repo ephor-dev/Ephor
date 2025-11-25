@@ -1,6 +1,8 @@
 import 'package:ephor/routing/routes.dart';
+import 'package:ephor/ui/core/ui/date_picker/date_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
 class CatnaForm1View extends StatefulWidget {
   const CatnaForm1View({super.key});
@@ -49,25 +51,12 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
     required Function(DateTime) setDate,
     required TextEditingController controller,
   }) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: currentDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2030),
-      builder: (BuildContext context, Widget? child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            primaryColor: const Color.fromARGB(255, 151, 15, 15),
-            colorScheme: const ColorScheme.light(
-              primary: Color.fromARGB(255, 151, 15, 15),
-            ),
-            buttonTheme: const ButtonThemeData(
-              textTheme: ButtonTextTheme.primary,
-            ),
-          ),
-          child: child!,
-        );
-      },
+    final DateTime? picked = await showEphorDatePicker(
+      context, 
+      currentDate ?? DateTime.now(), 
+      DateTime(2000), 
+      DateTime(2030), 
+      OmniDateTimePickerType.date
     );
 
     if (picked != null && picked != currentDate) {
@@ -112,8 +101,8 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                 child: Container(
                   height: 20,
                   width: 640,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
                     gradient: LinearGradient(
                       begin: Alignment.centerLeft,
                       end: Alignment.bottomRight,
@@ -130,12 +119,12 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                 child: Container(
                   height: 160,
                   width: 640,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(cornerRadius),
                       bottomRight: Radius.circular(cornerRadius),
                     ),
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                   ),
                   child: const Center(
                     child: Text(
@@ -156,11 +145,11 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                   height: 40,
                   width: 640,
                   alignment: Alignment.centerLeft,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(
                       Radius.circular(cornerRadius),
                     ),
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -180,11 +169,11 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                 child: Container(
                   width: 640,
                   alignment: Alignment.centerLeft,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(
                       Radius.circular(cornerRadius),
                     ),
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -540,11 +529,10 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                         context.go(Routes.getCATNAForm2Path());
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFFDE3535),
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        foregroundColor: Theme.of(context).colorScheme.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(cornerRadius),
-                          side: const BorderSide(color: Colors.black, width: 1),
                         ),
                       ),
                       child: const Text(

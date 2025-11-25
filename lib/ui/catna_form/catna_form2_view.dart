@@ -343,19 +343,15 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                             Navigator.pop(context);
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFFDE3535),
+                            backgroundColor: Theme.of(context).colorScheme.surface,
+                            foregroundColor: Theme.of(context).colorScheme.primary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(cornerRadius),
-                              side: const BorderSide(
-                                color: Colors.black,
-                                width: 1,
-                              ),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Back',
-                            style: TextStyle(color: Color(0xFFDE3535)),
+                            style: TextStyle(color: Theme.of(context).colorScheme.primary),
                           ),
                         ),
 
@@ -365,19 +361,15 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                             context.go(Routes.getCATNAForm3Path());
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFFDE3535),
+                            backgroundColor: Theme.of(context).colorScheme.surface,
+                            foregroundColor: Theme.of(context).colorScheme.primary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(cornerRadius),
-                              side: const BorderSide(
-                                color: Colors.black,
-                                width: 1,
-                              ),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Next',
-                            style: TextStyle(color: Color(0xFFDE3535)),
+                            style: TextStyle(color: Theme.of(context).colorScheme.primary),
                           ),
                         ),
                       ],
