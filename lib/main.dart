@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'ui/core/themes/theme.dart';
 import 'routing/router.dart';
+import 'package:ephor/ui/catna/catna_form_creator_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
