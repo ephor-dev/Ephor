@@ -1,15 +1,13 @@
-import 'package:ephor/routing/routes.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-class CatnaForm3View extends StatefulWidget {
-  const CatnaForm3View({super.key});
+class CatnaForm3_View extends StatefulWidget {
+  const CatnaForm3_View({super.key});
 
   @override
-  State<CatnaForm3View> createState() => _CatnaForm3ViewState();
+  State<CatnaForm3_View> createState() => _CatnaForm3_ViewState();
 }
 
-class _CatnaForm3ViewState extends State<CatnaForm3View> {
+class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
   final List<bool> _knowledgeCheckStates = List.generate(4, (index) => false);
   final List<bool> _skillCheckStates = List.generate(4, (index) => false);
   final List<bool> _attitudeCheckStates = List.generate(4, (index) => false);
@@ -17,6 +15,12 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
   final List<bool> _categoryCheckStatesQ2 = List.generate(4, (index) => false);
   final List<bool> _categoryCheckStatesQ3 = List.generate(4, (index) => false);
   final List<bool> _categoryCheckStatesQ4 = List.generate(4, (index) => false);
+
+  int _selectedYear = DateTime.now().year;
+  final List<int> _years = List<int>.generate(
+    10,
+    (index) => DateTime.now().year - 5 + index,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -28,29 +32,29 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
     const double spacing3 = 4;
     const double buttonSpacing = 24;
 
-    final List<String> knowledgeTrainingItems = [
+    final List<String> _knowledgeTrainingItems = [
       'Needs orientation seminar on content-based knowledge',
       'Needs conceptual training on specialized topics related to academic programs',
       'Needs training on functional know-how relating to administration services',
       'Needs other learning and development intervention (e.g. coaching, counselling, mentoring, job rotation, etc.)',
     ];
-    final List<String> skillTrainingItems = [
+    final List<String> _skillTrainingItems = [
       'Needs practical/work-based skill trainings related to academic programs',
       'Needs practical/work-based skill trainings related to organizational effectiveness (e.g. teamwork, problem-solving, conflict resolution, etc.)',
       'Needs practical/work-based skill training related to effective personal management (e.g. time & stress management, communication, etc.)',
       'Needs other learning and development intervention (e.g. coaching, counselling, mentoring, job rotation, etc.)',
     ];
-    final List<String> attitudeTrainingItems = [
+    final List<String> _attitudeTrainingItems = [
       'Needs conceptual and/or work-based trainings related to further development of attitude and work effectiveness',
       'Needs conceptual and/or work-based trainings related to further development of attitude and work relationship',
       'Needs conceptual and/or work-based trainings related to further development of attitude and customer service',
       'Needs other learning and development intervention (e.g. coaching, counselling, mentoring, job rotation, etc.)',
     ];
-    final List<String> categoryItems = [
+    final List<String> _categoryItems = [
       'Mandatory',
       'Knowledge Based',
       'Skill Based',
-      'Attitudinal Based'
+      'Attitudinal Based',
     ];
 
     return Scaffold(
@@ -206,8 +210,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           ),
                         ),
                         const SizedBox(height: spacing2),
-
-                        ...List.generate(knowledgeTrainingItems.length, (
+                        ...List.generate(_knowledgeTrainingItems.length, (
                           index,
                         ) {
                           return Column(
@@ -224,7 +227,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                                   ),
                                   Expanded(
                                     child: Text(
-                                      knowledgeTrainingItems[index],
+                                      _knowledgeTrainingItems[index],
                                       style: TextStyle(
                                         color: Colors.black,
                                         fontSize: fontsizeSize1,
@@ -238,7 +241,6 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                             ],
                           );
                         }),
-
                         Container(
                           height: 4,
                           decoration: const BoxDecoration(
@@ -251,7 +253,6 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           ),
                         ),
                         const SizedBox(height: spacing2),
-
                         Align(
                           alignment: AlignmentGeometry.center,
                           child: Text(
@@ -276,8 +277,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           ),
                         ),
                         const SizedBox(height: spacing1),
-
-                        ...List.generate(skillTrainingItems.length, (index) {
+                        ...List.generate(_skillTrainingItems.length, (index) {
                           return Column(
                             children: [
                               Row(
@@ -292,7 +292,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                                   ),
                                   Expanded(
                                     child: Text(
-                                      skillTrainingItems[index],
+                                      _skillTrainingItems[index],
                                       style: TextStyle(
                                         color: Colors.black,
                                         fontSize: fontsizeSize1,
@@ -306,7 +306,6 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                             ],
                           );
                         }),
-
                         Container(
                           height: 4,
                           decoration: const BoxDecoration(
@@ -319,7 +318,6 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           ),
                         ),
                         const SizedBox(height: spacing2),
-
                         Align(
                           alignment: AlignmentGeometry.center,
                           child: Text(
@@ -344,7 +342,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           ),
                         ),
                         const SizedBox(height: spacing1),
-                        ...List.generate(attitudeTrainingItems.length, (
+                        ...List.generate(_attitudeTrainingItems.length, (
                           index,
                         ) {
                           return Column(
@@ -361,7 +359,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                                   ),
                                   Expanded(
                                     child: Text(
-                                      attitudeTrainingItems[index],
+                                      _attitudeTrainingItems[index],
                                       style: TextStyle(
                                         color: Colors.black,
                                         fontSize: fontsizeSize1,
@@ -381,7 +379,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                 ),
               ),
               const SizedBox(height: panelSpacing),
-              
+
               Center(
                 child: Container(
                   height: 40,
@@ -406,7 +404,6 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                   ),
                 ),
               ),
-
               const SizedBox(height: panelSpacing),
               Center(
                 child: Container(
@@ -422,6 +419,39 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
+                        const SizedBox(height: spacing2),
+                        Align(
+                          alignment: AlignmentGeometry.centerLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: SizedBox(
+                              width: 160,
+                              child: DropdownButtonFormField<int>(
+                                initialValue: _selectedYear,
+                                decoration: const InputDecoration(
+                                  labelText: 'Timeline Year',
+                                  border: OutlineInputBorder(),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 0,
+                                  ),
+                                ),
+                                items: _years.map((int year) {
+                                  return DropdownMenuItem<int>(
+                                    value: year,
+                                    child: Text(year.toString()),
+                                  );
+                                }).toList(),
+                                onChanged: (int? newValue) {
+                                  setState(() {
+                                    _selectedYear = newValue!;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: spacing2),
                         Align(
                           alignment: AlignmentGeometry.centerLeft,
                           child: Text(
@@ -464,11 +494,10 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                             ),
                           ),
                         ),
-                        // MODIFIED: Replaced Row with Wrap for responsive layout
-                        Wrap( 
-                          spacing: spacing3, // spacing between items horizontally
-                          runSpacing: spacing3, // spacing between lines vertically
-                          children: List.generate(categoryItems.length, (
+                        Wrap(
+                          spacing: spacing3,
+                          runSpacing: spacing3,
+                          children: List.generate(_categoryItems.length, (
                             index,
                           ) {
                             return Row(
@@ -483,7 +512,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                                   },
                                 ),
                                 Text(
-                                  categoryItems[index],
+                                  _categoryItems[index],
                                   style: TextStyle(
                                     color: Colors.black,
                                     fontSize: fontsizeSize1,
@@ -495,7 +524,6 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           }),
                         ),
                         const SizedBox(height: spacing2),
-
                         Align(
                           alignment: AlignmentGeometry.centerLeft,
                           child: Text(
@@ -538,11 +566,10 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                             ),
                           ),
                         ),
-                        // MODIFIED: Replaced Row with Wrap for responsive layout
                         Wrap(
-                          spacing: spacing3, // spacing between items horizontally
-                          runSpacing: spacing3, // spacing between lines vertically
-                          children: List.generate(categoryItems.length, (
+                          spacing: spacing3,
+                          runSpacing: spacing3,
+                          children: List.generate(_categoryItems.length, (
                             index,
                           ) {
                             return Row(
@@ -557,7 +584,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                                   },
                                 ),
                                 Text(
-                                  categoryItems[index],
+                                  _categoryItems[index],
                                   style: TextStyle(
                                     color: Colors.black,
                                     fontSize: fontsizeSize1,
@@ -569,7 +596,6 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           }),
                         ),
                         const SizedBox(height: spacing2),
-
                         Align(
                           alignment: AlignmentGeometry.centerLeft,
                           child: Text(
@@ -612,11 +638,10 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                             ),
                           ),
                         ),
-                        // MODIFIED: Replaced Row with Wrap for responsive layout
                         Wrap(
-                          spacing: spacing3, // spacing between items horizontally
-                          runSpacing: spacing3, // spacing between lines vertically
-                          children: List.generate(categoryItems.length, (
+                          spacing: spacing3,
+                          runSpacing: spacing3,
+                          children: List.generate(_categoryItems.length, (
                             index,
                           ) {
                             return Row(
@@ -631,7 +656,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                                   },
                                 ),
                                 Text(
-                                  categoryItems[index],
+                                  _categoryItems[index],
                                   style: TextStyle(
                                     color: Colors.black,
                                     fontSize: fontsizeSize1,
@@ -643,7 +668,6 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           }),
                         ),
                         const SizedBox(height: spacing2),
-
                         Align(
                           alignment: AlignmentGeometry.centerLeft,
                           child: Text(
@@ -686,11 +710,10 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                             ),
                           ),
                         ),
-                        // MODIFIED: Replaced Row with Wrap for responsive layout
                         Wrap(
-                          spacing: spacing3, // spacing between items horizontally
-                          runSpacing: spacing3, // spacing between lines vertically
-                          children: List.generate(categoryItems.length, (
+                          spacing: spacing3,
+                          runSpacing: spacing3,
+                          children: List.generate(_categoryItems.length, (
                             index,
                           ) {
                             return Row(
@@ -705,7 +728,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                                   },
                                 ),
                                 Text(
-                                  categoryItems[index],
+                                  _categoryItems[index],
                                   style: TextStyle(
                                     color: Colors.black,
                                     fontSize: fontsizeSize1,
@@ -736,33 +759,38 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                             Navigator.pop(context);
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.surface,
-                            foregroundColor: Theme.of(context).colorScheme.primary,
+                            backgroundColor: Colors.white,
+                            foregroundColor: const Color(0xFFDE3535),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(cornerRadius),
+                              side: const BorderSide(
+                                color: Colors.black,
+                                width: 1,
+                              ),
                             ),
                           ),
-                          child: Text(
+                          child: const Text(
                             'Back',
-                            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                            style: TextStyle(color: Color(0xFFDE3535)),
                           ),
                         ),
-
                         const SizedBox(width: buttonSpacing),
                         ElevatedButton(
-                          onPressed: () {
-                            context.go(Routes.dashboard);
-                          },
+                          onPressed: () {},
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            backgroundColor: const Color(0xFFDE3535),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(cornerRadius),
+                              side: const BorderSide(
+                                color: Colors.black,
+                                width: 1,
+                              ),
                             ),
                           ),
-                          child: Text(
+                          child: const Text(
                             'Submit',
-                            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                            style: TextStyle(color: Colors.white),
                           ),
                         ),
                       ],
