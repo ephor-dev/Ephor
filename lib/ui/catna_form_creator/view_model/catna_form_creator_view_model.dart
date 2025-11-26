@@ -143,7 +143,7 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
     _isPublished = !_isPublished;
     notifyListeners();
   }
-  
+
   @override
   void dispose() {
     titleController.dispose();
