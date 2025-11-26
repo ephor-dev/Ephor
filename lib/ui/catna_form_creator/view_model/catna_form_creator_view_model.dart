@@ -122,8 +122,16 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
       };
       
       // Add options for Multiple Choice and Checkbox
-      if (questionType == 'Multiple Choice' || questionType == 'Checkbox') {
+      if (questionType == 'Multiple Choice') {
         questionData['options'] = ['Option 1', 'Option 2'];
+      }
+      
+      // Add options and config for Checkbox
+      if (questionType == 'Checkbox') {
+        questionData['options'] = ['Option 1', 'Option 2'];
+        questionData['config'] = {
+          'maxSelections': null, // null = no limit
+        };
       }
       
       // Add config for Rating Scale
@@ -184,9 +192,14 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
         questions[questionIndex]['type'] = type;
         
         // Add/remove options based on type
-        if (type == 'Multiple Choice' || type == 'Checkbox') {
+        if (type == 'Multiple Choice') {
           questions[questionIndex]['options'] = ['Option 1', 'Option 2'];
           questions[questionIndex]['config'] = null;
+        } else if (type == 'Checkbox') {
+          questions[questionIndex]['options'] = ['Option 1', 'Option 2'];
+          questions[questionIndex]['config'] = {
+            'maxSelections': null,
+          };
         } else if (type == 'Rating Scale') {
           questions[questionIndex]['options'] = null;
           questions[questionIndex]['config'] = {
@@ -281,6 +294,21 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
         questions[questionIndex]['config'] = {
           'min': min,
           'max': max,
+        };
+        notifyListeners();
+      }
+    }
+  }
+  
+  /// Updates checkbox maximum selections configuration
+  void updateCheckboxMaxSelections(int sectionIndex, int questionIndex, {int? maxSelections}) {
+    if (sectionIndex >= 0 && sectionIndex < _sections.length) {
+      final questions = _sections[sectionIndex]['questions'] as List<Map<String, dynamic>>;
+      if (questionIndex >= 0 && questionIndex < questions.length) {
+        final currentConfig = questions[questionIndex]['config'] as Map<String, dynamic>? ?? {};
+        questions[questionIndex]['config'] = {
+          ...currentConfig,
+          'maxSelections': maxSelections,
         };
         notifyListeners();
       }

@@ -633,6 +633,8 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
     String questionType,
   ) {
     final options = question['options'] as List<String>? ?? ['Option 1', 'Option 2'];
+    final config = question['config'] as Map<String, dynamic>? ?? {};
+    final maxSelections = config['maxSelections'] as int?;
     
     return [
       const SizedBox(height: 16),
@@ -723,6 +725,105 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         ),
       ),
+      
+      // Max selections configuration (Checkbox only)
+      if (questionType == 'Checkbox') ...[
+        const SizedBox(height: 16),
+        const Divider(),
+        const SizedBox(height: 8),
+        
+        // Max selections header
+        Row(
+          children: [
+            Icon(
+              Icons.format_list_numbered,
+              size: 18,
+              color: onSurfaceVariantColor,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Selection Limit',
+              style: TextStyle(
+                color: onSurfaceVariantColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        
+        // Max selections dropdown
+        Row(
+          children: [
+            Expanded(
+              child: DropdownButtonFormField<int?>(
+                initialValue: maxSelections,
+                decoration: InputDecoration(
+                  labelText: 'Maximum Selections',
+                  helperText: 'Limit how many options can be checked',
+                  helperStyle: const TextStyle(fontSize: 11),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  isDense: true,
+                ),
+                items: [
+                  const DropdownMenuItem(
+                    value: null,
+                    child: Text('No Limit'),
+                  ),
+                  ...List.generate(
+                    options.length - 1,
+                    (index) => DropdownMenuItem(
+                      value: index + 2,
+                      child: Text('${index + 2} options'),
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  widget.viewModel.updateCheckboxMaxSelections(
+                    sectionIndex,
+                    questionIndex,
+                    maxSelections: value,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        
+        // Info message
+        if (maxSelections != null) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: primaryContainerColor.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: primaryColor.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, size: 16, color: onPrimaryContainerColor),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Users can select up to $maxSelections option${maxSelections > 1 ? 's' : ''}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: onPrimaryContainerColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
     ];
   }
   
@@ -899,7 +1000,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
             includeTime: value,
           );
         },
-        activeColor: primaryColor,
+        activeThumbColor: primaryColor,
         contentPadding: EdgeInsets.zero,
         dense: true,
       ),
@@ -1175,7 +1276,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
                   allowMultiple: value,
                 );
               },
-              activeColor: primaryColor,
+              activeThumbColor: primaryColor,
               contentPadding: EdgeInsets.zero,
               dense: true,
             ),
