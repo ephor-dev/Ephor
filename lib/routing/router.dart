@@ -1,5 +1,8 @@
 import 'package:ephor/ui/add_employee/view/add_employee_view.dart';
 import 'package:ephor/ui/add_employee/view_model/add_employee_viewmodel.dart';
+import 'package:ephor/ui/catna_form/catna_form1_view.dart';
+import 'package:ephor/ui/catna_form/catna_form2_view.dart';
+import 'package:ephor/ui/catna_form/catna_form3_view.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_assessment/view/finished_assessment_subview.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_assessment/view_model/finished_assessment_viewmodel.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_trainings/view/finished_trainings_subview.dart';
@@ -86,6 +89,18 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           ),
         ),
         GoRoute(
+          path: Routes.getCATNAForm1Path(),
+          builder: (context, state) => CatnaForm1View()
+        ),
+        GoRoute(
+          path: Routes.getCATNAForm2Path(),
+          builder: (context, state) => CatnaForm2View()
+        ),
+        GoRoute(
+          path: Routes.getCATNAForm3Path(),
+          builder: (context, state) => CatnaForm3View()
+        ),
+        GoRoute(
           path: Routes.getImpactAssessmentPath(),
           builder: (context, state) => ImpactAssessmentForm(),
         ),
@@ -123,7 +138,7 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
                   ),
                 );
               },
-            )
+            ),
           ]
         ),
         GoRoute(
