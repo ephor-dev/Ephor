@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/routing/routes.dart';
+import 'package:ephor/ui/core/themes/theme_mode_notifier.dart';
 import 'package:ephor/ui/core/ui/confirm_identity_dialog/confirm_identity_dialog.dart';
 import 'package:ephor/ui/core/ui/dashboard_menu_item/dashboard_menu_item.dart';
 import 'package:ephor/ui/core/ui/edit_profile_dialog/edit_profile_dialog.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:ephor/utils/responsiveness.dart';
+import 'package:provider/provider.dart';
 
 class DashboardView extends StatefulWidget {
   final DashboardViewModel viewModel;
@@ -239,6 +241,7 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   PreferredSizeWidget _buildAppBar({required bool isMobile}) {
+    final themeNotifier = Provider.of<ThemeModeNotifier>(context, listen: false);
     return AppBar(
       backgroundColor: Colors.white, 
       elevation: 1.0, 
@@ -343,6 +346,34 @@ class _DashboardViewState extends State<DashboardView> {
                           ],
                         ),
                       ),
+                      PopupMenuItem(
+                        onTap: null,
+                        child: Row(
+                          children: [
+                            PopupMenuItem(
+                              value: 'light_mode',
+                              child: Icon(
+                                Icons.light_mode,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              )
+                            ),
+                            PopupMenuItem(
+                              value: 'dark_mode',
+                              child: Icon(
+                                Icons.dark_mode,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              )
+                            ),
+                            PopupMenuItem(
+                              value: 'follow_system_mode',
+                              child: Icon(
+                                Icons.brightness_auto,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              )
+                            )
+                          ],
+                        )
+                      ),
                       const PopupMenuItem<String>(
                         value: 'edit_profile',
                         child: Row(children: [Icon(Icons.settings_outlined, color: Colors.black87), SizedBox(width: 8), Text('Edit Profile')]),
@@ -353,10 +384,22 @@ class _DashboardViewState extends State<DashboardView> {
                       ),
                     ],
                     onSelected: (String result) {
-                      if (result == 'edit_profile') {
-                        _handleEditProfile(context);
-                      } else if (result == 'logout') {
-                        _handleLogout(context);
+                      switch (result) {
+                        case 'edit_profile':
+                          _handleEditProfile(context);
+                          break;
+                        case 'logout':
+                          _handleLogout(context);
+                          break;
+                        case 'light_mode':
+                          themeNotifier.setThemeMode(ThemeMode.light);
+                          break;
+                        case 'dark_mode':
+                          themeNotifier.setThemeMode(ThemeMode.dark);
+                          break;
+                        case 'follow_system_mode':
+                          themeNotifier.setThemeMode(ThemeMode.system);
+                          break;
                       }
                     },
                   ),
