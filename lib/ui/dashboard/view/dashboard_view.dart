@@ -316,7 +316,7 @@ class _DashboardViewState extends State<DashboardView> {
                   // User Profile/Avatar Icon
                   PopupMenuButton<String>(
                     offset: const Offset(0, 50),
-                    color: const Color(0xFFF7F7F7),
+                    color: Theme.of(context).colorScheme.surfaceContainerLowest,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     child: CachedNetworkImage(
                       imageUrl: imageUrl ?? 'Error',
@@ -374,13 +374,35 @@ class _DashboardViewState extends State<DashboardView> {
                           ],
                         )
                       ),
-                      const PopupMenuItem<String>(
+                      PopupMenuItem<String>(
                         value: 'edit_profile',
-                        child: Row(children: [Icon(Icons.settings_outlined, color: Colors.black87), SizedBox(width: 8), Text('Edit Profile')]),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.settings_outlined, 
+                              color: Theme.of(context).colorScheme.onSurface
+                            ), 
+                            SizedBox(
+                              width: 8
+                            ), 
+                            Text('Edit Profile')
+                          ]
+                        ),
                       ),
-                      const PopupMenuItem<String>(
+                      PopupMenuItem<String>(
                         value: 'logout',
-                        child: Row(children: [Icon(Icons.logout, color: Colors.black87), SizedBox(width: 8), Text('Logout')]),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.logout, 
+                              color: Theme.of(context).colorScheme.onSurface
+                            ), 
+                            SizedBox(
+                              width: 8
+                            ), 
+                            Text('Logout')
+                          ]
+                        ),
                       ),
                     ],
                     onSelected: (String result) {
