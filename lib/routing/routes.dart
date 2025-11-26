@@ -17,6 +17,7 @@ abstract final class Routes {
   static const dashboardCATNA2 = 'catna-form-2';
   static const dashboardCATNA3 = 'catna-form-3';
   static const dashboardIAForm = 'impact-assessment-form';
+  static const dashboardCatnaFormCreator = 'catna-form-creator';
 
   static String getOverviewPath() => '$dashboard/$dashboardOverview';
   static String getSchedulesPath() => '$dashboard/$dashboardSchedules';
@@ -31,4 +32,5 @@ abstract final class Routes {
   static String getCATNAForm2Path() => '$dashboard/$dashboardCATNA2';
   static String getCATNAForm3Path() => '$dashboard/$dashboardCATNA3';
   static String getImpactAssessmentPath() => '$dashboard/$dashboardIAForm';
+  static String getCatnaFormCreatorPath() => '$dashboard/$dashboardCatnaFormCreator';
 }
