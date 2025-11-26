@@ -181,7 +181,9 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
         GoRoute(
           path: Routes.getCatnaFormCreatorPath(),
           builder: (context, state) => CatnaFormCreatorView(
-            viewModel: CatnaFormCreatorViewModel(),
+            viewModel: CatnaFormCreatorViewModel(
+              formRepository: context.read(),
+            ),
           ),
         ),
       ]
