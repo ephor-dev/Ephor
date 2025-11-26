@@ -1,4 +1,5 @@
 import 'package:ephor/config/dependencies.dart';
+import 'package:ephor/ui/core/themes/theme_mode_notifier.dart';
 import 'package:ephor/ui/core/themes/theme_util.dart';
 import 'package:ephor/config/supabase_config.dart';
 import 'package:flutter/material.dart';
@@ -49,13 +50,14 @@ class _EphorState extends State<EphorApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     TextTheme textTheme = createTextTheme(context, "Ubuntu", "Lato");
     EphorTheme ephorTheme = EphorTheme(textTheme);
+    final themeModeNotifier = Provider.of<ThemeModeNotifier>(context);
 
     return MaterialApp.router(
       scrollBehavior: MaterialScrollBehavior(),
       debugShowCheckedModeBanner: false,
       theme: ephorTheme.light(),
       darkTheme: ephorTheme.dark(),
-      themeMode: ThemeMode.light,
+      themeMode: themeModeNotifier.currentThemeMode,
       routerConfig: router(context.read()),
     );
   }

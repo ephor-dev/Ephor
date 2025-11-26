@@ -18,6 +18,7 @@ import 'package:ephor/ui/edit_employee/view/edit_employee_view.dart';
 import 'package:ephor/ui/edit_employee/view_model/edit_employee_viewmodel.dart';
 import 'package:ephor/ui/employee_management/view/employees_view.dart';
 import 'package:ephor/ui/employee_management/view_model/employees_viewmodel.dart';
+import 'package:ephor/ui/impact_assessment_form/view/impact_assessment_form_view.dart';
 import 'package:ephor/ui/password_update/forgot_password/view/forgot_password_view.dart';
 import 'package:ephor/ui/password_update/forgot_password/view_model/forgot_password_viewmodel.dart';
 import 'package:ephor/ui/password_update/update_password/view/update_password_view.dart';
@@ -98,6 +99,10 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
         GoRoute(
           path: Routes.getCATNAForm3Path(),
           builder: (context, state) => CatnaForm3View()
+        ),
+        GoRoute(
+          path: Routes.getImpactAssessmentPath(),
+          builder: (context, state) => ImpactAssessmentForm(),
         ),
         GoRoute(
           path: Routes.getEmployeeListPath(),
