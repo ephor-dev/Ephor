@@ -112,15 +112,47 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
   void addQuestion(int sectionIndex, String questionType) {
     if (sectionIndex >= 0 && sectionIndex < _sections.length) {
       final questions = _sections[sectionIndex]['questions'] as List<Map<String, dynamic>>;
-      questions.add({
+      
+      // Build question data with type-specific configuration
+      final questionData = <String, dynamic>{
         'id': DateTime.now().millisecondsSinceEpoch.toString(),
         'type': questionType,
         'question': '',
         'required': false,
-        'options': (questionType == 'Multiple Choice' || questionType == 'Checkbox') 
-            ? ['Option 1', 'Option 2'] 
-            : null,
-      });
+      };
+      
+      // Add options for Multiple Choice and Checkbox
+      if (questionType == 'Multiple Choice' || questionType == 'Checkbox') {
+        questionData['options'] = ['Option 1', 'Option 2'];
+      }
+      
+      // Add config for Rating Scale
+      if (questionType == 'Rating Scale') {
+        questionData['config'] = {
+          'min': 1,
+          'max': 5,
+        };
+      }
+      
+      // Add config for Date
+      if (questionType == 'Date') {
+        questionData['config'] = {
+          'includeTime': false,
+          'minDate': null,
+          'maxDate': null,
+        };
+      }
+      
+      // Add config for File Upload
+      if (questionType == 'File Upload') {
+        questionData['config'] = {
+          'allowedTypes': ['all'], // 'all', 'image', 'document', 'pdf'
+          'maxSizeMB': 10,
+          'allowMultiple': false,
+        };
+      }
+      
+      questions.add(questionData);
       notifyListeners();
     }
   }
@@ -150,12 +182,36 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
       final questions = _sections[sectionIndex]['questions'] as List<Map<String, dynamic>>;
       if (questionIndex >= 0 && questionIndex < questions.length) {
         questions[questionIndex]['type'] = type;
-        // Add options for multiple choice and checkbox
+        
+        // Add/remove options based on type
         if (type == 'Multiple Choice' || type == 'Checkbox') {
           questions[questionIndex]['options'] = ['Option 1', 'Option 2'];
+          questions[questionIndex]['config'] = null;
+        } else if (type == 'Rating Scale') {
+          questions[questionIndex]['options'] = null;
+          questions[questionIndex]['config'] = {
+            'min': 1,
+            'max': 5,
+          };
+        } else if (type == 'Date') {
+          questions[questionIndex]['options'] = null;
+          questions[questionIndex]['config'] = {
+            'includeTime': false,
+            'minDate': null,
+            'maxDate': null,
+          };
+        } else if (type == 'File Upload') {
+          questions[questionIndex]['options'] = null;
+          questions[questionIndex]['config'] = {
+            'allowedTypes': ['all'],
+            'maxSizeMB': 10,
+            'allowMultiple': false,
+          };
         } else {
           questions[questionIndex]['options'] = null;
+          questions[questionIndex]['config'] = null;
         }
+        
         notifyListeners();
       }
     }
@@ -166,6 +222,98 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
       final questions = _sections[sectionIndex]['questions'] as List<Map<String, dynamic>>;
       if (questionIndex >= 0 && questionIndex < questions.length) {
         questions[questionIndex]['required'] = !(questions[questionIndex]['required'] ?? false);
+        notifyListeners();
+      }
+    }
+  }
+  
+  // ============================================
+  // QUESTION OPTIONS MANAGEMENT
+  // ============================================
+  
+  /// Updates a specific option in a Multiple Choice or Checkbox question
+  void updateQuestionOption(int sectionIndex, int questionIndex, int optionIndex, String value) {
+    if (sectionIndex >= 0 && sectionIndex < _sections.length) {
+      final questions = _sections[sectionIndex]['questions'] as List<Map<String, dynamic>>;
+      if (questionIndex >= 0 && questionIndex < questions.length) {
+        final options = questions[questionIndex]['options'] as List<String>?;
+        if (options != null && optionIndex >= 0 && optionIndex < options.length) {
+          options[optionIndex] = value;
+          notifyListeners();
+        }
+      }
+    }
+  }
+  
+  /// Adds a new option to a Multiple Choice or Checkbox question
+  void addQuestionOption(int sectionIndex, int questionIndex) {
+    if (sectionIndex >= 0 && sectionIndex < _sections.length) {
+      final questions = _sections[sectionIndex]['questions'] as List<Map<String, dynamic>>;
+      if (questionIndex >= 0 && questionIndex < questions.length) {
+        final options = questions[questionIndex]['options'] as List<String>?;
+        if (options != null) {
+          options.add('Option ${options.length + 1}');
+          notifyListeners();
+        }
+      }
+    }
+  }
+  
+  /// Removes an option from a Multiple Choice or Checkbox question
+  void removeQuestionOption(int sectionIndex, int questionIndex, int optionIndex) {
+    if (sectionIndex >= 0 && sectionIndex < _sections.length) {
+      final questions = _sections[sectionIndex]['questions'] as List<Map<String, dynamic>>;
+      if (questionIndex >= 0 && questionIndex < questions.length) {
+        final options = questions[questionIndex]['options'] as List<String>?;
+        if (options != null && optionIndex >= 0 && optionIndex < options.length && options.length > 2) {
+          options.removeAt(optionIndex);
+          notifyListeners();
+        }
+      }
+    }
+  }
+  
+  /// Updates rating scale configuration (min and max values)
+  void updateRatingScaleConfig(int sectionIndex, int questionIndex, {required int min, required int max}) {
+    if (sectionIndex >= 0 && sectionIndex < _sections.length) {
+      final questions = _sections[sectionIndex]['questions'] as List<Map<String, dynamic>>;
+      if (questionIndex >= 0 && questionIndex < questions.length) {
+        questions[questionIndex]['config'] = {
+          'min': min,
+          'max': max,
+        };
+        notifyListeners();
+      }
+    }
+  }
+  
+  /// Updates date question configuration
+  void updateDateConfig(int sectionIndex, int questionIndex, {bool? includeTime, DateTime? minDate, DateTime? maxDate}) {
+    if (sectionIndex >= 0 && sectionIndex < _sections.length) {
+      final questions = _sections[sectionIndex]['questions'] as List<Map<String, dynamic>>;
+      if (questionIndex >= 0 && questionIndex < questions.length) {
+        final currentConfig = questions[questionIndex]['config'] as Map<String, dynamic>? ?? {};
+        questions[questionIndex]['config'] = {
+          'includeTime': includeTime ?? currentConfig['includeTime'] ?? false,
+          'minDate': minDate?.toIso8601String() ?? currentConfig['minDate'],
+          'maxDate': maxDate?.toIso8601String() ?? currentConfig['maxDate'],
+        };
+        notifyListeners();
+      }
+    }
+  }
+  
+  /// Updates file upload question configuration
+  void updateFileUploadConfig(int sectionIndex, int questionIndex, {List<String>? allowedTypes, int? maxSizeMB, bool? allowMultiple}) {
+    if (sectionIndex >= 0 && sectionIndex < _sections.length) {
+      final questions = _sections[sectionIndex]['questions'] as List<Map<String, dynamic>>;
+      if (questionIndex >= 0 && questionIndex < questions.length) {
+        final currentConfig = questions[questionIndex]['config'] as Map<String, dynamic>? ?? {};
+        questions[questionIndex]['config'] = {
+          'allowedTypes': allowedTypes ?? currentConfig['allowedTypes'] ?? ['all'],
+          'maxSizeMB': maxSizeMB ?? currentConfig['maxSizeMB'] ?? 10,
+          'allowMultiple': allowMultiple ?? currentConfig['allowMultiple'] ?? false,
+        };
         notifyListeners();
       }
     }
