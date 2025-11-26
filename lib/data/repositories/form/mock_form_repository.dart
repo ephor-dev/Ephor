@@ -63,6 +63,8 @@ class MockFormRepository implements IFormRepository {
       final publishedForm = form.copyWith(
         status: FormStatus.published,
         updatedAt: DateTime.now(),
+        // TESTING: Uncomment line below to simulate form with responses
+        // responseCount: 5,  // ← ADD THIS LINE TO TEST UNPUBLISH ERROR
       );
       
       _formsStorage[formId] = publishedForm;
@@ -84,6 +86,16 @@ class MockFormRepository implements IFormRepository {
       if (form == null) {
         return Result.error(
           CustomMessageException('Form not found')
+        );
+      }
+      
+      // Constraint: Cannot unpublish if form has responses
+      if (form.responseCount > 0) {
+        return Result.error(
+          CustomMessageException(
+            'Cannot unpublish form with ${form.responseCount} existing responses. '
+            'Please archive the form instead.'
+          )
         );
       }
       
