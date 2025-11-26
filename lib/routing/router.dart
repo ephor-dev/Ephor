@@ -1,5 +1,7 @@
 import 'package:ephor/ui/add_employee/view/add_employee_view.dart';
 import 'package:ephor/ui/add_employee/view_model/add_employee_viewmodel.dart';
+import 'package:ephor/ui/catna_form_creator/view/catna_form_creator_view.dart';
+import 'package:ephor/ui/catna_form_creator/view_model/catna_form_creator_view_model.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_assessment/view/finished_assessment_subview.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_assessment/view_model/finished_assessment_viewmodel.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_trainings/view/finished_trainings_subview.dart';
@@ -148,6 +150,12 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: Routes.getRecommendedTrainingsPath(),
           builder: (context, state) => RecommendedTrainingsSubView(
             viewModel: RecommendedTrainingsViewModel(),
+          ),
+        ),
+        GoRoute(
+          path: Routes.getCatnaFormCreatorPath(),
+          builder: (context, state) => CatnaFormCreatorView(
+            viewModel: CatnaFormCreatorViewModel(),
           ),
         ),
       ]
