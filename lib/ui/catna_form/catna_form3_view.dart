@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class CatnaForm3_View extends StatefulWidget {
-  const CatnaForm3_View({super.key});
+class CatnaForm3View extends StatefulWidget {
+  const CatnaForm3View({super.key});
 
   @override
-  State<CatnaForm3_View> createState() => _CatnaForm3_ViewState();
+  State<CatnaForm3View> createState() => _CatnaForm3ViewState();
 }
 
-class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
+class _CatnaForm3ViewState extends State<CatnaForm3View> {
   final List<bool> _knowledgeCheckStates = List.generate(4, (index) => false);
   final List<bool> _skillCheckStates = List.generate(4, (index) => false);
   final List<bool> _attitudeCheckStates = List.generate(4, (index) => false);
@@ -32,25 +32,25 @@ class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
     const double spacing3 = 4;
     const double buttonSpacing = 24;
 
-    final List<String> _knowledgeTrainingItems = [
+    final List<String> knowledgeTrainingItems = [
       'Needs orientation seminar on content-based knowledge',
       'Needs conceptual training on specialized topics related to academic programs',
       'Needs training on functional know-how relating to administration services',
       'Needs other learning and development intervention (e.g. coaching, counselling, mentoring, job rotation, etc.)',
     ];
-    final List<String> _skillTrainingItems = [
+    final List<String> skillTrainingItems = [
       'Needs practical/work-based skill trainings related to academic programs',
       'Needs practical/work-based skill trainings related to organizational effectiveness (e.g. teamwork, problem-solving, conflict resolution, etc.)',
       'Needs practical/work-based skill training related to effective personal management (e.g. time & stress management, communication, etc.)',
       'Needs other learning and development intervention (e.g. coaching, counselling, mentoring, job rotation, etc.)',
     ];
-    final List<String> _attitudeTrainingItems = [
+    final List<String> attitudeTrainingItems = [
       'Needs conceptual and/or work-based trainings related to further development of attitude and work effectiveness',
       'Needs conceptual and/or work-based trainings related to further development of attitude and work relationship',
       'Needs conceptual and/or work-based trainings related to further development of attitude and customer service',
       'Needs other learning and development intervention (e.g. coaching, counselling, mentoring, job rotation, etc.)',
     ];
-    final List<String> _categoryItems = [
+    final List<String> categoryItems = [
       'Mandatory',
       'Knowledge Based',
       'Skill Based',
@@ -210,7 +210,7 @@ class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
                           ),
                         ),
                         const SizedBox(height: spacing2),
-                        ...List.generate(_knowledgeTrainingItems.length, (
+                        ...List.generate(knowledgeTrainingItems.length, (
                           index,
                         ) {
                           return Column(
@@ -227,7 +227,7 @@ class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
                                   ),
                                   Expanded(
                                     child: Text(
-                                      _knowledgeTrainingItems[index],
+                                      knowledgeTrainingItems[index],
                                       style: TextStyle(
                                         color: Colors.black,
                                         fontSize: fontsizeSize1,
@@ -277,7 +277,7 @@ class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
                           ),
                         ),
                         const SizedBox(height: spacing1),
-                        ...List.generate(_skillTrainingItems.length, (index) {
+                        ...List.generate(skillTrainingItems.length, (index) {
                           return Column(
                             children: [
                               Row(
@@ -292,7 +292,7 @@ class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
                                   ),
                                   Expanded(
                                     child: Text(
-                                      _skillTrainingItems[index],
+                                      skillTrainingItems[index],
                                       style: TextStyle(
                                         color: Colors.black,
                                         fontSize: fontsizeSize1,
@@ -342,7 +342,7 @@ class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
                           ),
                         ),
                         const SizedBox(height: spacing1),
-                        ...List.generate(_attitudeTrainingItems.length, (
+                        ...List.generate(attitudeTrainingItems.length, (
                           index,
                         ) {
                           return Column(
@@ -359,7 +359,7 @@ class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
                                   ),
                                   Expanded(
                                     child: Text(
-                                      _attitudeTrainingItems[index],
+                                      attitudeTrainingItems[index],
                                       style: TextStyle(
                                         color: Colors.black,
                                         fontSize: fontsizeSize1,
@@ -497,7 +497,7 @@ class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
                         Wrap(
                           spacing: spacing3,
                           runSpacing: spacing3,
-                          children: List.generate(_categoryItems.length, (
+                          children: List.generate(categoryItems.length, (
                             index,
                           ) {
                             return Row(
@@ -512,7 +512,7 @@ class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
                                   },
                                 ),
                                 Text(
-                                  _categoryItems[index],
+                                  categoryItems[index],
                                   style: TextStyle(
                                     color: Colors.black,
                                     fontSize: fontsizeSize1,
@@ -569,7 +569,7 @@ class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
                         Wrap(
                           spacing: spacing3,
                           runSpacing: spacing3,
-                          children: List.generate(_categoryItems.length, (
+                          children: List.generate(categoryItems.length, (
                             index,
                           ) {
                             return Row(
@@ -584,7 +584,7 @@ class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
                                   },
                                 ),
                                 Text(
-                                  _categoryItems[index],
+                                  categoryItems[index],
                                   style: TextStyle(
                                     color: Colors.black,
                                     fontSize: fontsizeSize1,
@@ -641,7 +641,7 @@ class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
                         Wrap(
                           spacing: spacing3,
                           runSpacing: spacing3,
-                          children: List.generate(_categoryItems.length, (
+                          children: List.generate(categoryItems.length, (
                             index,
                           ) {
                             return Row(
@@ -656,7 +656,7 @@ class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
                                   },
                                 ),
                                 Text(
-                                  _categoryItems[index],
+                                  categoryItems[index],
                                   style: TextStyle(
                                     color: Colors.black,
                                     fontSize: fontsizeSize1,
@@ -713,7 +713,7 @@ class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
                         Wrap(
                           spacing: spacing3,
                           runSpacing: spacing3,
-                          children: List.generate(_categoryItems.length, (
+                          children: List.generate(categoryItems.length, (
                             index,
                           ) {
                             return Row(
@@ -728,7 +728,7 @@ class _CatnaForm3_ViewState extends State<CatnaForm3_View> {
                                   },
                                 ),
                                 Text(
-                                  _categoryItems[index],
+                                  categoryItems[index],
                                   style: TextStyle(
                                     color: Colors.black,
                                     fontSize: fontsizeSize1,
