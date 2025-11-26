@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ephor/ui/catna_form_creator/view_model/catna_form_creator_view_model.dart';
 import 'package:ephor/utils/responsiveness.dart';
+import 'package:ephor/utils/results.dart';
 import 'package:go_router/go_router.dart';
 
 class CatnaFormCreatorView extends StatefulWidget {
@@ -522,19 +523,44 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
   
   Widget _buildFloatingActionButton(BuildContext context) {
     return FloatingActionButton.extended(
-      onPressed: () async {
-        await widget.viewModel.saveForm();
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Form saved successfully!'),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+      // Disable button while saving
+      onPressed: widget.viewModel.isSaving ? null : () async {
+        // Call saveForm and handle result
+        final result = await widget.viewModel.saveForm();
+        
+        if (!context.mounted) return;
+        
+        // Pattern match on Result type
+        switch (result) {
+          case Ok<dynamic>(:final value):
+            // Success - show success message with form ID
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Form saved successfully! ID: ${value.id}'),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+            
+          case Error<dynamic>(:final error):
+            // Error - show error message with retry option
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Save failed: ${error.toString()}'),
+                backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 4),
+                action: SnackBarAction(
+                  label: 'Retry',
+                  textColor: Colors.white,
+                  onPressed: () => widget.viewModel.saveForm(),
+                ),
+              ),
+            );
         }
       },
-      icon: widget.viewModel.isLoading
+      icon: widget.viewModel.isSaving
           ? const SizedBox(
               width: 24,
               height: 24,
@@ -544,10 +570,10 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
               ),
             )
           : const Icon(Icons.save),
-      label: Text(widget.viewModel.isLoading ? 'Saving...' : 'Save Form'),
-      backgroundColor: primaryColor,
+      label: Text(widget.viewModel.isSaving ? 'Saving...' : 'Save Form'),
+      backgroundColor: widget.viewModel.isSaving ? Colors.grey : primaryColor,
       foregroundColor: Colors.white,
-      elevation: 4,
+      elevation: widget.viewModel.isSaving ? 0 : 4,
     );
   }
   
