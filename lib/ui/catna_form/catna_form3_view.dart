@@ -763,10 +763,6 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                             foregroundColor: Theme.of(context).colorScheme.primary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(cornerRadius),
-                              side: const BorderSide(
-                                color: Colors.black,
-                                width: 1,
-                              ),
                             ),
                           ),
                           child: Text(
@@ -782,10 +778,6 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(cornerRadius),
-                              side: const BorderSide(
-                                color: Colors.black,
-                                width: 1,
-                              ),
                             ),
                           ),
                           child: Text(
