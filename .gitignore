@@ -48,3 +48,11 @@ app.*.map.json
 *.jks
 *.keystore
 key.properties
+
+# Ignore specific files in lib/ui/catna_form_creator
+lib/ui/catna_form_creator/ARCHITECTURE_DIAGRAM.md
+lib/ui/catna_form_creator/CODE_SNIPPETS.md
+lib/ui/catna_form_creator/IMPLEMENTATION_SUMMARY.md
+lib/ui/catna_form_creator/QUICK_REFERENCE.md
+lib/ui/catna_form_creator/README.md
+lib/ui/catna_form_creator/TECHNICAL_SPECIFICATION.md
