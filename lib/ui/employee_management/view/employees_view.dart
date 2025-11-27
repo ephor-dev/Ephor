@@ -5,6 +5,7 @@ import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/routing/routes.dart';
 import 'package:ephor/ui/core/ui/employee_info_popover/employee_info_popover.dart';
+import 'package:ephor/ui/core/ui/svg_icon/svg_icon.dart';
 import 'package:ephor/ui/employee_management/view_model/employees_viewmodel.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
@@ -69,16 +70,28 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                 isUserHR ? 'Employees' : department != null ? '$department Employees' : 'Employees',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
+              actionsPadding: EdgeInsets.only(right: 8),
               actions: [
                 isUserHR
                 ? IconButton(
                     icon: const Icon(Icons.person_add),
+                    tooltip: 'Add a User',
+                    onPressed: () => context.go(Routes.getAddEmployeePath()), 
+                )
+                : const SizedBox.shrink(),
+                isUserHR
+                ? IconButton(
+                    icon: const SvgIcon(
+                      'assets/images/batch_add.svg',
+                      size: 24,
+                    ),
+                    tooltip: 'Add Multiple Users',
                     onPressed: () => context.go(Routes.getAddEmployeePath()), 
                 )
                 : const SizedBox.shrink(),
                 PopupMenuButton<String>(
                   offset: const Offset(0, 50),
-                  // color: const Color(0xFFF7F7F7),
+                  tooltip: 'Sort Employee List',
                   child: Icon(Icons.sort),
                   // Menu Items 
                   itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -107,6 +120,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.refresh),
+                  tooltip: 'Refresh the List',
                   onPressed: viewModel.isLoading ? null : () => viewModel.loadEmployees.execute(),
                 ),
               ],
