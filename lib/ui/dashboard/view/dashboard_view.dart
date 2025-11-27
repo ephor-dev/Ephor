@@ -23,6 +23,7 @@ class DashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<DashboardView> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _showSearch = false;
   
   static const Color _primaryRed = Color(0xFFAC312B);
 
@@ -40,6 +41,11 @@ class _DashboardViewState extends State<DashboardView> {
   
     final index = menuItems.indexWhere((item) {
       final path = item['path'];
+
+      _showSearch = (location.contains(path) && path == Routes.dashboardEmployeeList)
+        ? true
+        : false;
+
       return path != null && location.contains(path);
     });
 
@@ -276,30 +282,32 @@ class _DashboardViewState extends State<DashboardView> {
               
               // Search Bar: Takes up available space
               Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: 4.0, 
-                    horizontal: isMobile ? 16 : 48
-                  ),
-                  child: ConstrainedBox(
-                    // Max width ensures search bar doesn't look too wide on huge screens
-                    constraints: const BoxConstraints(maxWidth: 500), 
-                    child: TextField(
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.grey.shade100,
-                        hintText: 'Search',
-                        hintStyle: TextStyle(color: Colors.grey.shade600),
-                        prefixIcon: Icon(Icons.search, color: Colors.grey.shade600, size: 20),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20.0), borderSide: BorderSide.none),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20.0), borderSide: BorderSide(color: Colors.grey.shade400, width: 1.0)),
+                child: !_showSearch
+                  ? SizedBox.shrink()
+                  : Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: 4.0, 
+                        horizontal: isMobile ? 16 : 48
                       ),
-                      cursorColor: _primaryRed, 
-                      style: const TextStyle(fontSize: 16),
+                      child: ConstrainedBox(
+                        // Max width ensures search bar doesn't look too wide on huge screens
+                        constraints: const BoxConstraints(maxWidth: 500), 
+                        child: TextField(
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.grey.shade100,
+                            hintText: 'Search',
+                            hintStyle: TextStyle(color: Colors.grey.shade600),
+                            prefixIcon: Icon(Icons.search, color: Colors.grey.shade600, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(20.0), borderSide: BorderSide.none),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20.0), borderSide: BorderSide(color: Colors.grey.shade400, width: 1.0)),
+                          ),
+                          cursorColor: _primaryRed, 
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
               ),
               
               // Action Buttons (Info, Notifications, Profile)
