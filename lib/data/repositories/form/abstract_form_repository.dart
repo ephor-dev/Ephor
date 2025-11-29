@@ -63,6 +63,10 @@ abstract interface class IFormRepository {
   /// Fetches all forms created by a user.
   Future<Result<List<FormModel>>> getFormsByCreator(String creatorId);
   
+  /// Fetches all forms (for mock/development - returns all forms in storage).
+  /// In production with Supabase, this should filter by current user.
+  Future<Result<List<FormModel>>> getAllForms();
+  
   /// Deletes a form.
   /// Note: Should validate in ViewModel if form has responses.
   Future<Result<void>> deleteForm(String formId);

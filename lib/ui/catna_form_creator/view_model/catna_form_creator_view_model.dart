@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ephor/data/repositories/form/abstract_form_repository.dart';
+import 'package:ephor/data/repositories/auth/abstract_auth_repository.dart';
 import 'package:ephor/domain/models/form/form_model.dart';
 import 'package:ephor/domain/models/form/section_model.dart';
 import 'package:ephor/domain/models/form/question_model.dart';
@@ -12,10 +13,16 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
   // DEPENDENCIES
   // ============================================
   final IFormRepository _formRepository;
+  final AbstractAuthRepository _authRepository;
+  final String? _formIdToLoad;
   
   CatnaFormCreatorViewModel({
     required IFormRepository formRepository,
-  }) : _formRepository = formRepository {
+    required AbstractAuthRepository authRepository,
+    String? formIdToLoad,
+  }) : _formRepository = formRepository,
+       _authRepository = authRepository,
+       _formIdToLoad = formIdToLoad {
     _initializeForm();
   }
   
@@ -74,8 +81,149 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
   bool get isPublished => _isPublished;
   
   void _initializeForm() {
-    // Start with one default section
-    addSection();
+    if (_formIdToLoad != null) {
+      // Load existing form
+      loadForm(_formIdToLoad);
+    } else {
+      // Start with one default section for a new form
+      addSection();
+    }
+  }
+  
+  /// Load an existing form by ID for editing
+  Future<void> loadForm(String formId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    
+    try {
+      final result = await _formRepository.getFormById(formId);
+      
+      if (result is Ok<FormModel>) {
+        final form = result.value;
+        _currentForm = form;
+        
+        // Populate form fields
+        titleController.text = form.title;
+        descriptionController.text = form.description;
+        
+        // Clear existing sections
+        _sections.clear();
+        
+        // Convert FormModel sections to UI sections format
+        for (final section in form.sections) {
+          final uiSection = {
+            'id': section.id,
+            'title': section.title,
+            'description': section.description,
+            'questions': <Map<String, dynamic>>[],
+          };
+          
+          // Convert questions
+          for (final question in section.questions) {
+            final uiQuestion = _convertQuestionToUI(question);
+            (uiSection['questions'] as List<Map<String, dynamic>>).add(uiQuestion);
+          }
+          
+          _sections.add(uiSection);
+        }
+        
+        // Update status
+        _isPublished = form.isPublished;
+        _formStatus = form.status;
+        
+        _isLoading = false;
+        notifyListeners();
+      } else if (result is Error<FormModel>) {
+        _errorMessage = 'Failed to load form: ${result.error}';
+        _isLoading = false;
+        // Still create a default section so the UI isn't empty
+        addSection();
+        notifyListeners();
+      }
+    } catch (e) {
+      _errorMessage = 'Error loading form: $e';
+      _isLoading = false;
+      // Still create a default section so the UI isn't empty
+      addSection();
+      notifyListeners();
+    }
+  }
+  
+  /// Helper method to convert a QuestionModel to UI format
+  Map<String, dynamic> _convertQuestionToUI(QuestionModel question) {
+    final uiQuestion = <String, dynamic>{
+      'id': question.id,
+      'type': _questionTypeToString(question.type),
+      'question': question.questionText,
+      'required': question.isRequired,
+    };
+    
+    // Handle type-specific data
+    switch (question.type) {
+      case QuestionType.multipleChoice:
+        if (question.options != null) {
+          uiQuestion['options'] = List<String>.from(question.options!);
+        }
+        break;
+      case QuestionType.checkbox:
+        if (question.options != null) {
+          uiQuestion['options'] = List<String>.from(question.options!);
+        }
+        if (question.config != null && question.config!['maxSelections'] != null) {
+          uiQuestion['config'] = {
+            'maxSelections': question.config!['maxSelections'],
+          };
+        }
+        break;
+      case QuestionType.ratingScale:
+        if (question.config != null) {
+          uiQuestion['config'] = {
+            'min': question.config!['min'] ?? 1,
+            'max': question.config!['max'] ?? 5,
+          };
+        }
+        break;
+      case QuestionType.date:
+        if (question.config != null) {
+          uiQuestion['config'] = {
+            'includeTime': question.config!['includeTime'] ?? false,
+            'minDate': question.config!['minDate'],
+            'maxDate': question.config!['maxDate'],
+          };
+        }
+        break;
+      case QuestionType.fileUpload:
+        if (question.config != null) {
+          uiQuestion['config'] = {
+            'allowedFileTypes': question.config!['allowedFileTypes'] ?? [],
+            'maxFileSizeMB': question.config!['maxFileSizeMB'] ?? 10,
+          };
+        }
+        break;
+      default:
+        break;
+    }
+    
+    return uiQuestion;
+  }
+  
+  /// Convert QuestionType enum to UI string
+  String _questionTypeToString(QuestionType type) {
+    switch (type) {
+      case QuestionType.text:
+        return 'Text';
+      case QuestionType.multipleChoice:
+        return 'Multiple Choice';
+      case QuestionType.checkbox:
+        return 'Checkbox';
+      case QuestionType.ratingScale:
+        return 'Rating Scale';
+      case QuestionType.date:
+        return 'Date';
+      case QuestionType.fileUpload:
+        return 'File Upload';
+    }
   }
   
   void addSection() {
@@ -578,7 +726,7 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
       sections: sectionModels,
       createdAt: _currentForm?.createdAt ?? DateTime.now(),
       updatedAt: DateTime.now(),
-      createdBy: 'current_user_id',  // TODO: Get from auth service
+      createdBy: _authRepository.currentUser?.userId ?? '',
       responseCount: _currentForm?.responseCount ?? 0,
     );
   }

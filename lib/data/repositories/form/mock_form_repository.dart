@@ -166,6 +166,24 @@ class MockFormRepository implements IFormRepository {
   }
 
   @override
+  Future<Result<List<FormModel>>> getAllForms() async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      final forms = _formsStorage.values.toList();
+
+      // Sort by updatedAt descending (most recent first)
+      forms.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+      return Result.ok(forms);
+    } catch (e) {
+      return Result.error(
+        CustomMessageException('Failed to fetch forms: ${e.toString()}'),
+      );
+    }
+  }
+
+  @override
   Future<Result<void>> deleteForm(String formId) async {
     try {
       await Future.delayed(const Duration(milliseconds: 300));
