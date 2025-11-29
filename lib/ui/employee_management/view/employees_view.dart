@@ -219,7 +219,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                                 employee.photoUrl!.startsWith('http');
 
         return Card(
-          elevation: 1,
+          elevation: 0.25,
           margin: const EdgeInsets.symmetric(vertical: 8.0),
           color: Theme.of(context).colorScheme.surfaceContainer,
           child: GestureDetector(
