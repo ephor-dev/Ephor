@@ -66,8 +66,8 @@ class _MyFormsViewState extends State<MyFormsView> {
       surfaceTintColor: Colors.transparent,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: onSurfaceColor),
-        onPressed: () => context.pop(),
-        tooltip: 'Back',
+        onPressed: () => context.go(Routes.getOverviewPath()),
+        tooltip: 'Back to Dashboard',
       ),
       title: Text(
         'My Forms',

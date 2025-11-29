@@ -137,6 +137,14 @@ class MockFormRepository implements IFormRepository {
   Future<Result<FormModel?>> getFormById(String formId) async {
     try {
       await Future.delayed(const Duration(milliseconds: 300));
+      
+      // Check if form exists
+      if (!_formsStorage.containsKey(formId)) {
+        return Result.error(
+          CustomMessageException('Form not found with ID: $formId'),
+        );
+      }
+      
       return Result.ok(_formsStorage[formId]);
     } catch (e) {
       return Result.error(

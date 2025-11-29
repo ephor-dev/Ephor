@@ -44,37 +44,72 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
         return Scaffold(
           backgroundColor: surfaceVariantColor,
           appBar: _buildAppBar(context),
-          body: SingleChildScrollView(
-            padding: EdgeInsets.all(isMobile ? 16.0 : 24.0), // 16 = 8*2, 24 = 8*3
-            child: Center(
-              child: Container(
-                constraints: BoxConstraints(
-                  maxWidth: isMobile ? double.infinity : 900,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Form Title Card
-                    _buildFormTitleCard(context, isMobile),
-                    const SizedBox(height: 24),
-                    
-                    // Sections
-                    ...List.generate(
-                      widget.viewModel.sections.length,
-                      (index) => _buildSectionCard(context, index, isMobile),
+          body: widget.viewModel.isLoading
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: primaryColor),
+                      SizedBox(height: 16),
+                      Text('Loading form...'),
+                    ],
+                  ),
+                )
+              : SingleChildScrollView(
+                  padding: EdgeInsets.all(isMobile ? 16.0 : 24.0), // 16 = 8*2, 24 = 8*3
+                  child: Center(
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxWidth: isMobile ? double.infinity : 900,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Error message if any
+                          if (widget.viewModel.errorMessage != null)
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 16),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: errorColor.withValues(alpha: errorColor.a * 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: errorColor),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.error_outline, color: errorColor),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      widget.viewModel.errorMessage!,
+                                      style: TextStyle(color: errorColor),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          
+                          // Form Title Card
+                          _buildFormTitleCard(context, isMobile),
+                          const SizedBox(height: 24),
+                          
+                          // Sections
+                          ...List.generate(
+                            widget.viewModel.sections.length,
+                            (index) => _buildSectionCard(context, index, isMobile),
+                          ),
+                          
+                          const SizedBox(height: 16),
+                          
+                          // Add Section Button
+                          _buildAddSectionButton(context),
+                          
+                          const SizedBox(height: 32),
+                        ],
+                      ),
                     ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Add Section Button
-                    _buildAddSectionButton(context),
-                    
-                    const SizedBox(height: 32),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ),
           floatingActionButton: _buildFloatingActionButton(context),
         );
       },
