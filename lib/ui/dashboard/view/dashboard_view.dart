@@ -133,7 +133,7 @@ class _DashboardViewState extends State<DashboardView> {
                     onPressed: () => Navigator.pop(context), // Closes the drawer
                   ),
                   const SizedBox(width: 15.0), 
-                  Image.asset('assets/images/logo.png', height: 30, width: 30),
+                  Image.asset('assets/images/logo.png', height: 32, width: 32),
                   const SizedBox(width: 8.0),
                   const Text('EPHOR', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18.0)),
                 ],
@@ -327,6 +327,8 @@ class _DashboardViewState extends State<DashboardView> {
                     color: Theme.of(context).colorScheme.surfaceContainerLowest,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     child: CachedNetworkImage(
+                      width: 32,
+                      height: 32,
                       imageUrl: imageUrl ?? 'Error',
                       placeholder: (context, url) => CircularProgressIndicator(),
                       errorWidget: (context, url, error) => CircleAvatar(

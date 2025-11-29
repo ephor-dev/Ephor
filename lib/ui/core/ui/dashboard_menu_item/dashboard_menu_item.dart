@@ -41,13 +41,13 @@ class _DashboardMenuItemState extends State<DashboardMenuItem> {
       child: ListTile(
         leading: Icon(
           widget.icon,
-          color: Colors.black,
+          color: Theme.of(context).colorScheme.onSurface,
           size: 25,
         ),
         title: Text(
           widget.title,
-          style: const TextStyle(
-            color: Colors.black,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.normal,
           ),
         ),
