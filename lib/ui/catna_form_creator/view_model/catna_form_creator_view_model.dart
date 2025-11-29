@@ -99,47 +99,58 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
     try {
       final result = await _formRepository.getFormById(formId);
       
-      if (result is Ok<FormModel>) {
-        final form = result.value;
-        _currentForm = form;
-        
-        // Populate form fields
-        titleController.text = form.title;
-        descriptionController.text = form.description;
-        
-        // Clear existing sections
-        _sections.clear();
-        
-        // Convert FormModel sections to UI sections format
-        for (final section in form.sections) {
-          final uiSection = {
-            'id': section.id,
-            'title': section.title,
-            'description': section.description,
-            'questions': <Map<String, dynamic>>[],
-          };
-          
-          // Convert questions
-          for (final question in section.questions) {
-            final uiQuestion = _convertQuestionToUI(question);
-            (uiSection['questions'] as List<Map<String, dynamic>>).add(uiQuestion);
+      switch (result) {
+        case Ok<FormModel?>(:final value):
+          // Check if value is null (form not found)
+          if (value == null) {
+            _errorMessage = 'Form not found with ID: $formId';
+            _isLoading = false;
+            addSection(); // Create default section
+            notifyListeners();
+            return;
           }
           
-          _sections.add(uiSection);
-        }
-        
-        // Update status
-        _isPublished = form.isPublished;
-        _formStatus = form.status;
-        
-        _isLoading = false;
-        notifyListeners();
-      } else if (result is Error<FormModel>) {
-        _errorMessage = 'Failed to load form: ${result.error}';
-        _isLoading = false;
-        // Still create a default section so the UI isn't empty
-        addSection();
-        notifyListeners();
+          final form = value;
+          _currentForm = form;
+          
+          // Populate form fields
+          titleController.text = form.title;
+          descriptionController.text = form.description;
+          
+          // Clear existing sections
+          _sections.clear();
+          
+          // Convert FormModel sections to UI sections format
+          for (final section in form.sections) {
+            final uiSection = {
+              'id': section.id,
+              'title': section.title,
+              'description': section.description,
+              'questions': <Map<String, dynamic>>[],
+            };
+            
+            // Convert questions
+            for (final question in section.questions) {
+              final uiQuestion = _convertQuestionToUI(question);
+              (uiSection['questions'] as List<Map<String, dynamic>>).add(uiQuestion);
+            }
+            
+            _sections.add(uiSection);
+          }
+          
+          // Update status
+          _isPublished = form.isPublished;
+          _formStatus = form.status;
+          
+          _isLoading = false;
+          notifyListeners();
+          
+        case Error<FormModel?>(:final error):
+          _errorMessage = 'Failed to load form: ${error.toString()}';
+          _isLoading = false;
+          // Still create a default section so the UI isn't empty
+          addSection();
+          notifyListeners();
       }
     } catch (e) {
       _errorMessage = 'Error loading form: $e';
@@ -246,14 +257,14 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
   void updateSectionTitle(int sectionIndex, String title) {
     if (sectionIndex >= 0 && sectionIndex < _sections.length) {
       _sections[sectionIndex]['title'] = title;
-      notifyListeners();
+      // Don't notify listeners on every keystroke - let TextField handle it
     }
   }
   
   void updateSectionDescription(int sectionIndex, String description) {
     if (sectionIndex >= 0 && sectionIndex < _sections.length) {
       _sections[sectionIndex]['description'] = description;
-      notifyListeners();
+      // Don't notify listeners on every keystroke - let TextField handle it
     }
   }
   
@@ -328,7 +339,7 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
       final questions = _sections[sectionIndex]['questions'] as List<Map<String, dynamic>>;
       if (questionIndex >= 0 && questionIndex < questions.length) {
         questions[questionIndex]['question'] = question;
-        notifyListeners();
+        // Don't notify listeners on every keystroke - let TextField handle it
       }
     }
   }
@@ -400,7 +411,7 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
         final options = questions[questionIndex]['options'] as List<String>?;
         if (options != null && optionIndex >= 0 && optionIndex < options.length) {
           options[optionIndex] = value;
-          notifyListeners();
+          // Don't notify listeners on every keystroke - let TextField handle it
         }
       }
     }

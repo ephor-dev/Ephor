@@ -102,10 +102,5 @@ class MyFormsViewModel extends ChangeNotifier {
   
   /// Refreshes the forms list.
   Future<void> refresh() => loadForms();
-  
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }
 
