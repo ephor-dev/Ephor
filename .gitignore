@@ -49,12 +49,6 @@ app.*.map.json
 *.keystore
 key.properties
 
-# Ignore specific files in lib/ui/catna_form_creator
-lib/ui/catna_form_creator/ARCHITECTURE_DIAGRAM.md
-lib/ui/catna_form_creator/CODE_SNIPPETS.md
-lib/ui/catna_form_creator/IMPLEMENTATION_SUMMARY.md
-lib/ui/catna_form_creator/QUICK_REFERENCE.md
-lib/ui/catna_form_creator/README.md
-lib/ui/catna_form_creator/TECHNICAL_SPECIFICATION.md
-lib/ui/catna_form_creator/PUBLISH_IMPLEMENTATION_SUMMARY.md
-lib/ui/catna_form_creator/PUBLISH_QUICK_TEST_GUIDE.md
+# Ignore all markdown documentation files
+*.md
+!README.md

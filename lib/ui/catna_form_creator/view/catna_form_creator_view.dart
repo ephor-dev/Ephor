@@ -99,15 +99,11 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
         ),
       ),
       actions: [
-        // View Responses Button
+        // My Forms Button
         TextButton.icon(
-          onPressed: () {
-      ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('View Responses - Coming soon!')),
-            );
-          },
-          icon: const Icon(Icons.bar_chart_rounded, size: 24),
-          label: const Text('View Responses'),
+          onPressed: () => context.go(Routes.getMyFormsPath()),
+          icon: const Icon(Icons.folder_outlined, size: 24),
+          label: const Text('My Forms'),
           style: TextButton.styleFrom(
             foregroundColor: onSurfaceColor,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

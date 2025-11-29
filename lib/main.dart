@@ -1,4 +1,5 @@
 import 'package:ephor/config/dependencies.dart';
+import 'package:ephor/data/repositories/auth/auth_repository.dart';
 import 'package:ephor/ui/core/themes/theme_util.dart';
 import 'package:ephor/config/supabase_config.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +57,7 @@ class _EphorState extends State<EphorApp> with WidgetsBindingObserver {
       theme: ephorTheme.light(),
       darkTheme: ephorTheme.dark(),
       themeMode: ThemeMode.light,
-      routerConfig: router(context.read()),
+      routerConfig: router(context.read<AuthRepository>()),
     );
   }
 }
