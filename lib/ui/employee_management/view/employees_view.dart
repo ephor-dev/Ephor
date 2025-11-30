@@ -5,6 +5,7 @@ import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/routing/routes.dart';
 import 'package:ephor/ui/core/ui/employee_info_popover/employee_info_popover.dart';
+import 'package:ephor/ui/core/ui/svg_icon/svg_icon.dart';
 import 'package:ephor/ui/employee_management/view_model/employees_viewmodel.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
@@ -14,7 +15,6 @@ import 'package:go_router/go_router.dart';
 
 class EmployeeListSubView extends StatefulWidget {
   final EmployeeListViewModel viewModel;
-  
   const EmployeeListSubView({super.key, required this.viewModel});
 
   @override
@@ -23,11 +23,15 @@ class EmployeeListSubView extends StatefulWidget {
 
 class _EmployeeListSubViewState extends State<EmployeeListSubView> {
   String sortMethodKey = 'name_ascending';
+  bool _multiSelect = false;
+  List<EmployeeModel> deleteableEmployees = [];
 
   @override
   void initState() {
     super.initState();
     widget.viewModel.loadEmployees.addListener(_onResult);
+    widget.viewModel.deleteEmployee.addListener(_onSingleDeleteFinished);
+    widget.viewModel.deleteBatchEmployees.addListener(_onBatchDeleteFinished);
   }
 
   @override
@@ -37,11 +41,23 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
       oldWidget.viewModel.loadEmployees.removeListener(_onResult);
       widget.viewModel.loadEmployees.addListener(_onResult);
     }
+
+    if (oldWidget.viewModel.deleteEmployee != widget.viewModel.deleteEmployee) {
+      oldWidget.viewModel.deleteEmployee.removeListener(_onSingleDeleteFinished);
+      widget.viewModel.deleteEmployee.addListener(_onSingleDeleteFinished);
+    }
+
+    if (oldWidget.viewModel.deleteBatchEmployees != widget.viewModel.deleteBatchEmployees) {
+      oldWidget.viewModel.deleteBatchEmployees.removeListener(_onBatchDeleteFinished);
+      widget.viewModel.deleteBatchEmployees.addListener(_onBatchDeleteFinished);
+    }
   }
 
   @override
   void dispose() {
     widget.viewModel.loadEmployees.removeListener(_onResult);
+    widget.viewModel.deleteEmployee.removeListener(_onSingleDeleteFinished);
+    widget.viewModel.deleteBatchEmployees.removeListener(_onBatchDeleteFinished);
     super.dispose();
   }
 
@@ -53,6 +69,50 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
     'jobOrder': 'Job-Order Employee',
     null: 'Not Applicable'
   };
+
+  void _onSingleDeleteFinished() {
+    if (widget.viewModel.deleteEmployee.completed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Employee removed successfully!'), backgroundColor: Colors.green),
+      );
+      widget.viewModel.deleteEmployee.clearResult();
+    }
+    if (widget.viewModel.deleteEmployee.error) {
+      Error error = widget.viewModel.deleteEmployee.result as Error;
+      CustomMessageException messageException = error.error as CustomMessageException;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            messageException.message
+          ), 
+          backgroundColor: Theme.of(context).colorScheme.errorContainer
+        ),
+      );
+      widget.viewModel.deleteEmployee.clearResult();
+    }
+  }
+
+  void _onBatchDeleteFinished() {
+    if (widget.viewModel.deleteBatchEmployees.completed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Employees removed successfully!'), backgroundColor: Colors.green),
+      );
+      widget.viewModel.deleteBatchEmployees.clearResult();
+    }
+    if (widget.viewModel.deleteBatchEmployees.error) {
+      Error error = widget.viewModel.deleteBatchEmployees.result as Error;
+      CustomMessageException messageException = error.error as CustomMessageException;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            messageException.message
+          ), 
+          backgroundColor: Theme.of(context).colorScheme.errorContainer
+        ),
+      );
+      widget.viewModel.deleteBatchEmployees.clearResult();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,16 +129,53 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                 isUserHR ? 'Employees' : department != null ? '$department Employees' : 'Employees',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
+              actionsPadding: EdgeInsets.only(right: 8),
               actions: [
-                isUserHR
-                ? IconButton(
+                if (_multiSelect) IconButton(
+                    icon: Icon(
+                      Icons.delete_outline,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    tooltip: 'Delete selected Employees',
+                    onPressed: viewModel.deleteEmployee.running
+                      ? null
+                      : deleteableEmployees.isNotEmpty
+                        ? () => _confirmDelete(context, viewModel, deleteableEmployees)
+                        : null, 
+                ),
+                if (isUserHR) IconButton(
                     icon: const Icon(Icons.person_add),
+                    tooltip: 'Add a User',
                     onPressed: () => context.go(Routes.getAddEmployeePath()), 
-                )
-                : const SizedBox.shrink(),
+                ),
+                if (isUserHR) IconButton(
+                    icon: const SvgIcon(
+                      'assets/images/batch_add.svg',
+                      size: 24,
+                    ),
+                    tooltip: 'Add Multiple Users',
+                    onPressed: () => context.go(Routes.getBatchAddEmployeePath()), 
+                ),
+                if (isUserHR) IconButton(
+                    icon: _multiSelect
+                      ? Icon (
+                          Icons.cancel_outlined,
+                          color: Theme.of(context).colorScheme.error,
+                        )
+                      : const SvgIcon(
+                          'assets/images/batch_delete.svg',
+                          size: 24,
+                        ),
+                    tooltip: 'Batch Delete Users',
+                    onPressed: () {
+                      setState(() {
+                        _multiSelect = !_multiSelect;
+                      });
+                    }, 
+                ),
                 PopupMenuButton<String>(
                   offset: const Offset(0, 50),
-                  // color: const Color(0xFFF7F7F7),
+                  tooltip: 'Sort Employee List',
                   child: Icon(Icons.sort),
                   // Menu Items 
                   itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -107,6 +204,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.refresh),
+                  tooltip: 'Refresh the List',
                   onPressed: viewModel.isLoading ? null : () => viewModel.loadEmployees.execute(),
                 ),
               ],
@@ -124,28 +222,6 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
 
   // Helper method to build the employee list
   Widget _buildEmployeeList(BuildContext context, EmployeeListViewModel viewModel) {
-    // Listener for command results (handling success/error messages)
-    viewModel.deleteEmployee.addListener(() {
-      if (viewModel.deleteEmployee.completed) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Employee removed successfully!'), backgroundColor: Colors.green),
-        );
-        viewModel.deleteEmployee.clearResult();
-      }
-      if (viewModel.deleteEmployee.error) {
-        Error error = viewModel.deleteEmployee.result as Error;
-        CustomMessageException messageException = error.error as CustomMessageException;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              messageException.message
-            ), 
-            backgroundColor: Theme.of(context).colorScheme.errorContainer
-          ),
-        );
-        viewModel.deleteEmployee.clearResult();
-      }
-    });
 
     final bool canEditUsers = viewModel.currentUser?.role == EmployeeRole.humanResource;
     List<EmployeeModel> employeeList = viewModel.employees;
@@ -205,12 +281,25 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                                 employee.photoUrl!.startsWith('http');
 
         return Card(
-          elevation: 1,
+          elevation: 0.25,
           margin: const EdgeInsets.symmetric(vertical: 8.0),
           color: Theme.of(context).colorScheme.surfaceContainer,
           child: GestureDetector(
             child: ListTile(
-              leading: hasValidUrl
+              leading: _multiSelect
+                ? Checkbox(
+                    value: deleteableEmployees.contains(employee), 
+                    onChanged: (value) {
+                      setState(() {
+                        if (value != null && value) {
+                          deleteableEmployees.add(employee);
+                        } else {
+                          deleteableEmployees.remove(employee);
+                        }
+                      });
+                    }
+                  )
+                : hasValidUrl
                   ? CachedNetworkImage(
                       imageUrl: employee.photoUrl!,
                       placeholder: (context, url) => const CircularProgressIndicator(),
@@ -222,7 +311,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                         );
                       },
                     )
-                  : fallbackAvatar, // Render fallback immediately if URL is bad
+                  : fallbackAvatar,
               title: Text(
                 employee.fullName, 
                 style: const TextStyle(fontWeight: FontWeight.w600)
@@ -232,6 +321,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+
                   if (canEditUsers)
                     IconButton(
                       icon: const Icon(Icons.edit_outlined),
@@ -253,7 +343,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                     tooltip: 'Remove Employee',
                     onPressed: viewModel.deleteEmployee.running
                         ? null
-                        : () => _confirmDelete(context, viewModel, employee),
+                        : () => _confirmDelete(context, viewModel, [employee]),
                   ),
                 ],
               ),
@@ -282,18 +372,31 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
   }
 
   // Helper to show confirmation dialog
-  void _confirmDelete(BuildContext context, EmployeeListViewModel vm, EmployeeModel employee) {
+  void _confirmDelete(BuildContext context, EmployeeListViewModel vm, List<EmployeeModel> employeesForDelete) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Deletion'),
-        content: Text('Are you sure you want to remove ${employee.fullName}?'),
+        content: employeesForDelete.length == 1
+          ? Text('Are you sure you want to remove ${employeesForDelete.first.fullName}?')
+          : Text('Are you sure you want to remove ${employeesForDelete.first.fullName}, and ${employeesForDelete.length - 1} others?'),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(context).pop();
-              vm.deleteEmployee.execute(employee); // Execute the command
+
+              if (employeesForDelete.length == 1) {
+                await vm.deleteEmployee.execute(employeesForDelete.first);
+              } else {
+                await vm.deleteBatchEmployees.execute(employeesForDelete);
+              }
+
+              setState(() {
+                // 3. Clear the selection list after deletion
+                deleteableEmployees.clear(); 
+                _multiSelect = false; // Optional: exit selection mode
+              });
             },
             child: const Text('Remove', style: TextStyle(color: Colors.red)),
           ),

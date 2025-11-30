@@ -11,6 +11,7 @@ abstract final class Routes {
   static const dashboardRecommendedTrainings = 'recommended-trainings';
   static const dashboardEmployeeList = 'employee-list';
   static const dashboardAddEmployee = 'add';
+  static const dashboardBatchAddEmployee = 'batch-add';
   static const dashboardEditEmployee = 'edit';
   static const dashboardCATNA1 = 'catna-form-1';
   static const dashboardCATNA2 = 'catna-form-2';
@@ -24,6 +25,7 @@ abstract final class Routes {
   static String getRecommendedTrainingsPath() => '$dashboard/$dashboardRecommendedTrainings';
   static String getEmployeeListPath() => '$dashboard/$dashboardEmployeeList';
   static String getAddEmployeePath() => '$dashboard/$dashboardEmployeeList/$dashboardAddEmployee';
+  static String getBatchAddEmployeePath() => '$dashboard/$dashboardEmployeeList/$dashboardBatchAddEmployee';
   static String getEditEmployeePath() => '$dashboard/$dashboardEmployeeList/$dashboardEditEmployee';
   static String getCATNAForm1Path() => '$dashboard/$dashboardCATNA1';
   static String getCATNAForm2Path() => '$dashboard/$dashboardCATNA2';

@@ -4,6 +4,7 @@ import 'package:ephor/data/repositories/auth/abstract_auth_repository.dart';
 import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/command.dart';
+import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:flutter/foundation.dart';
 
@@ -20,6 +21,7 @@ class EmployeeListViewModel extends ChangeNotifier {
   final bool _isLoading = false;
 
   late CommandWithArgs deleteEmployee;
+  late CommandWithArgs deleteBatchEmployees;
   late CommandNoArgs loadEmployees;
 
   EmployeeListViewModel({
@@ -31,6 +33,7 @@ class EmployeeListViewModel extends ChangeNotifier {
 
     loadEmployees = CommandNoArgs<void>(_loadEmployees);
     deleteEmployee = CommandWithArgs<void, EmployeeModel>(_deleteEmployee);
+    deleteBatchEmployees = CommandWithArgs<void, List<EmployeeModel>>(_deleteBatchEmployees);
 
     _getCurrentUser();
   }
@@ -89,5 +92,22 @@ class EmployeeListViewModel extends ChangeNotifier {
       // Return the error from the repository
       return result; 
     }
+  }
+
+  Future<Result<String>> _deleteBatchEmployees(List<EmployeeModel> employeeList) async {
+    int success = 0;
+    for (EmployeeModel employee in employeeList) {
+      final result = await _deleteEmployee(employee);
+
+      if (result case Ok()) {
+        success++;
+      }
+    }
+
+    if (success != employeeList.length) {
+      return Result.error(CustomMessageException('Only $success of ${employeeList.length} Employees deleted.'));
+    }
+
+    return Result.ok('Batch Employee Deletion successfully finished!');
   }
 }

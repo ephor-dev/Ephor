@@ -98,10 +98,15 @@ class EmployeeRepository implements AbstractEmployeeRepository {
   }
   
   @override
-  Future<Result<void>> removeEmployee(String id) async {
+  Future<Result<String>> removeEmployee(String id) async {
     try {
-      await _supabaseService.removeEmployee(id);
-      return Result.ok(null);
+      final result = await _supabaseService.removeEmployee(id);
+
+      if (result.contains('Failed')) {
+        return Result.error(CustomMessageException(result));
+      }
+
+      return Result.ok(result);
     } on PostgrestException catch (e) {
       return Result.error(CustomMessageException('Database error while removing employee: ${e.message}'));
     } catch (e) {

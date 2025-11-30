@@ -1,5 +1,7 @@
 import 'package:ephor/ui/add_employee/view/add_employee_view.dart';
 import 'package:ephor/ui/add_employee/view_model/add_employee_viewmodel.dart';
+import 'package:ephor/ui/batch_add_employees/view/batch_add_employees_view.dart';
+import 'package:ephor/ui/batch_add_employees/view_model/batch_add_employees_viewmodel.dart';
 import 'package:ephor/ui/catna_form/catna_form1_view.dart';
 import 'package:ephor/ui/catna_form/catna_form2_view.dart';
 import 'package:ephor/ui/catna_form/catna_form3_view.dart';
@@ -117,6 +119,15 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
               path: Routes.dashboardAddEmployee,
               builder: (context, state) => AddEmployeeView(
                 viewModel: AddEmployeeViewModel(
+                  employeeRepository: context.read(),
+                  authRepository: authRepository
+                )
+              )
+            ),
+            GoRoute(
+              path: Routes.dashboardBatchAddEmployee,
+              builder: (context, state) => BatchAddEmployeesView(
+                viewModel: BatchAddEmployeesViewModel(
                   employeeRepository: context.read(),
                   authRepository: authRepository
                 )

@@ -1,11 +1,10 @@
-// ui/add_employee/view_model/add_employee_viewmodel.dart
-
 import 'dart:async';
-import 'dart:math';
 
 import 'package:ephor/data/repositories/auth/abstract_auth_repository.dart';
 import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
 import 'package:ephor/domain/enums/employee_role.dart';
+import 'package:ephor/domain/types/add_employee_params.dart';
+import 'package:ephor/domain/use_cases/employee_model_creator.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:flutter/material.dart';
 
@@ -13,19 +12,6 @@ import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/command.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:image_picker/image_picker.dart'; 
-
-/// Parameter type for the Command: Email and Password are conditionally required.
-typedef AddEmployeeParams = ({
-  String lastName,
-  String firstName,
-  String middleName,
-  String? email, // Now conditionally required
-  String? password, // Now conditionally required
-  EmployeeRole employeeRole, 
-  String? department,
-  String tags,
-  String? photoUrl,
-});
 
 class AddEmployeeViewModel extends ChangeNotifier { 
   
@@ -202,7 +188,7 @@ class AddEmployeeViewModel extends ChangeNotifier {
         photoUrl = null; 
     }
 
-    final EmployeeModel employeeToSave = _createEmployeeModel(params, userId, photoUrl);
+    final EmployeeModel employeeToSave = createEmployeeModel(params, userId, photoUrl);
     
     try {
       final result = await _employeeRepository.addEmployee(employeeToSave);
@@ -211,56 +197,6 @@ class AddEmployeeViewModel extends ChangeNotifier {
       debugPrint('Unexpected error in VM command: $e');
       return Result.error(CustomMessageException('Employee DB record failed to create: ${e.toString()}'));
     }
-  }
-
-  // --- Helper Methods ---
-  
-  EmployeeModel _createEmployeeModel(AddEmployeeParams params, String? userId, String? photoUrl) {
-    final List<String> tagList = params.tags
-        .split(',')
-        .map((String e) => e.trim())
-        .where((String e) => e.isNotEmpty)
-        .toList(growable: false);
-
-    String rolePrefix;
-    switch (params.employeeRole) {
-      case EmployeeRole.supervisor:
-        rolePrefix = 's-';
-        break;
-      case EmployeeRole.humanResource:
-        rolePrefix = 'hr-';
-        break;
-      case EmployeeRole.personnel:
-        rolePrefix = 'p-';
-        break;
-      case EmployeeRole.faculty:
-        rolePrefix = 'f-';
-        break;
-      case EmployeeRole.jobOrder:
-        rolePrefix = 'jo-';
-        break;
-    }
-
-    final now = DateTime.now();
-    final randomPart = Random().nextInt(90000) + 10000;
-    final timePart = now.second.toString().padLeft(2, '0');
-
-    // Final code format: ROLE-#####SS (e.g., hr-1234560)
-    final String employeeCode = '$rolePrefix$randomPart$timePart';
-    // Use the Supabase Auth ID if available, otherwise use null
-    return EmployeeModel(
-      id: userId, 
-      employeeCode: employeeCode, 
-      email: params.email ?? 'N/A', // Set email to N/A if not provided
-      role: params.employeeRole,
-      
-      lastName: params.lastName,
-      firstName: params.firstName,
-      middleName: params.middleName.isEmpty ? null : params.middleName,
-      department: params.department ?? 'N/A', 
-      extraTags: tagList,
-      photoUrl: photoUrl,
-    );
   }
   
   String? _validateForm(AddEmployeeParams params) {

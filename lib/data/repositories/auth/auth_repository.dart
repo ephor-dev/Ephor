@@ -153,15 +153,14 @@ class AuthRepository extends AbstractAuthRepository {
   Future<Result<String>> signUpNewUser(String email, String password) async {
     try {
       final response = await _supabaseService.signUpWithEmail(email, password);
-      final userId = response.user?.id;
-      
-      if (userId == null) {
-        // This case usually means email confirmation is required, but no session was created.
-        if (response.session == null && response.user != null) {
-             return Result.error(CustomMessageException('User created, but requires email confirmation.'));
-        }
-        return Result.error(CustomMessageException('User signup failed.'));
+      final data = response.data;
+
+      if (data is Map && data.containsKey('error')) {
+        return Result.error(CustomMessageException(data['error']));
       }
+
+      final userId = data['userId'];
+      
       return Result.ok(userId);
     } on AuthException catch (e) {
       return Result.error(CustomMessageException('Authentication error: ${e.message}'));
@@ -184,21 +183,6 @@ class AuthRepository extends AbstractAuthRepository {
       return Result.error(CustomMessageException(e.message));
     } catch (e) {
       return Result.error(CustomMessageException('Error updating password: $e'));
-    } finally {
-      _isLoadingController.add(false);
-    }
-  }
-
-  @override
-  Future<Result<void>> changeEmail(String newEmail) async {
-    _isLoadingController.add(true);
-    try {
-      await _supabaseService.changeEmail(newEmail);   
-      return Result.ok(null);
-    } on AuthException catch (e) {
-      return Result.error(CustomMessageException(e.message));
-    } catch (e) {
-      return Result.error(CustomMessageException('Error updating email: $e'));
     } finally {
       _isLoadingController.add(false);
     }
