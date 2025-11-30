@@ -451,9 +451,7 @@ class _DashboardViewState extends State<DashboardView> {
       listenable: widget.viewModel.logout, 
       builder: (context, _) {
         final isMobile = Responsive.isMobile(context);
-        
-        // Use a single Scaffold for all views.
-        // The drawer width is flexible, and the body (widget.child) occupies the rest of the space responsively.
+
         return Scaffold(
           key: _scaffoldKey,
           appBar: _buildAppBar(isMobile: isMobile),

@@ -1,7 +1,7 @@
 import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
 import 'package:flutter/material.dart';
 
-class ConfirmIdentityDialog extends StatefulWidget{
+class ConfirmIdentityDialog extends StatefulWidget {
   final DashboardViewModel viewModel;
   const ConfirmIdentityDialog({
     super.key,

@@ -61,12 +61,16 @@ class SupabaseService {
   // --- Authentication/User Actions (from original SupabaseService) ---
   // -----------------------------------------------------------
 
-  Future<AuthResponse> signUpWithEmail(String email, String password) async {
-    final authResponse = await _client.auth.signUp(
-      email: email,
-      password: password,
+  Future<FunctionResponse> signUpWithEmail(String email, String password) async {
+    final FunctionResponse response = await _client.functions.invoke(
+      'create-employee',
+      body: {
+        'email': email,
+        'password': password,
+        'role': 'employee', // Pass any extra data needed
+      },
     );
-    return authResponse;
+    return response;
   }
 
   Future<AuthResponse> loginWithEmail(String email, String password) async {
@@ -81,15 +85,6 @@ class SupabaseService {
     final userResponse = await _client.auth.updateUser(
       UserAttributes(
         password: password
-      )
-    );
-    return userResponse;
-  }
-
-  Future<UserResponse> changeEmail(String email) async {
-    final userResponse = await _client.auth.updateUser(
-      UserAttributes(
-        email: email
       )
     );
     return userResponse;
@@ -136,7 +131,6 @@ class SupabaseService {
   // --- Employee CRUD Actions (from original EmployeeSupabaseService) ---
   // -----------------------------------------------------------
 
-  /// Inserts a new employee record and returns the created model.
   Future<EmployeeModel> addEmployee(EmployeeModel employee) async {
     final List<Map<String, dynamic>> response = await _client
         .from('employees')
@@ -171,12 +165,52 @@ class SupabaseService {
     return response.map(EmployeeModel.fromJson).toList();
   }
 
-  /// Removes employee by ID.
-  Future<void> removeEmployee(String id) async {
-    await _client
-        .from('employees')
-        .delete()
-        .eq('id', id);
+  Future<String> removeEmployee(String id) async {
+    try {
+      // 1. Fetch the 'role' first to decide how to delete them
+      final Map<String, dynamic> record = await _client
+          .from('employees')
+          .select('role') 
+          .eq('id', id)
+          .single();
+
+      final String role = record['role'].toString();
+
+      final bool hasLoginAccount = 
+          role == 'supervisor' || role == 'humanResource'; 
+
+      if (hasLoginAccount) {
+        // --- PATH A: Privileged User ---
+        // Call Edge Function to delete Auth User + DB Record
+        final result = await _deleteViaEdgeFunction(id);
+        return result;
+      } else {
+        // --- PATH B: Regular Staff ---
+        // Delete directly from the table (Client-Side)
+        await _client
+            .from('employees')
+            .delete()
+            .eq('id', id);
+        return "Removed employee successfully";
+      }
+    } catch (e) {
+      return 'Failed to remove employee: $e';
+    }
+  }
+
+  Future<String> _deleteViaEdgeFunction(String tableId) async {
+    final FunctionResponse response = await _client.functions.invoke(
+      'delete-employee',
+      body: {'employeeId': tableId}, // Pass the Table ID
+    );
+
+    final data = response.data;
+    
+    if (response.status != 200 || (data is Map && data['error'] != null)) {
+      return 'Failed to remove employee: Server deletion failed';
+    }
+
+    return 'Removed employee successfully!';
   }
 
   /// Fetches employee by ID.

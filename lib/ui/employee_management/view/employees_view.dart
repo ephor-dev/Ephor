@@ -15,7 +15,6 @@ import 'package:go_router/go_router.dart';
 
 class EmployeeListSubView extends StatefulWidget {
   final EmployeeListViewModel viewModel;
-  
   const EmployeeListSubView({super.key, required this.viewModel});
 
   @override
@@ -86,7 +85,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                       size: 24,
                     ),
                     tooltip: 'Add Multiple Users',
-                    onPressed: () => context.go(Routes.getAddEmployeePath()), 
+                    onPressed: () => context.go(Routes.getBatchAddEmployeePath()), 
                 )
                 : const SizedBox.shrink(),
                 PopupMenuButton<String>(
