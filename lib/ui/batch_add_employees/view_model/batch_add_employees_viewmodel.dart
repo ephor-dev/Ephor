@@ -108,8 +108,6 @@ class BatchAddEmployeesViewModel extends ChangeNotifier {
   }
 
   Future<Result<String>> _pickCSV() async {
-    setLoading(true);
-
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -141,18 +139,15 @@ class BatchAddEmployeesViewModel extends ChangeNotifier {
           }
         }
 
-        setLoading(false);
         return Result.ok(fileContent); 
       }
 
-      setLoading(false);
       return Result.error(CustomMessageException("File picking cancelled by user"));
 
     } catch (e) {
       if (kDebugMode) {
         print('Error picking file: $e');
       }
-      setLoading(false);
       return Result.error(CustomMessageException("Error picking file: ${e.runtimeType}"));
     }
   }
