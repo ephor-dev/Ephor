@@ -5,7 +5,6 @@ typedef AddEmployeeParams = ({
   String firstName,
   String middleName,
   String? email, // Now conditionally required
-  String? password, // Now conditionally required
   EmployeeRole employeeRole, 
   String? department,
   String tags,

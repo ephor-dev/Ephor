@@ -61,13 +61,13 @@ class SupabaseService {
   // --- Authentication/User Actions (from original SupabaseService) ---
   // -----------------------------------------------------------
 
-  Future<FunctionResponse> signUpWithEmail(String email, String password) async {
+  Future<FunctionResponse> signUpWithEmail(String email) async {
     final FunctionResponse response = await _client.functions.invoke(
       'create-employee',
       body: {
         'email': email,
-        'password': password,
-        'role': 'employee', // Pass any extra data needed
+        'password': 'ephor_app', // Default Password
+        'role': 'employee',
       },
     );
     return response;

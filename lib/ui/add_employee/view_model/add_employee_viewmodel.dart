@@ -38,7 +38,6 @@ class AddEmployeeViewModel extends ChangeNotifier {
   final TextEditingController middleNameController = TextEditingController();
   final TextEditingController tagsController = TextEditingController();
   final TextEditingController emailController = TextEditingController(); // NEW
-  final TextEditingController passwordController = TextEditingController(); // NEW
   
   // --- UI State (Selections) ---
   EmployeeRole employeeRole = EmployeeRole.personnel; 
@@ -61,8 +60,7 @@ class AddEmployeeViewModel extends ChangeNotifier {
     firstNameController.dispose();
     middleNameController.dispose();
     tagsController.dispose();
-    emailController.dispose(); 
-    passwordController.dispose();
+    emailController.dispose();
     super.dispose();
   }
   
@@ -83,7 +81,6 @@ class AddEmployeeViewModel extends ChangeNotifier {
     final requiresLogin = role == EmployeeRole.supervisor || role == EmployeeRole.humanResource;
     if (!requiresLogin) {
       emailController.clear();
-      passwordController.clear();
     }
 
     notifyListeners();
@@ -165,8 +162,7 @@ class AddEmployeeViewModel extends ChangeNotifier {
     if (requiresLogin) {
       // Use non-nullable fields here, as they were validated in _validateForm
       final signUpResult = await _authRepository.signUpNewUser(
-        params.email!, 
-        params.password!,
+        params.email!
       );
       
       if (signUpResult case Ok(value: final id)) {
@@ -205,14 +201,12 @@ class AddEmployeeViewModel extends ChangeNotifier {
     if (params.lastName.length < 2) return 'Last Name must be at least 2 characters';
     if (params.firstName.length < 2) return 'First Name must be at least 2 characters';
 
-    // 🔑 CONDITIONAL VALIDATION: Check for email/password ONLY if login is required
     final bool requiresLogin = params.employeeRole == EmployeeRole.supervisor || 
                                params.employeeRole == EmployeeRole.humanResource;
 
     if (requiresLogin) {
       if (params.email == null || params.email!.isEmpty) return 'Email is required for ${params.employeeRole.name} accounts.';
       if (!RegExp(r'^\S+@\S+\.\S+$').hasMatch(params.email!)) return 'Invalid email format.';
-      if (params.password == null || params.password!.length < 6) return 'Password must be at least 6 characters for login accounts.';
     }
     
     return null;

@@ -206,7 +206,8 @@ class _FormSectionState extends State<FormSection> {
             Text('EMPLOYEE TYPE', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
             const SizedBox(height: 8),
             Container(
-              width: double.infinity, padding: const EdgeInsets.only(left: 16, right: 16),
+              width: double.infinity, 
+              padding: const EdgeInsets.only(left: 16, right: 16),
               decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16)),
               child: EmployeeTypeChooser(viewModel: widget.viewModel),
             ),
@@ -226,7 +227,7 @@ class _FormSectionState extends State<FormSection> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Note: Login is not required for this employee role (Email/Password fields are hidden).',
+                          'Note: Login is not required for this employee role (Email field is hidden).',
                           style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
                         ),
                         const SizedBox(height: 20),
@@ -234,17 +235,16 @@ class _FormSectionState extends State<FormSection> {
                     );
                 }
                 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Email Field
-                    NameField(label: 'EMAIL ADDRESS', controller: widget.viewModel.emailController, decoration: decoration, placeholder: 'Enter employee email', isRequired: true),
-                    const SizedBox(height: 20),
-
-                    // Password Field
-                    NameField(label: 'INITIAL PASSWORD', controller: widget.viewModel.passwordController, decoration: decoration, placeholder: 'Set initial password', isRequired: true),
-                    const SizedBox(height: 20),
-                  ],
+                return Container(
+                  padding: const EdgeInsets.only(left: 16, right: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Email Field
+                      NameField(label: 'EMAIL ADDRESS', controller: widget.viewModel.emailController, decoration: decoration, placeholder: 'Enter employee email', isRequired: true),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 );
               },
             ),
@@ -276,14 +276,17 @@ class _FormSectionState extends State<FormSection> {
             // Tags
             Text('EXTRA TAGS (COMMA SEPARATED, IF APPLICABLE)', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
             const SizedBox(height: 8),
-            TextFormField(
-              controller: widget.viewModel.tagsController, maxLines: null, minLines: 1,
-              style: const TextStyle(fontWeight: FontWeight.w300, color: Colors.black),
-              decoration: decoration.copyWith(
-                hintText: 'i.e. non-teaching',
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: const BorderSide(color: Color(0xFFD4C4B0), width: 1)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: const BorderSide(color: Color(0xFFFFB47B), width: 2)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            Container(
+              padding: const EdgeInsets.only(left: 16, right: 16),
+              child: TextFormField(
+                controller: widget.viewModel.tagsController, maxLines: null, minLines: 1,
+                style: const TextStyle(fontWeight: FontWeight.w300, color: Colors.black),
+                decoration: decoration.copyWith(
+                  hintText: 'i.e. non-teaching',
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: const BorderSide(color: Color(0xFFD4C4B0), width: 1)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: const BorderSide(color: Color(0xFFFFB47B), width: 2)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                ),
               ),
             ),
           ],

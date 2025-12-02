@@ -41,6 +41,38 @@ class _DepartmentRowState extends State<DepartmentRow> {
 
       final Size size = renderBox.size;
       final Offset position = renderBox.localToGlobal(Offset.zero);
+      final double screenHeight = MediaQuery.of(context).size.height;
+      const double dropdownMaxHeight = 300; // From your constraints
+      const double safeMargin = 16; // Margin to keep it away from screen edges
+
+      // 1. Calculate space available below and above the input field
+      final double spaceBelow = screenHeight - (position.dy + size.height) - safeMargin;
+      final double spaceAbove = position.dy - safeMargin;
+
+      // 2. Determine final dropdown height
+      // Use the maximum possible height, limited by the available space
+      double dropdownHeight;
+      bool showAbove;
+
+      if (spaceBelow >= dropdownMaxHeight || spaceBelow >= spaceAbove) {
+        // Enough space below, or more space below than above
+        showAbove = false;
+        dropdownHeight = dropdownMaxHeight;
+      } else {
+        // Not enough space below, so show above
+        showAbove = true;
+        dropdownHeight = spaceAbove > dropdownMaxHeight ? dropdownMaxHeight : spaceAbove;
+      }
+
+      // 3. Calculate the final vertical position (top)
+      double top;
+      if (showAbove) {
+        // Position above the input
+        top = position.dy - dropdownHeight;
+      } else {
+        // Position below the input (original behavior)
+        top = position.dy + size.height;
+      }
 
       _overlayEntry = OverlayEntry(
         builder: (BuildContext context) => GestureDetector(
@@ -51,14 +83,16 @@ class _DepartmentRowState extends State<DepartmentRow> {
                 Positioned.fill(child: Container(color: Colors.transparent)),
                 Positioned(
                   left: position.dx,
-                  top: position.dy + size.height,
+                  // **UPDATED: Use the calculated 'top' position**
+                  top: top, 
                   width: size.width,
                   child: GestureDetector(
                     onTap: () {},
                     child: Material(
                       elevation: 8,
                       child: Container(
-                        constraints: const BoxConstraints(maxHeight: 300),
+                        // **UPDATED: Use the calculated 'dropdownHeight'**
+                        constraints: BoxConstraints(maxHeight: dropdownHeight), 
                         decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xFFE0E0E0))),
                         child: ListView.separated(
                           shrinkWrap: true, padding: EdgeInsets.zero,
@@ -67,6 +101,7 @@ class _DepartmentRowState extends State<DepartmentRow> {
                             height: 1, color: Colors.grey.shade200, margin: const EdgeInsets.symmetric(horizontal: 0),
                           ),
                           itemBuilder: (BuildContext context, int index) {
+                            // ... (Item Builder logic remains the same)
                             final String department = widget.viewModel.departments[index];
                             final bool isSelected = widget.viewModel.selectedDepartment == department;
                             return InkWell(
@@ -99,9 +134,9 @@ class _DepartmentRowState extends State<DepartmentRow> {
                         ),
                       ),
                     ),
+                  ),
                 ),
-              ),
-            ],
+              ],
           ),
         ),
       );
