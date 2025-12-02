@@ -115,14 +115,12 @@ class _AddEmployeeViewState extends State<AddEmployeeView> {
 
                                 // Only send non-null values if login is required
                                 final String? email = requiresLogin ? widget.viewModel.emailController.text.trim() : null;
-                                final String? password = requiresLogin ? widget.viewModel.passwordController.text : null;
                                 
                                   final params = (
                                     lastName: widget.viewModel.lastNameController.text.trim(),
                                     firstName: widget.viewModel.firstNameController.text.trim(),
                                     middleName: widget.viewModel.middleNameController.text.trim(),
-                                    email: email, 
-                                    password: password,
+                                    email: email,
                                     employeeRole: widget.viewModel.employeeRole,
                                     department: widget.viewModel.noDepartment ? null : widget.viewModel.selectedDepartment,
                                     tags: widget.viewModel.tagsController.text,

@@ -55,14 +55,12 @@ class BatchAddEmployeesViewModel extends ChangeNotifier {
 
                                 // Only send non-null values if login is required
       final String? email = requiresLogin ? employee.email : null;
-      final String password = "ephor_app";
       
       AddEmployeeParams params = (
         lastName: employee.lastName,
         firstName: employee.firstName,
         middleName: employee.middleName ?? '',
-        email: email, 
-        password: password,
+        email: email,
         employeeRole: employee.role,
         department: employee.department,
         tags: employee.extraTags.join(','),
@@ -73,8 +71,7 @@ class BatchAddEmployeesViewModel extends ChangeNotifier {
 
       if (requiresLogin) {
         final signUpResult = await _authRepository.signUpNewUser(
-          params.email!, 
-          params.password!,
+          params.email!,
         );
         
         if (signUpResult case Ok(value: final id)) {

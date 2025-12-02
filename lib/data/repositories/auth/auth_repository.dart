@@ -150,9 +150,9 @@ class AuthRepository extends AbstractAuthRepository {
   }
 
   @override
-  Future<Result<String>> signUpNewUser(String email, String password) async {
+  Future<Result<String>> signUpNewUser(String email) async {
     try {
-      final response = await _supabaseService.signUpWithEmail(email, password);
+      final response = await _supabaseService.signUpWithEmail(email);
       final data = response.data;
 
       if (data is Map && data.containsKey('error')) {
