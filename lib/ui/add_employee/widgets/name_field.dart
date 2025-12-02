@@ -6,10 +6,16 @@ class NameField extends StatelessWidget {
     super.key, 
     required this.label, required this.controller, required this.decoration,
     required this.placeholder, this.isRequired = false, this.isOptional = false,
+    this.isEmail = false
   });
 
-  final String label; final TextEditingController controller; final InputDecoration decoration;
-  final String placeholder; final bool isRequired; final bool isOptional;
+  final String label;
+  final TextEditingController controller;
+  final InputDecoration decoration;
+  final String placeholder;
+  final bool isRequired;
+  final bool isOptional;
+  final bool isEmail;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +42,9 @@ class NameField extends StatelessWidget {
           keyboardType: TextInputType.name,
           textCapitalization: TextCapitalization.words,
           inputFormatters: <TextInputFormatter>[
-            FilteringTextInputFormatter.allow(RegExp(r"[a-zA-ZñÑ.\- ]")),
+            isEmail
+              ? FilteringTextInputFormatter.allow(RegExp(r"[a-zA-Z0-9ñÑ@.\-_]"))
+              : FilteringTextInputFormatter.allow(RegExp(r"[a-zA-ZñÑ.\- ]")),
           ],
         ),
       ],

@@ -241,7 +241,14 @@ class _FormSectionState extends State<FormSection> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Email Field
-                      NameField(label: 'EMAIL ADDRESS', controller: widget.viewModel.emailController, decoration: decoration, placeholder: 'Enter employee email', isRequired: true),
+                      NameField(
+                        label: 'EMAIL ADDRESS', 
+                        controller: widget.viewModel.emailController,
+                         decoration: decoration, 
+                         placeholder: 'Enter employee email', 
+                         isRequired: true,
+                         isEmail: true,
+                      ),
                       const SizedBox(height: 20),
                     ],
                   ),
