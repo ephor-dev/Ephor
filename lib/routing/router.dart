@@ -5,6 +5,10 @@ import 'package:ephor/ui/batch_add_employees/view_model/batch_add_employees_view
 import 'package:ephor/ui/catna_form/catna_form1_view.dart';
 import 'package:ephor/ui/catna_form/catna_form2_view.dart';
 import 'package:ephor/ui/catna_form/catna_form3_view.dart';
+import 'package:ephor/ui/catna_form_creator/view/catna_form_creator_view.dart';
+import 'package:ephor/ui/catna_form_creator/view_model/catna_form_creator_view_model.dart';
+import 'package:ephor/ui/my_forms/view/my_forms_view.dart';
+import 'package:ephor/ui/my_forms/view_model/my_forms_view_model.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_assessment/view/finished_assessment_subview.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_assessment/view_model/finished_assessment_viewmodel.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_trainings/view/finished_trainings_subview.dart';
@@ -175,6 +179,29 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           builder: (context, state) => RecommendedTrainingsSubView(
             viewModel: RecommendedTrainingsViewModel(),
           ),
+        ),
+        GoRoute(
+          path: Routes.getCatnaFormCreatorPath(),
+          builder: (context, state) {
+            final formId = state.uri.queryParameters['formId'];
+            return CatnaFormCreatorView(
+              viewModel: CatnaFormCreatorViewModel(
+                formRepository: context.read(),
+                authRepository: authRepository,
+                formIdToLoad: formId,
+              ),
+            );
+          },
+        ),
+        GoRoute(
+          path: Routes.getMyFormsPath(),
+          builder: (context, state) {
+            return MyFormsView(
+              viewModel: MyFormsViewModel(
+                formRepository: context.read(),
+              ),
+            );
+          },
         ),
       ]
     )

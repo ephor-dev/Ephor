@@ -48,3 +48,7 @@ app.*.map.json
 *.jks
 *.keystore
 key.properties
+
+# Ignore all markdown documentation files
+*.md
+!README.md
