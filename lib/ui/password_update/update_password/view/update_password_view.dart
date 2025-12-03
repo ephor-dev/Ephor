@@ -56,7 +56,7 @@ class _UpdatePasswordViewState extends State<UpdatePasswordView> {
       CustomMessageException ex = error.error as CustomMessageException;
       widget.viewModel.updateCommand.clearResult();
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(ex.message), backgroundColor: Colors.red),
+         SnackBar(content: Text(ex.message), backgroundColor: Theme.of(context).colorScheme.error),
       );
     }
   }

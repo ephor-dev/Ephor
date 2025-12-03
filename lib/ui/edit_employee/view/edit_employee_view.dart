@@ -96,7 +96,8 @@ class _EditEmployeeViewState extends State<EditEmployeeView> {
                     OutlinedButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Theme.of(context).colorScheme.onSurface.withAlpha(222), side: const BorderSide(color: Color(0xFFE0E0E0)),
+                        foregroundColor: Theme.of(context).colorScheme.onSurface.withAlpha(222), 
+                        side: BorderSide(color: Theme.of(context).colorScheme.surfaceContainerLow),
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -251,11 +252,20 @@ class _FormSectionState extends State<_FormSection> {
 
   InputDecoration get decoration => InputDecoration(
     filled: true, fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
-    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(14)), borderSide: BorderSide(color: Color(0xFFE0E0E0))),
-    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(14)), borderSide: BorderSide(color: Color(0xFFE0E0E0))),
-    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(14)), borderSide: BorderSide(color: Color(0xFFFFB47B), width: 2)),
-    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-    hintStyle: TextStyle(color: Color.fromRGBO(189, 189, 189, 1), fontWeight: FontWeight.w300),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.all(Radius.circular(14)), 
+      borderSide: BorderSide(color: Theme.of(context).colorScheme.surfaceContainerLow)
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.all(Radius.circular(14)), 
+      borderSide: BorderSide(color: Theme.of(context).colorScheme.surfaceContainerLow)
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.all(Radius.circular(14)), 
+      borderSide: BorderSide(color: Theme.of(context).colorScheme.tertiaryFixed, width: 2)
+    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    hintStyle: const TextStyle(color: Color.fromRGBO(189, 189, 189, 1), fontWeight: FontWeight.w300),
   );
 
   @override
@@ -275,9 +285,9 @@ class _FormSectionState extends State<_FormSection> {
               ? EdgeInsets.all(24)
               : EdgeInsets.zero,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFE8CC),
+              color: Theme.of(context).colorScheme.tertiaryFixed.withAlpha(127),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE0E0E0), width: 2, style: BorderStyle.solid),
+              border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerLow, width: 2, style: BorderStyle.solid),
             ),
             child: widget.viewModel.localImageFile != null
                 ? ClipRRect(
@@ -296,7 +306,7 @@ class _FormSectionState extends State<_FormSection> {
                         height: 176,
                       ),
                   )
-                : const Center(child: Icon(Icons.person_outline, size: 56, color: Color(0xFF9E9E9E))),
+                : Center(child: Icon(Icons.person_outline, size: 56, color: Theme.of(context).colorScheme.tertiaryFixedDim)),
           ),
         ),
         const SizedBox(height: 12),
@@ -307,7 +317,7 @@ class _FormSectionState extends State<_FormSection> {
               width: 130, // Adjusted width for two buttons
               child: OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFFFB47B), side: const BorderSide(color: Color(0xFFFFB47B), width: 1.5),
+                  foregroundColor: Theme.of(context).colorScheme.tertiaryFixedDim, side: BorderSide(color: Theme.of(context).colorScheme.tertiaryFixedDim, width: 1.5),
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -319,7 +329,7 @@ class _FormSectionState extends State<_FormSection> {
             if (widget.viewModel.localImageFile != null) ...[
               const SizedBox(width: 8),
               IconButton(
-                icon: const Icon(Icons.close, color: Colors.red),
+                icon: Icon(Icons.close, color: Theme.of(context).colorScheme.error),
                 onPressed: () => widget.viewModel.clearImage.execute(),
                 tooltip: 'Clear image',
               ),
@@ -340,7 +350,7 @@ class _FormSectionState extends State<_FormSection> {
             // Name field section with necessary padding/decoration
             Container(
               padding: const EdgeInsets.all(16), 
-              decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16)), 
+              decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerLow, borderRadius: BorderRadius.circular(16)), 
               child: isMobile
                   ? Column( // Column layout for mobile
                       children: <Widget>[
@@ -364,17 +374,17 @@ class _FormSectionState extends State<_FormSection> {
             const SizedBox(height: 20),
             
             // Employee Type (Role Selection)
-            Text('EMPLOYEE TYPE', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
+            Text('EMPLOYEE TYPE', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withAlpha(222), letterSpacing: 0.5)),
             const SizedBox(height: 8),
             Container(
               width: double.infinity, padding: const EdgeInsets.only(left: 16, right: 16),
-              decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16)),
+              decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerLow, borderRadius: BorderRadius.circular(16)),
               child: _EmployeeType(viewModel: widget.viewModel),
             ),
             const SizedBox(height: 20),
 
             // Department (Conditionally disabled by HR role)
-            Text('DEPARTMENT', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
+            Text('DEPARTMENT', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withAlpha(222), letterSpacing: 0.5)),
             const SizedBox(height: 8),
             ListenableBuilder(
               listenable: widget.viewModel,
@@ -386,7 +396,7 @@ class _FormSectionState extends State<_FormSection> {
                   opacity: isDepartmentDisabled ? 0.5 : 1.0,
                   child: Container(
                     width: double.infinity, padding: const EdgeInsets.only(left: 16, right: 16),
-                    decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16)),
+                    decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerLow, borderRadius: BorderRadius.circular(16)),
                     child: IgnorePointer(
                       ignoring: isDepartmentDisabled, // Disable interaction
                       child: _DepartmentRow(viewModel: widget.viewModel),
@@ -398,15 +408,15 @@ class _FormSectionState extends State<_FormSection> {
             const SizedBox(height: 20),
             
             // Tags
-            Text('EXTRA TAGS (COMMA SEPARATED, IF APPLICABLE)', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
+            Text('EXTRA TAGS (COMMA SEPARATED, IF APPLICABLE)', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withAlpha(222), letterSpacing: 0.5)),
             const SizedBox(height: 8),
             TextFormField(
               controller: widget.viewModel.tagsController, maxLines: null, minLines: 1,
-              style: const TextStyle(fontWeight: FontWeight.w300, color: Colors.black),
+              style: TextStyle(fontWeight: FontWeight.w300, color: Theme.of(context).colorScheme.onSurface),
               decoration: decoration.copyWith(
                 hintText: 'i.e. non-teaching',
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: const BorderSide(color: Color(0xFFD4C4B0), width: 1)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: const BorderSide(color: Color(0xFFFFB47B), width: 2)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide(color: Theme.of(context).colorScheme.tertiaryFixed.withAlpha(127), width: 1)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide(color: Theme.of(context).colorScheme.tertiaryFixedDim, width: 2)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
             ),
@@ -446,8 +456,8 @@ class _EmployeeTypeState extends State<_EmployeeType> {
 
   @override
   Widget build(BuildContext context) {
-    final Color accentColor = const Color(0xFFFFB47B); 
-    final Color inactiveBg = const Color(0xFFF5F5F5);
+    final Color accentColor = Theme.of(context).colorScheme.tertiaryFixedDim; 
+    final Color inactiveBg = Theme.of(context).colorScheme.surfaceContainerLowest;
 
     final bool isSelfEditing = widget.viewModel.fromUser; 
     
@@ -496,10 +506,10 @@ class _EmployeeTypeState extends State<_EmployeeType> {
               return states.contains(WidgetState.selected) ? accentColor : inactiveBg;
             }),
             foregroundColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-              return states.contains(WidgetState.selected) ? Colors.white : Colors.black87;
+              return states.contains(WidgetState.selected) ? Theme.of(context).colorScheme.surfaceContainerLowest : Theme.of(context).colorScheme.onSurface.withAlpha(222);
             }),
             side: WidgetStateProperty.resolveWith<BorderSide?>((Set<WidgetState> states) {
-              return states.contains(WidgetState.selected) ? BorderSide(color: accentColor, width: 1.5) : const BorderSide(color: Color(0xFFE0E0E0), width: 1.5);
+              return states.contains(WidgetState.selected) ? BorderSide(color: accentColor, width: 1.5) : BorderSide(color: Theme.of(context).colorScheme.surfaceContainerLow, width: 1.5);
             }),
             shape: WidgetStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
@@ -570,12 +580,16 @@ class _DepartmentRowState extends State<_DepartmentRow> {
                       elevation: 8,
                       child: Container(
                         constraints: const BoxConstraints(maxHeight: 300),
-                        decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xFFE0E0E0))),
+                        decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerLowest, border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerLow)),
                         child: ListView.separated(
                           shrinkWrap: true, padding: EdgeInsets.zero,
                           itemCount: widget.viewModel.departments.length,
                           separatorBuilder: (BuildContext context, int index) => Container(
-                            height: 1, color: Colors.grey.shade200, margin: const EdgeInsets.symmetric(horizontal: 0),
+                            height: 1, 
+                            color: Theme.brightnessOf(context) == Brightness.light
+                              ? Colors.grey.shade200
+                              : Colors.grey.shade800, 
+                            margin: const EdgeInsets.symmetric(horizontal: 0),
                           ),
                           itemBuilder: (BuildContext context, int index) {
                             final String department = widget.viewModel.departments[index];
@@ -587,12 +601,12 @@ class _DepartmentRowState extends State<_DepartmentRow> {
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                color: isSelected ? const Color(0xFFF5F5F5) : Colors.white,
+                                color: isSelected ? Theme.of(context).colorScheme.surfaceContainerLow : Theme.of(context).colorScheme.surfaceContainerLowest,
                                 child: Row(
                                   children: <Widget>[
                                     Expanded(
                                       child: Text(department, style: TextStyle(
-                                        color: isSelected ? const Color(0xFFFFB47B) : Colors.black87,
+                                        color: isSelected ? Theme.of(context).colorScheme.tertiaryFixedDim : Theme.of(context).colorScheme.onSurface.withAlpha(222),
                                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                                         fontSize: 15,
                                       )),
@@ -600,7 +614,7 @@ class _DepartmentRowState extends State<_DepartmentRow> {
                                     if (isSelected)
                                       Container(
                                         margin: const EdgeInsets.only(left: 8),
-                                        child: const Icon(Icons.check, color: Color(0xFFFFB47B), size: 20),
+                                        child: Icon(Icons.check, color: Theme.of(context).colorScheme.tertiaryFixedDim, size: 20),
                                       ),
                                   ],
                                 ),
@@ -635,9 +649,12 @@ class _DepartmentRowState extends State<_DepartmentRow> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100, borderRadius: BorderRadius.circular(18),
+              color: Theme.brightnessOf(context) == Brightness.light
+                ?Colors.grey.shade100 
+                : Colors.grey.shade900,
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: _isDropdownOpen ? const Color(0xFFFFB47B) : const Color(0xFFE0E0E0),
+                color: _isDropdownOpen ? Theme.of(context).colorScheme.tertiaryFixedDim : Theme.of(context).colorScheme.surfaceContainerLow,
                 width: _isDropdownOpen ? 2 : 1,
               ),
             ),
@@ -649,7 +666,7 @@ class _DepartmentRowState extends State<_DepartmentRow> {
                     widget.viewModel.noDepartment ? 'Select Department' : (widget.viewModel.selectedDepartment ?? 'Select Department'),
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
-                      color: widget.viewModel.noDepartment || widget.viewModel.selectedDepartment == null ? Colors.grey.shade600 : Colors.black,
+                      color: widget.viewModel.noDepartment || widget.viewModel.selectedDepartment == null ? Colors.grey.shade600 : Theme.of(context).colorScheme.onSurface,
                       fontSize: 15,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -658,7 +675,7 @@ class _DepartmentRowState extends State<_DepartmentRow> {
                 const SizedBox(width: 8),
                 Icon(
                   _isDropdownOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                  color: Colors.black87, size: 24,
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(222), size: 24,
                 ),
               ],
             ),
@@ -682,13 +699,13 @@ class _DepartmentRowState extends State<_DepartmentRow> {
                       _closeDropdown();
                     }
                   },
-                  activeColor: const Color(0xFFFF6B9D),
+                  activeColor: Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(width: 4),
-                const Text(
+                Text(
                   'Not part of any department.', 
                   style: TextStyle(
-                    color: Colors.black87, 
+                    color: Theme.of(context).colorScheme.onSurface.withAlpha(222), 
                     fontWeight: FontWeight.w400, 
                     fontSize: 14
                   )
@@ -724,13 +741,13 @@ class _NameField extends StatelessWidget {
       children: <Widget>[
         Row(
           children: <Widget>[
-            Text(label, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
+            Text(label, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withAlpha(222), letterSpacing: 0.5)),
             if (isOptional)
               Padding(padding: const EdgeInsets.only(left: 4), child: Text('(OPTIONAL)', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w400, color: Colors.grey.shade600, letterSpacing: 0.3, fontSize: 14))),
           ],
         ),
         const SizedBox(height: 8),
-        TextFormField(controller: controller, style: const TextStyle(fontWeight: FontWeight.w300, color: Colors.black), decoration: decoration.copyWith(hintText: placeholder)),
+        TextFormField(controller: controller, style: TextStyle(fontWeight: FontWeight.w300, color: Theme.of(context).colorScheme.onSurface), decoration: decoration.copyWith(hintText: placeholder)),
       ],
     );
   }
