@@ -22,8 +22,8 @@ class _EmployeeTypeChooserState extends State<EmployeeTypeChooser> {
 
   @override
   Widget build(BuildContext context) {
-    final Color accentColor = const Color(0xFFFFB47B); 
-    final Color inactiveBg = const Color(0xFFF5F5F5); 
+    final Color accentColor = Theme.of(context).colorScheme.tertiaryFixedDim; 
+    final Color inactiveBg = Theme.of(context).colorScheme.surfaceContainerLow; 
     
     return SizedBox(
       width: double.infinity,
@@ -66,10 +66,17 @@ class _EmployeeTypeChooserState extends State<EmployeeTypeChooser> {
           return states.contains(WidgetState.selected) ? accentColor : inactiveBg;
         }),
         foregroundColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-          return states.contains(WidgetState.selected) ? Colors.white : Colors.black87;
+          return states.contains(WidgetState.selected) 
+            ? Theme.of(context).colorScheme.surfaceContainerLowest 
+            : Theme.of(context).colorScheme.onSurface.withAlpha(222);
         }),
         side: WidgetStateProperty.resolveWith<BorderSide?>((Set<WidgetState> states) {
-          return states.contains(WidgetState.selected) ? BorderSide(color: accentColor, width: 1.5) : const BorderSide(color: Color(0xFFE0E0E0), width: 1.5);
+          return states.contains(WidgetState.selected) 
+            ? BorderSide(color: accentColor, width: 1.5) 
+            : BorderSide(
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              width: 1.5
+            );
         }),
         shape: WidgetStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
         padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),

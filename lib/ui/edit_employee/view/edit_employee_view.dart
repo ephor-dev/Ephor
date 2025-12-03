@@ -62,7 +62,7 @@ class _EditEmployeeViewState extends State<EditEmployeeView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.message),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.error,
           duration: const Duration(seconds: 3),
         ),
       );
@@ -96,7 +96,7 @@ class _EditEmployeeViewState extends State<EditEmployeeView> {
                     OutlinedButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.black87, side: const BorderSide(color: Color(0xFFE0E0E0)),
+                        foregroundColor: Theme.of(context).colorScheme.onSurface.withAlpha(222), side: const BorderSide(color: Color(0xFFE0E0E0)),
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -126,9 +126,9 @@ class _EditEmployeeViewState extends State<EditEmployeeView> {
                                 },
                             // ... (Button styling and loader remains the same) ...
                           child: isLoading
-                              ? const SizedBox(
+                              ? SizedBox(
                                     width: 20, height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                                    child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.surfaceContainerLowest)),
                                   )
                               : const Text('Confirm Edit', style: TextStyle(fontWeight: FontWeight.w600)),
                         );
@@ -146,11 +146,11 @@ class _EditEmployeeViewState extends State<EditEmployeeView> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
         elevation: 1.0,
-        title: const Text('Edit Employee Information', style: TextStyle(color: Colors.black)),
+        title: Text('Edit Employee Information', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () {
             if (widget.viewModel.fromUser) {
               context.go(Routes.dashboard);
@@ -226,7 +226,7 @@ class _FormSectionState extends State<_FormSection> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.message),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.error,
           duration: const Duration(seconds: 3),
         ),
       );
@@ -249,8 +249,8 @@ class _FormSectionState extends State<_FormSection> {
     }
   }
 
-  final InputDecoration decoration = const InputDecoration(
-    filled: true, fillColor: Colors.white,
+  InputDecoration get decoration => InputDecoration(
+    filled: true, fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
     border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(14)), borderSide: BorderSide(color: Color(0xFFE0E0E0))),
     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(14)), borderSide: BorderSide(color: Color(0xFFE0E0E0))),
     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(14)), borderSide: BorderSide(color: Color(0xFFFFB47B), width: 2)),

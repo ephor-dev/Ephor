@@ -24,19 +24,47 @@ class NameField extends StatelessWidget {
       children: <Widget>[
         Row(
           children: <Widget>[
-            Text(label, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
+            Text(
+              label, 
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600, 
+                color: Theme.of(context).colorScheme.onSurface.withAlpha(222), 
+                letterSpacing: 0.5
+              )
+            ),
             if (isRequired)
-              const Padding(padding: EdgeInsets.only(left: 4), child: Text('*', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600, fontSize: 16))),
+              Padding(
+                padding: EdgeInsets.only(left: 4), 
+                child: Text(
+                  '*', 
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary, 
+                    fontWeight: FontWeight.w600, 
+                    fontSize: 16
+                  )
+                )
+              ),
             if (isOptional)
-              Padding(padding: const EdgeInsets.only(left: 4), child: Text('(OPTIONAL)', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w400, color: Colors.grey.shade600, letterSpacing: 0.3, fontSize: 14))),
+              Padding(
+                padding: const EdgeInsets.only(left: 4), 
+                child: Text('(OPTIONAL)', 
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w400, 
+                  color: Theme.of(context).brightness == Brightness.light
+                    ? Colors.grey.shade600
+                    : Colors.grey.shade400, 
+                  letterSpacing: 0.3, fontSize: 14
+                )
+              )
+            ),
           ],
         ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w300, 
-            color: Colors.black
+            color: Theme.of(context).colorScheme.onSurface
           ),
           decoration: decoration.copyWith(hintText: placeholder),
           keyboardType: TextInputType.name,

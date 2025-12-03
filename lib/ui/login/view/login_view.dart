@@ -200,7 +200,6 @@ class _LoginViewState extends State<LoginView> {
           suffixIcon: IconButton(
             icon: Icon(
               _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-              // color: Colors.grey,
             ),
             onPressed: () {
               setState(() {
@@ -327,11 +326,11 @@ class _LoginViewState extends State<LoginView> {
             margin: const EdgeInsets.symmetric(vertical: 32.0),
             padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 32.0),
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha(224),
+              color: Theme.of(context).colorScheme.surfaceContainerLowest.withAlpha(224),
               borderRadius: BorderRadius.circular(45),
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
-                  color: Colors.black12,
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(31),
                   blurRadius: 10,
                   offset: Offset(0, 5),
                 ),
@@ -362,7 +361,6 @@ class _LoginViewState extends State<LoginView> {
             )
           )
         ),
-        // color: Theme.of(context).colorScheme.surface,
         child: Responsive(
           mobile: Padding(
             padding: const EdgeInsets.all(16.0),

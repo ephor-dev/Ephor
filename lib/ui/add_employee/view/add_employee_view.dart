@@ -60,7 +60,7 @@ class _AddEmployeeViewState extends State<AddEmployeeView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.message),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.error,
           duration: const Duration(seconds: 3),
         ),
       );
@@ -92,7 +92,10 @@ class _AddEmployeeViewState extends State<AddEmployeeView> {
                     OutlinedButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.black87, side: const BorderSide(color: Color(0xFFE0E0E0)),
+                        foregroundColor: Theme.of(context).colorScheme.onSurface.withAlpha(222), 
+                        side: BorderSide(
+                          color: Theme.of(context).colorScheme.surfaceContainerLow
+                        ),
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -130,9 +133,9 @@ class _AddEmployeeViewState extends State<AddEmployeeView> {
                                 },
                             // ... (Button styling and loader remains the same) ...
                           child: isLoading
-                              ? const SizedBox(
+                              ? SizedBox(
                                     width: 20, height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                                    child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.surfaceContainerLowest)),
                                   )
                               : const Text('Confirm', style: TextStyle(fontWeight: FontWeight.w600)),
                         );
@@ -150,11 +153,19 @@ class _AddEmployeeViewState extends State<AddEmployeeView> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
         elevation: 1.0,
-        title: const Text('Add New Employee', style: TextStyle(color: Colors.black)),
+        title: Text(
+          'Add New Employee',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface
+          )
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(
+            Icons.arrow_back, 
+            color: Theme.of(context).colorScheme.onSurface
+          ),
           onPressed: () => context.pop(),
           tooltip: 'Back to Employee List',
         ),
