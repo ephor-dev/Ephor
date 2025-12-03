@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
+import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/routing/routes.dart';
 import 'package:ephor/ui/core/ui/confirm_identity_dialog/confirm_identity_dialog.dart';
 import 'package:ephor/ui/core/ui/dashboard_menu_item/dashboard_menu_item.dart';
@@ -24,14 +25,29 @@ class _DashboardViewState extends State<DashboardView> {
   
   static const Color _primaryRed = Color(0xFFAC312B);
 
-  final List<Map<String, dynamic>> menuItems = [
-    {'title': 'Overview', 'icon': Icons.description_outlined, 'selected': true, 'path': Routes.dashboardOverview},
-    {'title': 'Employee List', 'icon': Icons.list, 'selected': false, 'path': Routes.dashboardEmployeeList},
-    {'title': 'Upcoming Schedules', 'icon': Icons.schedule_outlined, 'selected': false, 'path': Routes.dashboardSchedules},
-    {'title': 'Finished Assessments', 'icon': Icons.check_box_outlined, 'selected': false, 'path': Routes.dashboardAssessments},
-    {'title': 'Finished Trainings', 'icon': Icons.check_outlined, 'selected': false, 'path': Routes.dashboardFinishedTrainings},
-    {'title': 'Recommended Trainings', 'icon': Icons.wb_sunny_outlined, 'selected': false, 'path': Routes.dashboardRecommendedTrainings},
-  ];
+  List<Map<String, dynamic>> get menuItems {
+    final currentUser = widget.viewModel.currentUser.value;
+    final baseItems = [
+      {'title': 'Overview', 'icon': Icons.description_outlined, 'selected': true, 'path': Routes.dashboardOverview},
+      {'title': 'Employee List', 'icon': Icons.list, 'selected': false, 'path': Routes.dashboardEmployeeList},
+      {'title': 'Upcoming Schedules', 'icon': Icons.schedule_outlined, 'selected': false, 'path': Routes.dashboardSchedules},
+      {'title': 'Finished Assessments', 'icon': Icons.check_box_outlined, 'selected': false, 'path': Routes.dashboardAssessments},
+      {'title': 'Finished Trainings', 'icon': Icons.check_outlined, 'selected': false, 'path': Routes.dashboardFinishedTrainings},
+      {'title': 'Recommended Trainings', 'icon': Icons.wb_sunny_outlined, 'selected': false, 'path': Routes.dashboardRecommendedTrainings},
+    ];
+
+    // Add CATNA forms only for HR and Supervisors
+    if (currentUser != null &&
+        (currentUser.role == EmployeeRole.humanResource || currentUser.role == EmployeeRole.supervisor)) {
+      baseItems.addAll([
+        {'title': 'CATNA Form 1', 'icon': Icons.assignment_outlined, 'selected': false, 'path': Routes.dashboardCATNA1},
+        {'title': 'CATNA Form 2', 'icon': Icons.assignment_turned_in_outlined, 'selected': false, 'path': Routes.dashboardCATNA2},
+        {'title': 'CATNA Form 3', 'icon': Icons.assignment_turned_in, 'selected': false, 'path': Routes.dashboardCATNA3},
+      ]);
+    }
+
+    return baseItems;
+  }
 
   int _getSelectedIndex() {
     final location = GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;

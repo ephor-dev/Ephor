@@ -285,4 +285,16 @@ class SupabaseService {
 
     return null;
   }
+
+  // -----------------------------------------------------------
+  // --- CATNA Assessments (CATNA Forms 1–3) -------------------
+  // -----------------------------------------------------------
+
+  /// Inserts a CATNA assessment payload into the `catna_assessments` table.
+  ///
+  /// The payload is expected to match the JSON structure used in the UI
+  /// (employee_code, identifying_data, competency_ratings, training_needs, quarter_plans).
+  Future<void> insertCatnaAssessment(Map<String, dynamic> payload) async {
+    await _client.from('catna_assessments').insert(payload);
+  }
 }

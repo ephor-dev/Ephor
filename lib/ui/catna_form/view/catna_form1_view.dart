@@ -1,55 +1,55 @@
 import 'package:ephor/routing/routes.dart';
+import 'package:ephor/ui/catna_form/view_model/catna_form1_viewmodel.dart';
+import 'package:ephor/ui/catna_form/view_model/catna_form_shared_viewmodel.dart';
 import 'package:ephor/ui/core/ui/date_picker/date_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
-class CatnaForm1View extends StatefulWidget {
+class CatnaForm1View extends StatelessWidget {
   const CatnaForm1View({super.key});
 
   @override
-  State<CatnaForm1View> createState() => _CatnaForm1ViewState();
+  Widget build(BuildContext context) {
+    return const _CatnaForm1ViewContent();
+  }
 }
 
-class _CatnaForm1ViewState extends State<CatnaForm1View> {
-  DateTime? _dateStarted;
-  final TextEditingController _dateStartedController = TextEditingController();
-
-  DateTime? _dateFinished;
-  final TextEditingController _dateFinishedController = TextEditingController();
-
-  DateTime? _assessmentDate;
-  final TextEditingController _assessmentDateController =
-      TextEditingController();
-
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _middleNameController = TextEditingController();
-  final TextEditingController _yearsInCurrentPositionController =
-      TextEditingController();
-
-  String? _selectedDesignation;
-  String? _selectedOffice;
-  String? _selectedOperatingUnit;
-  String? _selectedPurpose;
+class _CatnaForm1ViewContent extends StatefulWidget {
+  const _CatnaForm1ViewContent();
 
   @override
-  void dispose() {
-    _dateStartedController.dispose();
-    _dateFinishedController.dispose();
-    _assessmentDateController.dispose();
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _middleNameController.dispose();
-    _yearsInCurrentPositionController.dispose();
-    super.dispose();
+  State<_CatnaForm1ViewContent> createState() => _CatnaForm1ViewState();
+}
+
+class _CatnaForm1ViewState extends State<_CatnaForm1ViewContent> {
+
+  void _showValidationDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Validation Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _selectDate({
     required BuildContext context,
+    required CatnaForm1ViewModel vm,
     required DateTime? currentDate,
-    required Function(DateTime) setDate,
-    required TextEditingController controller,
+    required Function(DateTime?) setDate,
   }) async {
     final DateTime? picked = await showEphorDatePicker(
       context, 
@@ -60,36 +60,33 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
     );
 
     if (picked != null && picked != currentDate) {
-      setState(() {
-        setDate(picked);
-        String formattedDate =
-            '${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}';
-        controller.text = formattedDate;
-      });
+      setDate(picked);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    const double cornerRadius = 8;
-    const double panelSpacing = 8;
-    const double fontsizeSize1 = 14;
-    const double spacing1 = 16;
-    const double spacing2 = 8;
-    const double spacing3 = 4;
-    final List<String> designationChoices = [
-      'Software Engineer',
-      'Product Manager',
-      'UX Designer',
-      'Data Scientist',
-    ];
-    final List<String> officeChoices = [
-      'College of Engineering (CoE)',
-      'College of Informatics and Computing Sciences (CICS)',
-    ];
-    final List<String> operatingUnitChoices = ['Alangilan', 'Pablo Borbon'];
-    final List<String> purposeChoices = ['Annual Review', 'Random Assessment'];
-    return Scaffold(
+    return Consumer<CatnaForm1ViewModel>(
+      builder: (context, vm, _) {
+        const double cornerRadius = 8;
+        const double panelSpacing = 8;
+        const double fontsizeSize1 = 14;
+        const double spacing1 = 16;
+        const double spacing2 = 8;
+        const double spacing3 = 4;
+        final List<String> designationChoices = [
+          'Software Engineer',
+          'Product Manager',
+          'UX Designer',
+          'Data Scientist',
+        ];
+        final List<String> officeChoices = [
+          'College of Engineering (CoE)',
+          'College of Informatics and Computing Sciences (CICS)',
+        ];
+        final List<String> operatingUnitChoices = ['Alangilan', 'Pablo Borbon'];
+        final List<String> purposeChoices = ['Annual Review', 'Random Assessment'];
+        return Scaffold(
       backgroundColor: Colors.grey,
       body: SingleChildScrollView(
         child: Padding(
@@ -197,7 +194,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                             children: [
                               Expanded(
                                 child: TextField(
-                                  controller: _firstNameController,
+                                  controller: vm.firstNameController,
                                   decoration: const InputDecoration(
                                     labelText: 'First Name',
                                     border: OutlineInputBorder(),
@@ -207,7 +204,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                               const SizedBox(width: spacing2),
                               Expanded(
                                 child: TextField(
-                                  controller: _lastNameController,
+                                  controller: vm.lastNameController,
                                   decoration: const InputDecoration(
                                     labelText: 'Last Name',
                                     border: OutlineInputBorder(),
@@ -217,7 +214,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                               const SizedBox(width: spacing2),
                               Expanded(
                                 child: TextField(
-                                  controller: _middleNameController,
+                                  controller: vm.middleNameController,
                                   decoration: const InputDecoration(
                                     labelText: 'Middle Name',
                                     border: OutlineInputBorder(),
@@ -235,7 +232,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                                 child: Column(
                                   children: [
                                     DropdownButtonFormField<String>(
-                                      initialValue: _selectedDesignation,
+                                      value: vm.selectedDesignation,
                                       isExpanded: true,
                                       selectedItemBuilder:
                                           (BuildContext context) {
@@ -259,9 +256,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                                         );
                                       }).toList(),
                                       onChanged: (value) {
-                                        setState(() {
-                                          _selectedDesignation = value;
-                                        });
+                                        vm.setSelectedDesignation(value);
                                       },
                                       decoration: const InputDecoration(
                                         labelText: 'Position / Designation',
@@ -270,7 +265,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                                     ),
                                     const SizedBox(height: spacing1),
                                     DropdownButtonFormField<String>(
-                                      initialValue: _selectedOffice,
+                                      value: vm.selectedOffice,
                                       isExpanded: true,
                                       selectedItemBuilder:
                                           (BuildContext context) {
@@ -291,9 +286,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                                         );
                                       }).toList(),
                                       onChanged: (value) {
-                                        setState(() {
-                                          _selectedOffice = value;
-                                        });
+                                        vm.setSelectedOffice(value);
                                       },
                                       decoration: const InputDecoration(
                                         labelText: 'Office/College',
@@ -320,15 +313,14 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                                       children: [
                                         Expanded(
                                           child: TextField(
-                                            controller: _dateStartedController,
+                                            controller: vm.dateStartedController,
                                             readOnly: true,
                                             onTap: () => _selectDate(
                                               context: context,
-                                              currentDate: _dateStarted,
+                                              vm: vm,
+                                              currentDate: vm.dateStarted,
                                               setDate: (picked) =>
-                                                  _dateStarted = picked,
-                                              controller:
-                                                  _dateStartedController,
+                                                  vm.setDateStarted(picked),
                                             ),
                                             decoration: const InputDecoration(
                                               labelText: 'Start Date',
@@ -346,15 +338,14 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                                         const SizedBox(width: spacing2),
                                         Expanded(
                                           child: TextField(
-                                            controller: _dateFinishedController,
+                                            controller: vm.dateFinishedController,
                                             readOnly: true,
                                             onTap: () => _selectDate(
                                               context: context,
-                                              currentDate: _dateFinished,
+                                              vm: vm,
+                                              currentDate: vm.dateFinished,
                                               setDate: (picked) =>
-                                                  _dateFinished = picked,
-                                              controller:
-                                                  _dateFinishedController,
+                                                  vm.setDateFinished(picked),
                                             ),
                                             decoration: const InputDecoration(
                                               labelText: 'Finish Date',
@@ -382,7 +373,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                                   children: [
                                     const SizedBox(height: spacing2),
                                     DropdownButtonFormField<String>(
-                                      initialValue: _selectedOperatingUnit,
+                                      value: vm.selectedOperatingUnit,
                                       isExpanded: true,
                                       selectedItemBuilder:
                                           (BuildContext context) {
@@ -406,9 +397,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                                         );
                                       }).toList(),
                                       onChanged: (value) {
-                                        setState(() {
-                                          _selectedOperatingUnit = value;
-                                        });
+                                        vm.setSelectedOperatingUnit(value);
                                       },
                                       decoration: const InputDecoration(
                                         labelText: 'Operating Unit / Campus',
@@ -418,7 +407,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                                     const SizedBox(height: spacing1),
                                     TextField(
                                       controller:
-                                          _yearsInCurrentPositionController,
+                                          vm.yearsInCurrentPositionController,
                                       decoration: const InputDecoration(
                                         labelText: 'Years in Current Position',
                                         border: OutlineInputBorder(),
@@ -441,14 +430,14 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                                     ),
                                     const SizedBox(height: spacing3),
                                     TextField(
-                                      controller: _assessmentDateController,
+                                      controller: vm.assessmentDateController,
                                       readOnly: true,
                                       onTap: () => _selectDate(
                                         context: context,
-                                        currentDate: _assessmentDate,
+                                        vm: vm,
+                                        currentDate: vm.assessmentDate,
                                         setDate: (picked) =>
-                                            _assessmentDate = picked,
-                                        controller: _assessmentDateController,
+                                            vm.setAssessmentDate(picked),
                                       ),
                                       decoration: const InputDecoration(
                                         labelText: 'mm/dd/yyyy',
@@ -477,7 +466,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                               ),
                               const SizedBox(height: spacing3),
                               DropdownButtonFormField<String>(
-                                initialValue: _selectedPurpose,
+                                value: vm.selectedPurpose,
                                 isExpanded: true,
                                 selectedItemBuilder: (BuildContext context) {
                                   return purposeChoices.map<Widget>((
@@ -497,9 +486,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                                   );
                                 }).toList(),
                                 onChanged: (value) {
-                                  setState(() {
-                                    _selectedPurpose = value;
-                                  });
+                                  vm.setSelectedPurpose(value);
                                 },
                                 decoration: const InputDecoration(
                                   labelText: 'Office/College',
@@ -522,31 +509,47 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                   height: 50, // Increased height to prevent clipping
                   width: 640,
                   // Use Align to push the button to the left
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        context.go(Routes.getCATNAForm2Path());
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.surface,
-                        foregroundColor: Theme.of(context).colorScheme.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(cornerRadius),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            final validationError = vm.validateForm();
+                            if (validationError != null) {
+                              print('Form 1 Validation Error: $validationError'); // Debug log
+                              _showValidationDialog(context, validationError);
+                              return;
+                            }
+
+                            final sharedVm =
+                                context.read<CatnaFormSharedViewModel>();
+
+                            sharedVm.saveIdentifyingData(vm.buildIdentifyingData());
+
+                            context.go(Routes.getCATNAForm2Path());
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surface,
+                            foregroundColor:
+                                Theme.of(context).colorScheme.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(cornerRadius),
+                            ),
+                          ),
+                          child: const Text(
+                            'Next',
+                            style: TextStyle(color: Color(0xFFDE3535)),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'Next',
-                        style: TextStyle(color: Color(0xFFDE3535)),
                       ),
                     ),
                   ),
-                ),
-              ),
             ],
           ),
         ),
       ),
+        );
+      },
     );
   }
 }

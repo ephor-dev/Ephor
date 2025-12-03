@@ -1,8 +1,12 @@
 import 'package:ephor/ui/add_employee/view/add_employee_view.dart';
 import 'package:ephor/ui/add_employee/view_model/add_employee_viewmodel.dart';
-import 'package:ephor/ui/catna_form/catna_form1_view.dart';
-import 'package:ephor/ui/catna_form/catna_form2_view.dart';
-import 'package:ephor/ui/catna_form/catna_form3_view.dart';
+import 'package:ephor/ui/catna_form/view/catna_form1_view.dart';
+import 'package:ephor/ui/catna_form/view/catna_form2_view.dart';
+import 'package:ephor/ui/catna_form/view/catna_form3_view.dart';
+import 'package:ephor/ui/catna_form/view_model/catna_form1_viewmodel.dart';
+import 'package:ephor/ui/catna_form/view_model/catna_form2_viewmodel.dart';
+import 'package:ephor/ui/catna_form/view_model/catna_form3_viewmodel.dart';
+import 'package:ephor/ui/catna_form/view_model/catna_form_shared_viewmodel.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_assessment/view/finished_assessment_subview.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_assessment/view_model/finished_assessment_viewmodel.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_trainings/view/finished_trainings_subview.dart';
@@ -27,6 +31,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:ephor/data/repositories/auth/auth_repository.dart';
+import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/ui/login/view_model/login_viewmodel.dart';
 import 'package:ephor/ui/login/view/login_view.dart';
 import 'package:ephor/ui/dashboard/view/dashboard_view.dart';
@@ -71,9 +76,12 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
     ),
     ShellRoute(
       builder: (BuildContext context, GoRouterState state, Widget child) {
-        return DashboardView(
-          viewModel: DashboardViewModel(authRepository: context.read()),
-          child: child
+        return ChangeNotifierProvider(
+          create: (_) => CatnaFormSharedViewModel(),
+          child: DashboardView(
+            viewModel: DashboardViewModel(authRepository: context.read()),
+            child: child,
+          ),
         );
       },
       routes: [
@@ -89,15 +97,37 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
         ),
         GoRoute(
           path: Routes.getCATNAForm1Path(),
-          builder: (context, state) => CatnaForm1View()
+          builder: (context, state) {
+            final vm = CatnaForm1ViewModel(
+              sharedViewModel: context.read(),
+            );
+            return ChangeNotifierProvider.value(
+              value: vm,
+              child: const CatnaForm1View(),
+            );
+          }
         ),
         GoRoute(
           path: Routes.getCATNAForm2Path(),
-          builder: (context, state) => CatnaForm2View()
+          builder: (context, state) {
+            final vm = CatnaForm2ViewModel(
+              sharedViewModel: context.read(),
+            );
+            return ChangeNotifierProvider.value(
+              value: vm,
+              child: const CatnaForm2View(),
+            );
+          }
         ),
         GoRoute(
           path: Routes.getCATNAForm3Path(),
-          builder: (context, state) => CatnaForm3View()
+          builder: (context, state) => ChangeNotifierProvider(
+            create: (context) => CatnaForm3ViewModel(
+              catnaRepository: context.read(),
+              authRepository: context.read(),
+            ),
+            child: const CatnaForm3View(),
+          )
         ),
         GoRoute(
           path: Routes.getEmployeeListPath(),
@@ -207,7 +237,21 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
     return null;
   }
 
-  // 3. Logged in normally → prevent returning to login/reset pages
+  // 3. Check CATNA form access permissions
+  final isCatnaForm1 = state.matchedLocation == Routes.getCATNAForm1Path();
+  final isCatnaForm2 = state.matchedLocation == Routes.getCATNAForm2Path();
+  final isCatnaForm3 = state.matchedLocation == Routes.getCATNAForm3Path();
+
+  if (isCatnaForm1 || isCatnaForm2 || isCatnaForm3) {
+    final currentUser = authRepo.currentUser;
+    if (currentUser == null ||
+        (currentUser.role != EmployeeRole.humanResource && currentUser.role != EmployeeRole.supervisor)) {
+      // Redirect to dashboard if user doesn't have permission
+      return Routes.dashboard;
+    }
+  }
+
+  // 4. Logged in normally → prevent returning to login/reset pages
   if (loggingIn || recoveringPassword || updatingPassword) {
     return Routes.dashboard;
   }

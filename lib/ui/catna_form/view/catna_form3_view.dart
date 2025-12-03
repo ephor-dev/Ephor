@@ -1,6 +1,11 @@
 import 'package:ephor/routing/routes.dart';
+import 'package:ephor/ui/catna_form/view_model/catna_form3_viewmodel.dart';
+import 'package:ephor/ui/catna_form/view_model/catna_form_shared_viewmodel.dart';
+import 'package:ephor/utils/custom_message_exception.dart';
+import 'package:ephor/utils/results.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class CatnaForm3View extends StatefulWidget {
   const CatnaForm3View({super.key});
@@ -17,6 +22,26 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
   final List<bool> _categoryCheckStatesQ2 = List.generate(4, (index) => false);
   final List<bool> _categoryCheckStatesQ3 = List.generate(4, (index) => false);
   final List<bool> _categoryCheckStatesQ4 = List.generate(4, (index) => false);
+
+  void _showValidationDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Validation Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -733,7 +758,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pop(context);
+                            context.go(Routes.getCATNAForm2Path());
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(context).colorScheme.surface,
@@ -749,22 +774,138 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                         ),
 
                         const SizedBox(width: buttonSpacing),
-                        ElevatedButton(
-                          onPressed: () {
-                            context.go(Routes.dashboard);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(cornerRadius),
-                            ),
+                        Consumer<CatnaForm3ViewModel>(
+                          builder: (context, vm, child) {
+                            if (vm.canSubmitAssessment) {
+                              return ElevatedButton(
+                                onPressed: () async {
+                                  final sharedVm =
+                                      context.read<CatnaFormSharedViewModel>();
+
+                                  // Build training_needs JSON
+                                  final trainingNeeds = <String, dynamic>{
+                                    'knowledge': [
+                                      for (var i = 0; i < knowledgeTrainingItems.length; i++)
+                                        if (_knowledgeCheckStates[i]) knowledgeTrainingItems[i],
+                                    ],
+                                    'skills': [
+                                      for (var i = 0; i < skillTrainingItems.length; i++)
+                                        if (_skillCheckStates[i]) skillTrainingItems[i],
+                                    ],
+                                    'attitudes': [
+                                      for (var i = 0; i < attitudeTrainingItems.length; i++)
+                                        if (_attitudeCheckStates[i]) attitudeTrainingItems[i],
+                                    ],
+                                  };
+
+                                  // Build quarter_plans JSON (titles are not yet captured in the UI)
+                                  Map<String, dynamic> buildQuarterPlan(
+                                    List<bool> categoryStates,
+                                  ) {
+                                    return {
+                                      'title': null,
+                                      'categories': {
+                                        'mandatory': categoryStates[0],
+                                        'knowledge_based': categoryStates[1],
+                                        'skill_based': categoryStates[2],
+                                        'attitudinal_based': categoryStates[3],
+                                      },
+                                    };
+                                  }
+
+                                  final quarterPlans = <String, dynamic>{
+                                    'q1': buildQuarterPlan(_categoryCheckStatesQ1),
+                                    'q2': buildQuarterPlan(_categoryCheckStatesQ2),
+                                    'q3': buildQuarterPlan(_categoryCheckStatesQ3),
+                                    'q4': buildQuarterPlan(_categoryCheckStatesQ4),
+                                  };
+
+                                  // Validate all form data before submission
+                                  final validationError = vm.validateAllForms(
+                                    identifyingData: sharedVm.identifyingData,
+                                    competencyRatings: sharedVm.competencyRatings,
+                                    trainingNeeds: trainingNeeds,
+                                    quarterPlans: quarterPlans,
+                                  );
+
+                                  if (validationError != null) {
+                                    print('Form 3 Validation Error: $validationError'); // Debug log
+                                    _showValidationDialog(context, validationError);
+                                    return;
+                                  }
+
+                                  final payload = <String, dynamic>{
+                                    if (sharedVm.identifyingData != null)
+                                      'identifying_data': sharedVm.identifyingData,
+                                    if (sharedVm.competencyRatings != null)
+                                      'competency_ratings':
+                                          sharedVm.competencyRatings,
+                                    'training_needs': trainingNeeds,
+                                    'quarter_plans': quarterPlans,
+                                  };
+
+                                  final Result<void> result =
+                                      await vm.submitCatna(payload);
+
+                                  if (!mounted) return;
+
+                                  switch (result) {
+                                    case Ok():
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'CATNA training needs submitted successfully.',
+                                          ),
+                                        ),
+                                      );
+                                      context.go(Routes.dashboard);
+                                    case Error(error: final e):
+                                      final message = e is CustomMessageException
+                                          ? e.message
+                                          : 'Failed to submit CATNA training needs.';
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text(message)),
+                                      );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Theme.of(context).colorScheme.primary,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(cornerRadius),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Submit',
+                                    style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                                  ),
+                                );
+                              } else {
+                                return ElevatedButton(
+                                  onPressed: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'You do not have permission to submit CATNA assessments. Only HR and Supervisors can submit assessments.',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(cornerRadius),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Submit (No Permission)',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                );
+                              }
+                            },
                           ),
-                          child: Text(
-                            'Submit',
-                            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
-                          ),
-                        ),
                       ],
                     ),
                   ),
