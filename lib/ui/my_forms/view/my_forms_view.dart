@@ -19,15 +19,15 @@ class MyFormsView extends StatefulWidget {
 
 class _MyFormsViewState extends State<MyFormsView> {
   // Material 3 Color Scheme - Red Theme (matching app theme)
-  static const Color primaryColor = Color(0xFFAC312B);
-  static const Color primaryContainerColor = Color(0xFFFFDAD6);
-  static const Color onPrimaryContainerColor = Color(0xFF8B1A11);
-  static const Color surfaceColor = Color(0xFFFFFBFE);
-  static const Color surfaceVariantColor = Color(0xFFF5F5F5);
-  static const Color onSurfaceColor = Color(0xFF1C1B1F);
-  static const Color onSurfaceVariantColor = Color(0xFF49454F);
-  static const Color outlineColor = Color(0xFF79747E);
-  static const Color errorColor = Color(0xFFB3261E);
+  Color get primaryColor => Theme.of(context).colorScheme.primary; // Primary Red (matches app theme)
+  Color get primaryContainerColor => Theme.of(context).colorScheme.surfaceContainer; // Light Red Container
+  Color get onPrimaryContainerColor => Theme.of(context).colorScheme.primaryFixedDim; // Dark Red
+  Color get surfaceColor => Theme.of(context).colorScheme.surfaceContainerLowest;
+  Color get surfaceVariantColor => Theme.of(context).colorScheme.surfaceContainerLow;
+  Color get onSurfaceColor => Theme.of(context).colorScheme.onSurface;
+  Color get onSurfaceVariantColor => Theme.of(context).colorScheme.onSurfaceVariant;
+  Color get outlineColor => Theme.of(context).colorScheme.outline;
+  Color get errorColor => Theme.of(context).colorScheme.error;
   
   @override
   void initState() {
@@ -65,7 +65,7 @@ class _MyFormsViewState extends State<MyFormsView> {
       backgroundColor: surfaceColor,
       surfaceTintColor: Colors.transparent,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: onSurfaceColor),
+        icon: Icon(Icons.arrow_back, color: onSurfaceColor),
         onPressed: () => context.go(Routes.getOverviewPath()),
         tooltip: 'Back to Dashboard',
       ),
@@ -78,7 +78,7 @@ class _MyFormsViewState extends State<MyFormsView> {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.refresh, color: onSurfaceColor),
+          icon: Icon(Icons.refresh, color: onSurfaceColor),
           onPressed: widget.viewModel.refresh,
           tooltip: 'Refresh',
         ),
@@ -89,7 +89,7 @@ class _MyFormsViewState extends State<MyFormsView> {
   
   Widget _buildBody(BuildContext context, bool isMobile) {
     if (widget.viewModel.isLoading) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
           color: primaryColor,
         ),
@@ -508,7 +508,7 @@ class _MyFormsViewState extends State<MyFormsView> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: errorColor),
+            Icon(Icons.warning_amber_rounded, color: errorColor),
             const SizedBox(width: 12),
             const Text('Delete Form?'),
           ],
