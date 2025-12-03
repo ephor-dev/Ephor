@@ -18,15 +18,15 @@ class CatnaFormCreatorView extends StatefulWidget {
 
 class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
   // Material 3 Color Scheme - Red Theme
-  static const Color primaryColor = Color(0xFFAC312B); // Primary Red (matches app theme)
-  static const Color primaryContainerColor = Color(0xFFFFDAD6); // Light Red Container
-  static const Color onPrimaryContainerColor = Color(0xFF8B1A11); // Dark Red
-  static const Color surfaceColor = Color(0xFFFFFBFE);
-  static const Color surfaceVariantColor = Color(0xFFF5F5F5);
-  static const Color onSurfaceColor = Color(0xFF1C1B1F);
-  static const Color onSurfaceVariantColor = Color(0xFF49454F);
-  static const Color outlineColor = Color(0xFF79747E);
-  static const Color errorColor = Color(0xFFB3261E);
+  Color get primaryColor => Theme.of(context).colorScheme.primary; // Primary Red (matches app theme)
+  Color get primaryContainerColor => Theme.of(context).colorScheme.surfaceContainer; // Light Red Container
+  Color get onPrimaryContainerColor => Theme.of(context).colorScheme.primaryFixedDim; // Dark Red
+  Color get surfaceColor => Theme.of(context).colorScheme.surfaceContainerLowest;
+  Color get surfaceVariantColor => Theme.of(context).colorScheme.surfaceContainerLow;
+  Color get onSurfaceColor => Theme.of(context).colorScheme.onSurface;
+  Color get onSurfaceVariantColor => Theme.of(context).colorScheme.onSurfaceVariant;
+  Color get outlineColor => Theme.of(context).colorScheme.outline;
+  Color get errorColor => Theme.of(context).colorScheme.error;
 
   @override
   void dispose() {
@@ -45,7 +45,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
           backgroundColor: surfaceVariantColor,
           appBar: _buildAppBar(context),
           body: widget.viewModel.isLoading
-              ? const Center(
+              ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -122,7 +122,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
       backgroundColor: surfaceColor,
       surfaceTintColor: Colors.transparent,
         leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: onSurfaceColor),
+        icon: Icon(Icons.arrow_back, color: onSurfaceColor),
           onPressed: () => context.go(Routes.getOverviewPath()),
         tooltip: 'Back to Dashboard',
       ),
@@ -168,7 +168,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
                       behavior: SnackBarBehavior.floating,
                       action: SnackBarAction(
                         label: 'Share',
-                        textColor: Colors.white,
+                        textColor: Theme.of(context).colorScheme.surfaceContainerLowest,
                         onPressed: () async {
                           // Copy form link to clipboard
                           final formLink = 'https://ephor.app/forms/${value.id}';
@@ -192,7 +192,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Publish failed: ${error.toString()}'),
-                      backgroundColor: Colors.red,
+                      backgroundColor: Theme.of(context).colorScheme.error,
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -209,9 +209,9 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
               switch (result) {
                 case Ok<FormModel>():
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content: Text('Form unpublished successfully'),
-                      backgroundColor: Colors.orange,
+                      backgroundColor: Theme.of(context).colorScheme.tertiaryFixedDim,
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -220,7 +220,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Unpublish failed: ${error.toString()}'),
-                      backgroundColor: Colors.red,
+                      backgroundColor: Theme.of(context).colorScheme.error,
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -228,12 +228,12 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
             }
           },
           icon: widget.viewModel.isPublishing
-              ? const SizedBox(
+              ? SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.surfaceContainerLowest),
                   ),
                 )
               : Icon(
@@ -249,7 +249,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
             backgroundColor: widget.viewModel.isPublishing 
                 ? Colors.grey 
                 : (widget.viewModel.isPublished ? Colors.green : primaryColor),
-            foregroundColor: Colors.white,
+            foregroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             elevation: widget.viewModel.isPublishing ? 0 : 2,
           ),
@@ -295,7 +295,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: primaryColor, width: 2),
+                  borderSide: BorderSide(color: primaryColor, width: 2),
                 ),
                 filled: true,
                 fillColor: surfaceColor,
@@ -326,7 +326,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: primaryColor, width: 2),
+                  borderSide: BorderSide(color: primaryColor, width: 2),
                 ),
                 filled: true,
                 fillColor: surfaceColor,
@@ -383,7 +383,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: primaryColor, width: 2),
+                          borderSide: BorderSide(color: primaryColor, width: 2),
                         ),
                         filled: true,
                         fillColor: surfaceColor,
@@ -426,7 +426,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: primaryColor, width: 2),
+                    borderSide: BorderSide(color: primaryColor, width: 2),
                   ),
                   filled: true,
                   fillColor: surfaceColor,
@@ -501,7 +501,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
                 ),
                   child: Text(
                   'Q${questionIndex + 1}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: onPrimaryContainerColor,
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
@@ -543,7 +543,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: primaryColor, width: 2),
+                borderSide: BorderSide(color: primaryColor, width: 2),
               ),
               filled: true,
               fillColor: surfaceColor,
@@ -588,7 +588,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: primaryColor, width: 2),
+                      borderSide: BorderSide(color: primaryColor, width: 2),
                     ),
                     filled: true,
                     fillColor: surfaceColor,
@@ -877,7 +877,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
       // Rating scale header
       Row(
         children: [
-          const Icon(Icons.star_border, size: 18, color: onSurfaceVariantColor),
+          Icon(Icons.star_border, size: 18, color: onSurfaceVariantColor),
           const SizedBox(width: 8),
           Text(
             'Rating Scale Configuration',
@@ -1005,7 +1005,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
       // Date configuration header
       Row(
         children: [
-          const Icon(Icons.calendar_today, size: 18, color: onSurfaceVariantColor),
+          Icon(Icons.calendar_today, size: 18, color: onSurfaceVariantColor),
           const SizedBox(width: 8),
           Text(
             'Date Configuration',
@@ -1166,7 +1166,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
       // File upload configuration header
       Row(
         children: [
-          const Icon(Icons.upload_file, size: 18, color: onSurfaceVariantColor),
+          Icon(Icons.upload_file, size: 18, color: onSurfaceVariantColor),
           const SizedBox(width: 8),
           Text(
             'File Upload Configuration',
@@ -1385,12 +1385,12 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Save failed: ${error.toString()}'),
-                backgroundColor: Colors.red,
+                backgroundColor: Theme.of(context).colorScheme.error,
                 behavior: SnackBarBehavior.floating,
                 duration: const Duration(seconds: 4),
                 action: SnackBarAction(
                   label: 'Retry',
-                  textColor: Colors.white,
+                  textColor: Theme.of(context).colorScheme.surfaceContainerLowest,
                   onPressed: () => widget.viewModel.saveForm(),
                 ),
               ),
@@ -1398,18 +1398,18 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
         }
       },
       icon: widget.viewModel.isSaving
-          ? const SizedBox(
+          ? SizedBox(
               width: 24,
               height: 24,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.surfaceContainerLowest),
               ),
             )
           : const Icon(Icons.save),
       label: Text(widget.viewModel.isSaving ? 'Saving...' : 'Save Form'),
       backgroundColor: widget.viewModel.isSaving ? Colors.grey : primaryColor,
-      foregroundColor: Colors.white,
+      foregroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
       elevation: widget.viewModel.isSaving ? 0 : 4,
     );
   }
@@ -1491,7 +1491,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
                 color: primaryContainerColor,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(Icons.info_outline, color: onPrimaryContainerColor, size: 20),
                   SizedBox(width: 8),
@@ -1534,7 +1534,11 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            const Icon(Icons.unpublished, color: Colors.orange, size: 28),
+            Icon(
+              Icons.unpublished, 
+              color: Theme.of(context).colorScheme.tertiaryFixedDim, 
+              size: 28
+            ),
             const SizedBox(width: 12),
             const Text('Unpublish Form?'),
           ],
@@ -1551,19 +1555,19 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange.shade50,
+                color: Theme.of(context).colorScheme.tertiaryFixedDim.withAlpha(32),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.shade200),
+                border: Border.all(color: Theme.of(context).colorScheme.tertiaryFixedDim.withAlpha(127)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
+                  Icon(Icons.warning_amber_rounded, color: Theme.of(context).colorScheme.tertiaryFixedDim, size: 20),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'This action cannot be undone if the form has responses.',
                       style: TextStyle(
-                        color: Colors.orange,
+                        color: Theme.of(context).colorScheme.tertiaryFixedDim,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -1584,7 +1588,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
             icon: const Icon(Icons.unpublished, size: 20),
             label: const Text('Unpublish'),
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.orange,
+              backgroundColor: Theme.of(context).colorScheme.tertiaryFixedDim,
             ),
           ),
         ],

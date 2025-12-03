@@ -58,7 +58,10 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
     ];
 
     return Scaffold(
-      backgroundColor: Colors.grey,
+      backgroundColor: Color.alphaBlend(
+        Theme.of(context).colorScheme.onSurface.withAlpha(50), 
+        Theme.of(context).colorScheme.surfaceContainerLowest
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -69,12 +72,15 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                 child: Container(
                   height: 20,
                   width: 640,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerLowest,
                     gradient: LinearGradient(
                       begin: Alignment.centerLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFFDE3535), Color(0xFFE0B0A4)],
+                      colors: [
+                        Theme.of(context).colorScheme.primary, 
+                        Theme.of(context).colorScheme.tertiaryFixed
+                      ],
                     ),
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(cornerRadius),
@@ -87,19 +93,19 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                 child: Container(
                   height: 160,
                   width: 640,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(cornerRadius),
                       bottomRight: Radius.circular(cornerRadius),
                     ),
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surfaceContainerLowest,
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text(
                       'Competency Assessment and Training\n Needs Analysis',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.black,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -112,8 +118,8 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                 child: Container(
                   width: 640,
                   alignment: Alignment.centerLeft,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerLowest,
                     borderRadius: BorderRadius.all(
                       Radius.circular(cornerRadius),
                     ),
@@ -126,7 +132,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                         Text(
                           'III. Individual Training Plan',
                           style: TextStyle(
-                            color: Colors.black,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: fontsizeSize1,
                             fontWeight: FontWeight.w600,
                           ),
@@ -134,7 +140,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                         Text(
                           'Instructions: Read each item per SCOPE Area and assess the Personnel.',
                           style: TextStyle(
-                            color: Colors.black,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: fontsizeSize1,
                             fontWeight: FontWeight.w400,
                           ),
@@ -150,18 +156,18 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                   height: 40,
                   width: 640,
                   alignment: Alignment.centerLeft,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(
                       Radius.circular(cornerRadius),
                     ),
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surfaceContainerLowest,
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       'A. Training Needs',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: fontsizeSize1,
                         fontWeight: FontWeight.w600,
                       ),
@@ -174,11 +180,11 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                 child: Container(
                   width: 640,
                   alignment: Alignment.centerLeft,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(
                       Radius.circular(cornerRadius),
                     ),
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surfaceContainerLowest,
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -191,7 +197,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           child: Text(
                             'KNOWLEDGE BASED TRAINING NEEDS',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w600,
                             ),
@@ -200,12 +206,15 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                         const SizedBox(height: spacing1),
                         Container(
                           height: 4,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainerLowest,
                             gradient: LinearGradient(
                               begin: Alignment.centerLeft,
                               end: Alignment.bottomRight,
-                              colors: [Color(0xFFDE3535), Color(0xFFE0B0A4)],
+                              colors: [
+                                Theme.of(context).colorScheme.primary, 
+                                Theme.of(context).colorScheme.tertiaryFixed
+                              ],
                             ),
                           ),
                         ),
@@ -229,7 +238,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                                     child: Text(
                                       knowledgeTrainingItems[index],
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: Theme.of(context).colorScheme.onSurface,
                                         fontSize: fontsizeSize1,
                                         fontWeight: FontWeight.w400,
                                       ),
@@ -243,12 +252,15 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                         }),
                         Container(
                           height: 4,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainerLowest,
                             gradient: LinearGradient(
                               begin: Alignment.centerLeft,
                               end: Alignment.bottomRight,
-                              colors: [Color(0xFFDE3535), Color(0xFFE0B0A4)],
+                              colors: [
+                                Theme.of(context).colorScheme.primary, 
+                                Theme.of(context).colorScheme.tertiaryFixed
+                              ],
                             ),
                           ),
                         ),
@@ -258,7 +270,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           child: Text(
                             'SKILLS BASED TRAINING NEEDS',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w600,
                             ),
@@ -267,12 +279,15 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                         const SizedBox(height: spacing2),
                         Container(
                           height: 4,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainerLowest,
                             gradient: LinearGradient(
                               begin: Alignment.centerLeft,
                               end: Alignment.bottomRight,
-                              colors: [Color(0xFFDE3535), Color(0xFFE0B0A4)],
+                              colors: [
+                                Theme.of(context).colorScheme.primary, 
+                                Theme.of(context).colorScheme.tertiaryFixed
+                              ],
                             ),
                           ),
                         ),
@@ -294,7 +309,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                                     child: Text(
                                       skillTrainingItems[index],
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: Theme.of(context).colorScheme.onSurface,
                                         fontSize: fontsizeSize1,
                                         fontWeight: FontWeight.w400,
                                       ),
@@ -308,12 +323,15 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                         }),
                         Container(
                           height: 4,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainerLowest,
                             gradient: LinearGradient(
                               begin: Alignment.centerLeft,
                               end: Alignment.bottomRight,
-                              colors: [Color(0xFFDE3535), Color(0xFFE0B0A4)],
+                              colors: [
+                                Theme.of(context).colorScheme.primary, 
+                                Theme.of(context).colorScheme.tertiaryFixed
+                              ],
                             ),
                           ),
                         ),
@@ -323,7 +341,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           child: Text(
                             'ATTITUDINAL BASED TRAINING NEEDS',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w600,
                             ),
@@ -332,12 +350,15 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                         const SizedBox(height: spacing2),
                         Container(
                           height: 4,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainerLowest,
                             gradient: LinearGradient(
                               begin: Alignment.centerLeft,
                               end: Alignment.bottomRight,
-                              colors: [Color(0xFFDE3535), Color(0xFFE0B0A4)],
+                              colors: [
+                                Theme.of(context).colorScheme.primary, 
+                                Theme.of(context).colorScheme.tertiaryFixed
+                              ],
                             ),
                           ),
                         ),
@@ -361,7 +382,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                                     child: Text(
                                       attitudeTrainingItems[index],
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: Theme.of(context).colorScheme.onSurface,
                                         fontSize: fontsizeSize1,
                                         fontWeight: FontWeight.w400,
                                       ),
@@ -385,18 +406,18 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                   height: 40,
                   width: 640,
                   alignment: Alignment.centerLeft,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(
                       Radius.circular(cornerRadius),
                     ),
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surfaceContainerLowest,
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       'Specific Training Needs',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: fontsizeSize1,
                         fontWeight: FontWeight.w600,
                       ),
@@ -409,11 +430,11 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                 child: Container(
                   width: 640,
                   alignment: Alignment.centerLeft,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(
                       Radius.circular(cornerRadius),
                     ),
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surfaceContainerLowest,
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -457,7 +478,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           child: Text(
                             'Q1 JANUARY - MARCH',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w400,
                             ),
@@ -469,7 +490,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           child: Text(
                             'Training Title/Topic',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w400,
                             ),
@@ -488,7 +509,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           child: Text(
                             'Category',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w400,
                             ),
@@ -514,7 +535,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                                 Text(
                                   categoryItems[index],
                                   style: TextStyle(
-                                    color: Colors.black,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                     fontSize: fontsizeSize1,
                                     fontWeight: FontWeight.w400,
                                   ),
@@ -529,7 +550,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           child: Text(
                             'Q2 APRIL - JUNE',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w400,
                             ),
@@ -541,7 +562,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           child: Text(
                             'Training Title/Topic',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w400,
                             ),
@@ -560,7 +581,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           child: Text(
                             'Category',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w400,
                             ),
@@ -586,7 +607,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                                 Text(
                                   categoryItems[index],
                                   style: TextStyle(
-                                    color: Colors.black,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                     fontSize: fontsizeSize1,
                                     fontWeight: FontWeight.w400,
                                   ),
@@ -601,7 +622,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           child: Text(
                             'Q3 JULY - SEPTEMBER',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w400,
                             ),
@@ -613,7 +634,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           child: Text(
                             'Training Title/Topic',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w400,
                             ),
@@ -632,7 +653,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           child: Text(
                             'Category',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w400,
                             ),
@@ -658,7 +679,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                                 Text(
                                   categoryItems[index],
                                   style: TextStyle(
-                                    color: Colors.black,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                     fontSize: fontsizeSize1,
                                     fontWeight: FontWeight.w400,
                                   ),
@@ -673,7 +694,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           child: Text(
                             'Q4 OCTOBER - DECEMBER',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w400,
                             ),
@@ -685,7 +706,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           child: Text(
                             'Training Title/Topic',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w400,
                             ),
@@ -704,7 +725,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           child: Text(
                             'Category',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w400,
                             ),
@@ -730,7 +751,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                                 Text(
                                   categoryItems[index],
                                   style: TextStyle(
-                                    color: Colors.black,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                     fontSize: fontsizeSize1,
                                     fontWeight: FontWeight.w400,
                                   ),
@@ -775,7 +796,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           onPressed: () {},
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(context).colorScheme.primary,
-                            foregroundColor: Colors.white,
+                            foregroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(cornerRadius),
                             ),

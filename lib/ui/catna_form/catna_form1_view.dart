@@ -90,7 +90,10 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
     final List<String> operatingUnitChoices = ['Alangilan', 'Pablo Borbon'];
     final List<String> purposeChoices = ['Annual Review', 'Random Assessment'];
     return Scaffold(
-      backgroundColor: Colors.grey,
+      backgroundColor: Color.alphaBlend(
+        Theme.of(context).colorScheme.onSurface.withAlpha(50), 
+        Theme.of(context).colorScheme.surfaceContainerLowest
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -106,7 +109,10 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                     gradient: LinearGradient(
                       begin: Alignment.centerLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFFDE3535), Color(0xFFE0B0A4)],
+                      colors: [
+                        Theme.of(context).colorScheme.primary, 
+                        Theme.of(context).colorScheme.primary.withAlpha(50)
+                      ],
                     ),
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(cornerRadius),
@@ -126,12 +132,12 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                     ),
                     color: Theme.of(context).colorScheme.surface,
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text(
                       'Competency Assessment and Training\n Needs Analysis',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.black,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -156,7 +162,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                     child: Text(
                       'I. Identifying Data',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: fontsizeSize1,
                         fontWeight: FontWeight.w600,
                       ),
@@ -185,7 +191,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                           child: Text(
                             'Personnel Name',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: fontsizeSize1,
                               fontWeight: FontWeight.w400,
                             ),
@@ -308,7 +314,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                                         child: Text(
                                           'Review Period',
                                           style: TextStyle(
-                                            color: Colors.black,
+                                            color: Theme.of(context).colorScheme.onSurface,
                                             fontSize: fontsizeSize1,
                                             fontWeight: FontWeight.w400,
                                           ),
@@ -432,7 +438,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                                         child: Text(
                                           'Assessment Date',
                                           style: TextStyle(
-                                            color: Colors.black,
+                                            color: Theme.of(context).colorScheme.onSurface,
                                             fontSize: fontsizeSize1,
                                             fontWeight: FontWeight.w400,
                                           ),
@@ -470,7 +476,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                               Text(
                                 'Purpose of Assessment',
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                   fontSize: fontsizeSize1,
                                   fontWeight: FontWeight.w400,
                                 ),
@@ -535,9 +541,9 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                           borderRadius: BorderRadius.circular(cornerRadius),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Next',
-                        style: TextStyle(color: Color(0xFFDE3535)),
+                        style: TextStyle(color: Theme.of(context).colorScheme.primary),
                       ),
                     ),
                   ),

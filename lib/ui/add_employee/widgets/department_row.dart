@@ -93,12 +93,19 @@ class _DepartmentRowState extends State<DepartmentRow> {
                       child: Container(
                         // **UPDATED: Use the calculated 'dropdownHeight'**
                         constraints: BoxConstraints(maxHeight: dropdownHeight), 
-                        decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xFFE0E0E0))),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceContainerLowest,
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.surfaceContainerLow,
+                          )
+                        ),
                         child: ListView.separated(
                           shrinkWrap: true, padding: EdgeInsets.zero,
                           itemCount: widget.viewModel.departments.length,
                           separatorBuilder: (BuildContext context, int index) => Container(
-                            height: 1, color: Colors.grey.shade200, margin: const EdgeInsets.symmetric(horizontal: 0),
+                            height: 1, 
+                            color: Theme.of(context).brightness == Brightness.light ? Colors.grey.shade200 : Colors.grey.shade800, 
+                            margin: const EdgeInsets.symmetric(horizontal: 0),
                           ),
                           itemBuilder: (BuildContext context, int index) {
                             // ... (Item Builder logic remains the same)
@@ -111,12 +118,16 @@ class _DepartmentRowState extends State<DepartmentRow> {
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                color: isSelected ? const Color(0xFFF5F5F5) : Colors.white,
+                                color: isSelected 
+                                  ? Theme.of(context).colorScheme.surfaceContainerLow 
+                                  : Theme.of(context).colorScheme.surfaceContainerLowest,
                                 child: Row(
                                   children: <Widget>[
                                     Expanded(
                                       child: Text(department, style: TextStyle(
-                                        color: isSelected ? const Color(0xFFFFB47B) : Colors.black87,
+                                        color: isSelected 
+                                          ? Theme.of(context).colorScheme.tertiaryFixedDim
+                                          : Theme.of(context).colorScheme.onSurface.withAlpha(222),
                                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                                         fontSize: 15,
                                       )),
@@ -124,7 +135,11 @@ class _DepartmentRowState extends State<DepartmentRow> {
                                     if (isSelected)
                                       Container(
                                         margin: const EdgeInsets.only(left: 8),
-                                        child: const Icon(Icons.check, color: Color(0xFFFFB47B), size: 20),
+                                        child: Icon(
+                                          Icons.check, 
+                                          color: Theme.of(context).colorScheme.tertiaryFixedDim,
+                                          size: 20
+                                        ),
                                       ),
                                   ],
                                 ),
@@ -157,11 +172,14 @@ class _DepartmentRowState extends State<DepartmentRow> {
           key: _dropdownKey,
           onTap: _toggleDropdown,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100, borderRadius: BorderRadius.circular(18),
+              color: Theme.of(context).colorScheme.surfaceContainerLowest, 
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: _isDropdownOpen ? const Color(0xFFFFB47B) : const Color(0xFFE0E0E0),
+                color: _isDropdownOpen 
+                  ? Theme.of(context).colorScheme.tertiaryFixedDim
+                  : Theme.of(context).colorScheme.surfaceContainerLow,
                 width: _isDropdownOpen ? 2 : 1,
               ),
             ),
@@ -173,7 +191,9 @@ class _DepartmentRowState extends State<DepartmentRow> {
                     widget.viewModel.noDepartment ? 'Select Department' : (widget.viewModel.selectedDepartment ?? 'Select Department'),
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
-                      color: widget.viewModel.noDepartment || widget.viewModel.selectedDepartment == null ? Colors.grey.shade600 : Colors.black,
+                      color: widget.viewModel.noDepartment || widget.viewModel.selectedDepartment == null 
+                      ? Theme.of(context).brightness == Brightness.light ? Colors.grey.shade600 : Colors.grey.shade400 
+                      : Theme.of(context).colorScheme.onSurface,
                       fontSize: 15,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -182,7 +202,8 @@ class _DepartmentRowState extends State<DepartmentRow> {
                 const SizedBox(width: 8),
                 Icon(
                   _isDropdownOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                  color: Colors.black87, size: 24,
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(222), 
+                  size: 24,
                 ),
               ],
             ),
@@ -206,13 +227,13 @@ class _DepartmentRowState extends State<DepartmentRow> {
                       _closeDropdown();
                     }
                   },
-                  activeColor: const Color(0xFFFF6B9D),
+                  activeColor: Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(width: 4),
-                const Text(
+                Text(
                   'Not part of any department.', 
                   style: TextStyle(
-                    color: Colors.black87, 
+                    color: Theme.of(context).colorScheme.onSurface.withAlpha(222), 
                     fontWeight: FontWeight.w400, 
                     fontSize: 14
                   )
