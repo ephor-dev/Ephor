@@ -82,7 +82,7 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
             Text(
               item,
               style: TextStyle(
-                color: Colors.black,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: fontsizeSize1,
                 fontWeight: FontWeight.w400,
               ),
@@ -110,7 +110,7 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                             },
                             child: Radio<int>(
                               value: entry.value,
-                              activeColor: const Color(0xFFDE3535),
+                              activeColor: Theme.of(context).colorScheme.primary,
                               materialTapTargetSize:
                                   MaterialTapTargetSize.shrinkWrap,
                             ),
@@ -129,7 +129,10 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey,
+      backgroundColor: Color.alphaBlend(
+        Theme.of(context).colorScheme.onSurface.withAlpha(50), 
+        Theme.of(context).colorScheme.surfaceContainerLowest
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -139,12 +142,15 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                 child: Container(
                   height: 20,
                   width: 640,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerLowest,
                     gradient: LinearGradient(
                       begin: Alignment.centerLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFFDE3535), Color(0xFFE0B0A4)],
+                      colors: [
+                        Theme.of(context).colorScheme.primary,
+                        Theme.of(context).colorScheme.tertiaryFixed
+                      ],
                     ),
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(cornerRadius),
@@ -157,19 +163,19 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                 child: Container(
                   height: 160,
                   width: 640,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(cornerRadius),
                       bottomRight: Radius.circular(cornerRadius),
                     ),
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surfaceContainerLowest,
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text(
                       'Competency Assessment and Training\n Needs Analysis',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.black,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -183,8 +189,8 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                 child: Container(
                   width: 640,
                   alignment: Alignment.centerLeft,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerLowest,
                     borderRadius: BorderRadius.all(
                       Radius.circular(cornerRadius),
                     ),
@@ -198,7 +204,7 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                         Text(
                           'II. Rating of Competency',
                           style: TextStyle(
-                            color: Colors.black,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: fontsizeSize1,
                             fontWeight: FontWeight.w600,
                           ),
@@ -206,7 +212,7 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                         Text(
                           'Instructions: Read each item per SCOPE Area and assess the Personnel.',
                           style: TextStyle(
-                            color: Colors.black,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: fontsizeSize1,
                             fontWeight: FontWeight.w400,
                           ),
@@ -221,11 +227,11 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                 child: Container(
                   width: 640,
                   alignment: Alignment.centerLeft,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(
                       Radius.circular(cornerRadius),
                     ),
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surfaceContainerLowest,
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -235,7 +241,7 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                         Text(
                           '1. KNOWLEDGE (Content, Functional, Specialized)',
                           style: TextStyle(
-                            color: Colors.black,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: fontsizeSize1,
                             fontWeight: FontWeight.w600,
                           ),
@@ -243,12 +249,15 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                         const SizedBox(height: spacing3),
                         Container(
                           height: 4,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainerLowest,
                             gradient: LinearGradient(
                               begin: Alignment.centerLeft,
                               end: Alignment.bottomRight,
-                              colors: [Color(0xFFDE3535), Color(0xFFE0B0A4)],
+                              colors: [
+                                Theme.of(context).colorScheme.primary, 
+                                Theme.of(context).colorScheme.tertiaryFixed
+                              ],
                             ),
                           ),
                         ),
@@ -256,12 +265,15 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                         ...buildAssessmentItems(_knowledgeItems),
                         Container(
                           height: 4,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainerLowest,
                             gradient: LinearGradient(
                               begin: Alignment.centerLeft,
                               end: Alignment.bottomRight,
-                              colors: [Color(0xFFDE3535), Color(0xFFE0B0A4)],
+                              colors: [
+                                Theme.of(context).colorScheme.primary, 
+                                Theme.of(context).colorScheme.tertiaryFixed
+                              ],
                             ),
                           ),
                         ),
@@ -270,7 +282,7 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                         Text(
                           '2. Skills (Organizational, Functional, Self-Management)',
                           style: TextStyle(
-                            color: Colors.black,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: fontsizeSize1,
                             fontWeight: FontWeight.w600,
                           ),
@@ -278,12 +290,15 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                         const SizedBox(height: spacing2),
                         Container(
                           height: 4,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainerLowest,
                             gradient: LinearGradient(
                               begin: Alignment.centerLeft,
                               end: Alignment.bottomRight,
-                              colors: [Color(0xFFDE3535), Color(0xFFE0B0A4)],
+                              colors: [
+                                Theme.of(context).colorScheme.primary, 
+                                Theme.of(context).colorScheme.tertiaryFixed
+                              ],
                             ),
                           ),
                         ),
@@ -291,12 +306,15 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                         ...buildAssessmentItems(_skillsItems),
                         Container(
                           height: 4,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainerLowest,
                             gradient: LinearGradient(
                               begin: Alignment.centerLeft,
                               end: Alignment.bottomRight,
-                              colors: [Color(0xFFDE3535), Color(0xFFE0B0A4)],
+                              colors: [
+                                Theme.of(context).colorScheme.primary, 
+                                Theme.of(context).colorScheme.tertiaryFixed
+                              ],
                             ),
                           ),
                         ),
@@ -304,7 +322,7 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                         Text(
                           '3. Attitudes (Attitude Towards Work, Co-Worker, Customer and other Stakeholders)',
                           style: TextStyle(
-                            color: Colors.black,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: fontsizeSize1,
                             fontWeight: FontWeight.w600,
                           ),
@@ -312,12 +330,15 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                         const SizedBox(height: spacing2),
                         Container(
                           height: 4,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainerLowest,
                             gradient: LinearGradient(
                               begin: Alignment.centerLeft,
                               end: Alignment.bottomRight,
-                              colors: [Color(0xFFDE3535), Color(0xFFE0B0A4)],
+                              colors: [
+                                Theme.of(context).colorScheme.primary, 
+                                Theme.of(context).colorScheme.tertiaryFixed
+                              ],
                             ),
                           ),
                         ),

@@ -1,5 +1,4 @@
 import 'package:ephor/ui/dashboard/subviews/overview/view_model/overview_viewmodel.dart';
-import 'package:ephor/utils/responsiveness.dart';
 import 'package:flutter/material.dart';
 
 class OverviewSubView extends StatelessWidget {
@@ -9,16 +8,13 @@ class OverviewSubView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "Overview",
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+            style: Theme.of(context).textTheme.titleLarge
           ),
           const SizedBox(height: 24),
           // Top Statistics Row
@@ -53,8 +49,11 @@ class _TopStatsRow extends StatelessWidget {
                   value: "205",
                   subtitle: "Training Identified",
                   // Gradient Red
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFD32F2F), Color(0xFFEF5350)],
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary, 
+                      Theme.of(context).colorScheme.secondary
+                    ],
                     begin: Alignment.bottomLeft,
                     end: Alignment.topRight,
                   ),
@@ -68,9 +67,13 @@ class _TopStatsRow extends StatelessWidget {
                   value: "3",
                   subtitle: "Pending Training",
                   // Salmon/Pink
-                  color: const Color(0xFFFF8A80),
-                  textColor: Colors.black87,
-                  iconOrChart: Icon(Icons.description_outlined, size: 48, color: Colors.black54),
+                  color: Theme.of(context).colorScheme.tertiaryFixedDim,
+                  textColor: Theme.of(context).colorScheme.onSurface.withAlpha(222),
+                  iconOrChart: Icon(
+                    Icons.description_outlined,
+                    size: 48, 
+                    color: Theme.of(context).colorScheme.onSurface.withAlpha(139)
+                  ),
                 ),
               ),
               const SizedBox(width: 20),
@@ -80,7 +83,7 @@ class _TopStatsRow extends StatelessWidget {
                   value: "136",
                   subtitle: "Skills Gap Analysis",
                   // Dark Maroon
-                  color: const Color(0xFF5D0000),
+                  color: Theme.of(context).colorScheme.primaryFixedDim,
                   iconOrChart: Icon(Icons.track_changes_outlined, size: 48, color: Colors.white24),
                 ),
               ),
@@ -94,8 +97,12 @@ class _TopStatsRow extends StatelessWidget {
                 title: "Training Needs Identified",
                 value: "205",
                 subtitle: "Training Identified",
-                gradient: const LinearGradient(
-                    colors: [Color(0xFFD32F2F), Color(0xFFEF5350)]),
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary, 
+                    Theme.of(context).colorScheme.secondary
+                  ]
+                ),
                 iconOrChart: _MockLineChart(),
               ),
               const SizedBox(height: 16),
@@ -103,16 +110,20 @@ class _TopStatsRow extends StatelessWidget {
                 title: "Pending Training Requests",
                 value: "3",
                 subtitle: "Pending Training",
-                color: const Color(0xFFFF8A80),
-                textColor: Colors.black87,
-                iconOrChart: const Icon(Icons.description_outlined, size: 48, color: Colors.black54),
+                color: Theme.of(context).colorScheme.tertiaryFixedDim,
+                textColor: Theme.of(context).colorScheme.onSurface.withAlpha(222),
+                iconOrChart: Icon(
+                  Icons.description_outlined, 
+                  size: 48, 
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(139)
+                ),
               ),
               const SizedBox(height: 16),
               _StatCard(
                 title: "Skills Gap Analysis",
                 value: "136",
                 subtitle: "Skills Gap Analysis",
-                color: const Color(0xFF5D0000),
+                color: Theme.of(context).colorScheme.primaryFixedDim,
                 iconOrChart: const Icon(Icons.track_changes_outlined, size: 48, color: Colors.white24),
               ),
             ],
@@ -153,7 +164,7 @@ class _StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(13),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -165,11 +176,11 @@ class _StatCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: TextStyle(color: textColor.withOpacity(0.9), fontSize: 16)),
+              Text(title, style: TextStyle(color: textColor.withAlpha(230), fontSize: 16)),
               const Spacer(),
               Text(value, style: TextStyle(color: textColor, fontSize: 36, fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
-              Text(subtitle, style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 12)),
+              Text(subtitle, style: TextStyle(color: textColor.withAlpha(179), fontSize: 12)),
             ],
           ),
           // Icon or Chart Positioned
@@ -229,8 +240,11 @@ class _TrainingNeedsChartCard extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         // Dark gradient background for chart card
-        gradient: const LinearGradient(
-          colors: [Color(0xFF3E0000), Color(0xFF5A1010)],
+        gradient: LinearGradient(
+          colors: [
+            Theme.of(context).colorScheme.secondaryFixedDim, 
+            Theme.of(context).colorScheme.onSecondaryContainer
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -239,15 +253,19 @@ class _TrainingNeedsChartCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Training Needs by Department",
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.surfaceContainerLowest, 
+              fontSize: 18, 
+              fontWeight: FontWeight.bold
+            ),
           ),
           Expanded(
             child: Row(
               children: [
                 // Donut Chart Mockup
-                const Expanded(
+                Expanded(
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
@@ -258,10 +276,15 @@ class _TrainingNeedsChartCard extends StatelessWidget {
                           value: 0.76,
                           strokeWidth: 25,
                           backgroundColor: Colors.white12,
-                          color: Color(0xFFEF5350), // Red progress
+                          color: Theme.of(context).colorScheme.primary, // Red progress
                         ),
                       ),
-                      Text("76%", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                      Text("76%", style: TextStyle(
+                        color: Theme.of(context).colorScheme.surfaceContainerLowest, 
+                        fontSize: 24, 
+                        fontWeight: FontWeight.bold
+                        )
+                      ),
                     ],
                   ),
                 ),
@@ -271,7 +294,7 @@ class _TrainingNeedsChartCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _LegendItem(color: Colors.redAccent, label: "Business Developer"),
+                      _LegendItem(color: Theme.of(context).colorScheme.primary, label: "Business Developer"),
                       _LegendItem(color: Colors.white24, label: "Educator"),
                       _LegendItem(color: Colors.white24, label: "Development Needs"),
                       _LegendItem(color: Colors.white10, label: "Others"),
@@ -320,11 +343,11 @@ class _RecentActivityCard extends StatelessWidget {
       height: 350,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(13),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -391,10 +414,10 @@ class _ActivityRow extends StatelessWidget {
             flex: 3,
             child: Row(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 14,
                   backgroundColor: Colors.grey,
-                  child: Icon(Icons.person, size: 16, color: Colors.white),
+                  child: Icon(Icons.person, size: 16, color: Theme.of(context).colorScheme.surfaceContainerLowest),
                 ),
                 const SizedBox(width: 8),
                 Text(name, style: const TextStyle(fontWeight: FontWeight.w500)),
@@ -412,7 +435,7 @@ class _ActivityRow extends StatelessWidget {
                 Container(
                   width: 8, height: 8,
                   decoration: BoxDecoration(
-                    color: isCompleted ? Colors.red : Colors.orange[200],
+                    color: isCompleted ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.tertiaryFixed,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -444,7 +467,7 @@ class _LineChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.5)
+      ..color = Colors.white.withAlpha(13)
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 

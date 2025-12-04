@@ -79,7 +79,7 @@ class _BatchAddEmployeesViewState extends State<BatchAddEmployeesView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.message),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.error,
           duration: const Duration(seconds: 3),
         ),
       );
@@ -104,7 +104,7 @@ class _BatchAddEmployeesViewState extends State<BatchAddEmployeesView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.message),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.error,
           duration: const Duration(seconds: 3),
         ),
       );
@@ -134,7 +134,7 @@ class _BatchAddEmployeesViewState extends State<BatchAddEmployeesView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.message),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.error,
           duration: const Duration(seconds: 3),
         ),
       );
@@ -162,7 +162,7 @@ class _BatchAddEmployeesViewState extends State<BatchAddEmployeesView> {
               if (_employeeList.isNotEmpty) ...[
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.red),
+                  icon: Icon(Icons.close, color: Theme.of(context).colorScheme.error),
                   onPressed: () {
                     setState(() {
                       _employeeList = List.empty();
@@ -254,15 +254,19 @@ class _BatchAddEmployeesViewState extends State<BatchAddEmployeesView> {
 
     return Scaffold(
       appBar: AppBar(
-        // Using context.colorScheme.surfaceContainerLowest for better Material 3 integration
         backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest, 
         elevation: 1.0,
-        title: const Text(
+        title: Text(
           'Batch Add Employees', 
-          style: TextStyle(color: Colors.black)
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface
+          )
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(
+            Icons.arrow_back, 
+            color: Theme.of(context).colorScheme.onSurface
+          ),
           onPressed: () => context.pop(),
           tooltip: 'Back to Employee List',
         ),

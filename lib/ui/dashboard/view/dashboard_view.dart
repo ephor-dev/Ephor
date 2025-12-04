@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/routing/routes.dart';
-import 'package:ephor/ui/core/themes/theme_mode_notifier.dart';
 import 'package:ephor/ui/core/ui/confirm_identity_dialog/confirm_identity_dialog.dart';
 import 'package:ephor/ui/core/ui/dashboard_menu_item/dashboard_menu_item.dart';
 import 'package:ephor/ui/core/ui/edit_profile_dialog/edit_profile_dialog.dart';
@@ -10,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:ephor/utils/responsiveness.dart';
-import 'package:provider/provider.dart';
 
 class DashboardView extends StatefulWidget {
   final DashboardViewModel viewModel;
@@ -24,8 +22,6 @@ class DashboardView extends StatefulWidget {
 class _DashboardViewState extends State<DashboardView> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _showSearch = false;
-  
-  static const Color _primaryRed = Color(0xFFAC312B);
 
   final List<Map<String, dynamic>> menuItems = [
     {'title': 'Overview', 'icon': Icons.description_outlined, 'selected': true, 'path': Routes.dashboardOverview},
@@ -118,25 +114,36 @@ class _DashboardViewState extends State<DashboardView> {
     return Drawer(
       // Set max drawer width, but allow it to shrink on smaller screens
       width: 300, 
-      backgroundColor: Colors.white, 
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest, 
       child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 10.0),
             child: AppBar(
-              backgroundColor: Colors.white,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
               elevation: 0,
               automaticallyImplyLeading: false, 
               title: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.black, size: 25),
+                    icon: Icon(
+                      Icons.arrow_back, 
+                      color: Theme.of(context).colorScheme.onSurface, 
+                      size: 25
+                    ),
                     onPressed: () => Navigator.pop(context), // Closes the drawer
                   ),
                   const SizedBox(width: 15.0), 
                   Image.asset('assets/images/logo.png', height: 32, width: 32),
                   const SizedBox(width: 8.0),
-                  const Text('EPHOR', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18.0)),
+                  Text(
+                    'EPHOR', 
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface.withAlpha(222), 
+                      fontWeight: FontWeight.bold, 
+                      fontSize: 18.0
+                    )
+                  ),
                 ],
               ),
             ),
@@ -248,9 +255,8 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   PreferredSizeWidget _buildAppBar({required bool isMobile}) {
-    final themeNotifier = Provider.of<ThemeModeNotifier>(context, listen: false);
     return AppBar(
-      backgroundColor: Colors.white, 
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest, 
       elevation: 1.0, 
       automaticallyImplyLeading: false,
       title: ValueListenableBuilder<EmployeeModel?>(
@@ -264,7 +270,11 @@ class _DashboardViewState extends State<DashboardView> {
             children: [
               // Menu button is always visible to open the drawer
               IconButton(
-                icon: const Icon(Icons.menu, color: Colors.black, size: 25), 
+                icon: Icon(
+                  Icons.menu, 
+                  color: Theme.of(context).colorScheme.onSurface, 
+                  size: 25
+                ), 
                 onPressed: () {
                   _scaffoldKey.currentState?.openDrawer();
                 }, 
@@ -277,7 +287,14 @@ class _DashboardViewState extends State<DashboardView> {
                 children: [
                   Image.asset('assets/images/logo.png', height: 32, width: 32),
                   const SizedBox(width: 8.0),
-                  if (!isMobile) Text('EPHOR', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18.0)),
+                  if (!isMobile) Text(
+                    'EPHOR', 
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface.withAlpha(222), 
+                      fontWeight: FontWeight.bold, 
+                      fontSize: 18.0
+                    )
+                  ),
                 ],
               ),
               
@@ -296,16 +313,42 @@ class _DashboardViewState extends State<DashboardView> {
                         child: TextField(
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: Colors.grey.shade100,
+                            fillColor: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.grey.shade900
+                                : Colors.grey.shade100,
                             hintText: 'Search',
-                            hintStyle: TextStyle(color: Colors.grey.shade600),
-                            prefixIcon: Icon(Icons.search, color: Colors.grey.shade600, size: 20),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(20.0), borderSide: BorderSide.none),
+                            hintStyle: TextStyle(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey.shade500
+                                  : Colors.grey.shade600,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.search,
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey.shade500
+                                  : Colors.grey.shade600,
+                              size: 20,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                              borderSide: BorderSide.none,
+                            ),
                             contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20.0), borderSide: BorderSide(color: Colors.grey.shade400, width: 1.0)),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                              borderSide: BorderSide(
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.grey.shade700
+                                    : Colors.grey.shade400,
+                                width: 1.0,
+                              ),
+                            ),
                           ),
-                          cursorColor: _primaryRed, 
-                          style: const TextStyle(fontSize: 16),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Theme.of(context).colorScheme.onSurface
+                          ),
+                          cursorColor: Theme.of(context).colorScheme.primary, // This is already good
                         ),
                       ),
                     ),
@@ -316,9 +359,23 @@ class _DashboardViewState extends State<DashboardView> {
                 // Use responsive checks here if you wanted to hide some buttons on mobile
                 children: [
                   // Use Responsive.isMobile to decide if to show or not
-                  IconButton(icon: const Icon(Icons.info_outline, color: Colors.black, size: 25), onPressed: _showInfoPlaceholder),
+                  IconButton(
+                    icon: Icon(
+                      Icons.info_outline, 
+                      color: Theme.of(context).colorScheme.onSurface, 
+                      size: 25
+                    ),
+                    onPressed: _showInfoPlaceholder
+                  ),
                   
-                  IconButton(icon: const Icon(Icons.notifications_none, color: Colors.black, size: 25), onPressed: _showNotificationsPlaceholder),
+                  IconButton(
+                    icon: Icon(
+                      Icons.notifications_none, 
+                      color: Theme.of(context).colorScheme.onSurface, 
+                      size: 25
+                    ), 
+                    onPressed: _showNotificationsPlaceholder
+                  ),
                   
                   const SizedBox(width: 15.0), 
 
@@ -425,13 +482,13 @@ class _DashboardViewState extends State<DashboardView> {
                           _handleLogout(context);
                           break;
                         case 'light_mode':
-                          themeNotifier.setThemeMode(ThemeMode.light);
+                          widget.viewModel.setDarkMode.execute(ThemeMode.light);
                           break;
                         case 'dark_mode':
-                          themeNotifier.setThemeMode(ThemeMode.dark);
+                          widget.viewModel.setDarkMode.execute(ThemeMode.dark);
                           break;
                         case 'follow_system_mode':
-                          themeNotifier.setThemeMode(ThemeMode.system);
+                          widget.viewModel.setDarkMode.execute(ThemeMode.system);
                           break;
                       }
                     },

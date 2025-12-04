@@ -65,7 +65,7 @@ class _FormSectionState extends State<FormSection> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.message),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.primary,
           duration: const Duration(seconds: 3),
         ),
       );
@@ -88,13 +88,29 @@ class _FormSectionState extends State<FormSection> {
     }
   }
 
-  final InputDecoration decoration = const InputDecoration(
-    filled: true, fillColor: Colors.white,
-    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(14)), borderSide: BorderSide(color: Color(0xFFE0E0E0))),
-    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(14)), borderSide: BorderSide(color: Color(0xFFE0E0E0))),
-    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(14)), borderSide: BorderSide(color: Color(0xFFFFB47B), width: 2)),
+  InputDecoration get decoration => InputDecoration(
+    filled: true, 
+    fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.all(Radius.circular(14)), 
+      borderSide: BorderSide(color: Theme.of(context).colorScheme.surfaceContainer)
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.all(Radius.circular(14)), 
+      borderSide: BorderSide(color: Theme.of(context).colorScheme.surfaceContainer)
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.all(Radius.circular(14)), 
+      borderSide: BorderSide(
+        color: Theme.of(context).colorScheme.tertiaryFixedDim, 
+        width: 2
+      )
+    ),
     contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-    hintStyle: TextStyle(color: Color.fromRGBO(189, 189, 189, 1), fontWeight: FontWeight.w300),
+    hintStyle: TextStyle(
+      color: Color.fromRGBO(189, 189, 189, 1), 
+      fontWeight: FontWeight.w300
+    ),
   );
 
   @override
@@ -114,9 +130,13 @@ class _FormSectionState extends State<FormSection> {
               ? EdgeInsets.all(24)
               : EdgeInsets.zero,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFE8CC),
+              color: Theme.of(context).colorScheme.tertiaryFixed,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE0E0E0), width: 2, style: BorderStyle.solid),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.surfaceContainerLow, 
+                width: 2, 
+                style: BorderStyle.solid
+              ),
             ),
             child: widget.viewModel.localImageFile != null
                 ? ClipRRect(
@@ -135,7 +155,12 @@ class _FormSectionState extends State<FormSection> {
                             height: 176,
                           ),
                   )
-                : const Center(child: Icon(Icons.person_outline, size: 56, color: Color(0xFF9E9E9E))),
+                : Center(
+                    child: Icon(Icons.person_outline, 
+                      size: 56, 
+                      color: Theme.of(context).colorScheme.tertiaryFixedDim
+                      )
+                  ),
           ),
         ),
         const SizedBox(height: 12),
@@ -146,7 +171,11 @@ class _FormSectionState extends State<FormSection> {
               width: 130, // Adjusted width for two buttons
               child: OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFFFB47B), side: const BorderSide(color: Color(0xFFFFB47B), width: 1.5),
+                  foregroundColor: Theme.of(context).colorScheme.tertiaryFixedDim, 
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.tertiaryFixedDim, 
+                    width: 1.5
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -158,7 +187,10 @@ class _FormSectionState extends State<FormSection> {
             if (widget.viewModel.localImageFile != null) ...[
               const SizedBox(width: 8),
               IconButton(
-                icon: const Icon(Icons.close, color: Colors.red),
+                icon: Icon(
+                  Icons.close, 
+                  color: Theme.of(context).colorScheme.primary
+                ),
                 onPressed: () => widget.viewModel.clearImage.execute(),
                 tooltip: 'Clear image',
               ),
@@ -175,42 +207,37 @@ class _FormSectionState extends State<FormSection> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            // Name Fields (Responsive Row/Column using isMobile)
-            // Name field section with necessary padding/decoration
-            Container(
-              padding: const EdgeInsets.all(16), 
-              decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16)), 
-              child: isMobile
-                  ? Column( // Column layout for mobile
-                      children: <Widget>[
-                        NameField(label: 'LAST NAME', controller: widget.viewModel.lastNameController, decoration: decoration, placeholder: 'Enter last name', isRequired: true),
-                        const SizedBox(height: 12),
-                        NameField(label: 'FIRST NAME', controller: widget.viewModel.firstNameController, decoration: decoration, placeholder: 'Enter first name', isRequired: true),
-                        const SizedBox(height: 12),
-                        NameField(label: 'MIDDLE NAME', controller: widget.viewModel.middleNameController, decoration: decoration, placeholder: 'Enter middle name', isOptional: true),
-                      ],
-                    )
-                  : Row( // Row layout for Tablet/Desktop
-                      children: <Widget>[
-                        Expanded(child: NameField(label: 'LAST NAME', controller: widget.viewModel.lastNameController, decoration: decoration, placeholder: 'Enter last name', isRequired: true)),
-                        const SizedBox(width: 8),
-                        Expanded(child: NameField(label: 'FIRST NAME', controller: widget.viewModel.firstNameController, decoration: decoration, placeholder: 'Enter first name', isRequired: true)),
-                        const SizedBox(width: 8),
-                        Expanded(child: NameField(label: 'MIDDLE NAME', controller: widget.viewModel.middleNameController, decoration: decoration, placeholder: 'Enter middle name', isOptional: true)),
-                      ],
-                    ),
-            ),
+            isMobile
+              ? Column( // Column layout for mobile
+                  children: <Widget>[
+                    NameField(label: 'LAST NAME', controller: widget.viewModel.lastNameController, decoration: decoration, placeholder: 'Enter last name', isRequired: true),
+                    const SizedBox(height: 12),
+                    NameField(label: 'FIRST NAME', controller: widget.viewModel.firstNameController, decoration: decoration, placeholder: 'Enter first name', isRequired: true),
+                    const SizedBox(height: 12),
+                    NameField(label: 'MIDDLE NAME', controller: widget.viewModel.middleNameController, decoration: decoration, placeholder: 'Enter middle name', isOptional: true),
+                  ],
+                )
+              : Row( // Row layout for Tablet/Desktop
+                  children: <Widget>[
+                    Expanded(child: NameField(label: 'LAST NAME', controller: widget.viewModel.lastNameController, decoration: decoration, placeholder: 'Enter last name', isRequired: true)),
+                    const SizedBox(width: 8),
+                    Expanded(child: NameField(label: 'FIRST NAME', controller: widget.viewModel.firstNameController, decoration: decoration, placeholder: 'Enter first name', isRequired: true)),
+                    const SizedBox(width: 8),
+                    Expanded(child: NameField(label: 'MIDDLE NAME', controller: widget.viewModel.middleNameController, decoration: decoration, placeholder: 'Enter middle name', isOptional: true)),
+                  ],
+                ),
             const SizedBox(height: 20),
             
             // Employee Type (Role Selection)
-            Text('EMPLOYEE TYPE', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
+            Text(
+              'EMPLOYEE TYPE', 
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600, 
+                color: Theme.of(context).colorScheme.onSurface.withAlpha(222), 
+                letterSpacing: 0.5)
+              ),
             const SizedBox(height: 8),
-            Container(
-              width: double.infinity, 
-              padding: const EdgeInsets.only(left: 16, right: 16),
-              decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16)),
-              child: EmployeeTypeChooser(viewModel: widget.viewModel),
-            ),
+            EmployeeTypeChooser(viewModel: widget.viewModel),
             const SizedBox(height: 20),
             
             // 🔑 CONDITIONAL LOGIN FIELDS CONTAINER
@@ -235,29 +262,32 @@ class _FormSectionState extends State<FormSection> {
                     );
                 }
                 
-                return Container(
-                  padding: const EdgeInsets.only(left: 16, right: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Email Field
-                      NameField(
-                        label: 'EMAIL ADDRESS', 
-                        controller: widget.viewModel.emailController,
-                         decoration: decoration, 
-                         placeholder: 'Enter employee email', 
-                         isRequired: true,
-                         isEmail: true,
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Email Field
+                    NameField(
+                      label: 'EMAIL ADDRESS', 
+                      controller: widget.viewModel.emailController,
+                       decoration: decoration, 
+                       placeholder: 'Enter employee email', 
+                       isRequired: true,
+                       isEmail: true,
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                 );
               },
             ),
 
             // Department (Conditionally disabled by HR role)
-            Text('DEPARTMENT', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
+            Text(
+              'DEPARTMENT', 
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600, 
+                color: Theme.of(context).colorScheme.onSurface.withAlpha(222), 
+                letterSpacing: 0.5)
+              ),
             const SizedBox(height: 8),
             ListenableBuilder(
               listenable: widget.viewModel,
@@ -267,13 +297,9 @@ class _FormSectionState extends State<FormSection> {
                 
                 return Opacity(
                   opacity: isDepartmentDisabled ? 0.5 : 1.0,
-                  child: Container(
-                    width: double.infinity, padding: const EdgeInsets.only(left: 16, right: 16),
-                    decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16)),
-                    child: IgnorePointer(
-                      ignoring: isDepartmentDisabled, // Disable interaction
-                      child: DepartmentRow(viewModel: widget.viewModel),
-                    ),
+                  child: IgnorePointer(
+                    ignoring: isDepartmentDisabled, // Disable interaction
+                    child: DepartmentRow(viewModel: widget.viewModel),
                   ),
                 );
               },
@@ -281,19 +307,37 @@ class _FormSectionState extends State<FormSection> {
             const SizedBox(height: 20),
             
             // Tags
-            Text('EXTRA TAGS (COMMA SEPARATED, IF APPLICABLE)', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: Colors.black87, letterSpacing: 0.5)),
+            Text(
+              'EXTRA TAGS (COMMA SEPARATED, IF APPLICABLE)', 
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600, 
+                color: Theme.of(context).colorScheme.onSurface.withAlpha(222), 
+                letterSpacing: 0.5)
+              ),
             const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.only(left: 16, right: 16),
-              child: TextFormField(
-                controller: widget.viewModel.tagsController, maxLines: null, minLines: 1,
-                style: const TextStyle(fontWeight: FontWeight.w300, color: Colors.black),
-                decoration: decoration.copyWith(
-                  hintText: 'i.e. non-teaching',
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: const BorderSide(color: Color(0xFFD4C4B0), width: 1)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: const BorderSide(color: Color(0xFFFFB47B), width: 2)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            TextFormField(
+              controller: widget.viewModel.tagsController, maxLines: null, minLines: 1,
+              style: TextStyle(
+                fontWeight: FontWeight.w300, 
+                color: Theme.of(context).colorScheme.onSurface
+              ),
+              decoration: decoration.copyWith(
+                hintText: 'i.e. non-teaching',
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16), 
+                  borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.tertiaryFixed, 
+                    width: 1
+                  )
                 ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16), 
+                  borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.tertiaryFixedDim, 
+                    width: 2
+                  )
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
             ),
           ],

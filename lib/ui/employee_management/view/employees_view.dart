@@ -179,21 +179,57 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                   child: Icon(Icons.sort),
                   // Menu Items 
                   itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
                       value: 'name_ascending',
-                      child: Row(children: [Icon(Icons.arrow_upward, color: Colors.black87), SizedBox(width: 8), Text('Names (Ascending)')]),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.arrow_upward, 
+                            color: Theme.of(context).colorScheme.onSurface.withAlpha(222)
+                          ),
+                          SizedBox(width: 8), 
+                          Text('Names (Ascending)')
+                        ]
+                      ),
                     ),
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
                       value: 'name_descending',
-                      child: Row(children: [Icon(Icons.arrow_downward, color: Colors.black87), SizedBox(width: 8), Text('Names (Descending)')]),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.arrow_downward, 
+                            color: Theme.of(context).colorScheme.onSurface.withAlpha(222)
+                          ), 
+                          SizedBox(width: 8), 
+                          Text('Names (Descending)')
+                        ]
+                      ),
                     ),
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
                       value: 'role_ascending',
-                      child: Row(children: [Icon(Icons.keyboard_arrow_up, color: Colors.black87), SizedBox(width: 8), Text('Roles (Ascending)')]),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.keyboard_arrow_up, 
+                            color: Theme.of(context).colorScheme.onSurface.withAlpha(222)
+                          ), 
+                          SizedBox(width: 8), 
+                          Text('Roles (Ascending)')
+                        ]
+                      ),
                     ),
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
                       value: 'role_descending',
-                      child: Row(children: [Icon(Icons.keyboard_arrow_down, color: Colors.black87), SizedBox(width: 8), Text('Roles (Descending)')]),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.keyboard_arrow_down, 
+                            color: Theme.of(context).colorScheme.onSurface.withAlpha(222)
+                          ), 
+                          SizedBox(width: 8), 
+                          Text('Roles (Descending)')
+                        ]
+                      ),
                     ),
                   ],
                   onSelected: (String result) {
@@ -339,7 +375,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                   IconButton(
                     icon: viewModel.deleteEmployee.running
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.delete_outline, color: Colors.red),
+                        : Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
                     tooltip: 'Remove Employee',
                     onPressed: viewModel.deleteEmployee.running
                         ? null
@@ -359,7 +395,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                       iconPadding: EdgeInsets.zero,
                       actionsPadding: EdgeInsets.zero,
                       insetPadding: EdgeInsets.zero,
-                      backgroundColor: const Color(0x00000000),
+                      backgroundColor: Colors.transparent,
                     );
                   },
                 );
@@ -398,7 +434,12 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                 _multiSelect = false; // Optional: exit selection mode
               });
             },
-            child: const Text('Remove', style: TextStyle(color: Colors.red)),
+            child: Text(
+              'Remove', 
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error
+              )
+            ),
           ),
         ],
       ),

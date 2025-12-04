@@ -39,6 +39,10 @@ List<SingleChildWidget> get providers {
         PrefsRepository(
           prefsService: context.read()
         )
+    ),
+    ChangeNotifierProvider<ThemeModeNotifier>(
+      create: (context) =>
+        ThemeModeNotifier()
     )
   ];
 }

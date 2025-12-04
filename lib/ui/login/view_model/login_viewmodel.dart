@@ -3,9 +3,11 @@
 import 'dart:async';
 import 'package:ephor/data/repositories/shared_prefs/abstract_prefs_repository.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
+import 'package:ephor/ui/core/themes/theme_mode_notifier.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Keep only for generic User type
 import 'package:ephor/data/services/supabase/supabase_service.dart';
 import 'package:ephor/data/repositories/auth/auth_repository.dart';
@@ -17,6 +19,7 @@ class LoginViewModel extends ChangeNotifier {
   
   final AuthRepository _authRepository;
   final AbstractPrefsRepository _prefsRepository;
+  final ThemeModeNotifier _themeNotifier;
   
   // Subscriptions to the Repository streams
   late final StreamSubscription<bool> _loadingSubscription; 
@@ -41,9 +44,14 @@ class LoginViewModel extends ChangeNotifier {
   late CommandWithArgs login;
   late CommandWithArgs setRememberMe;
 
-  LoginViewModel({required AuthRepository authRepository, required AbstractPrefsRepository prefsRepository})
+  LoginViewModel({
+    required AuthRepository authRepository, 
+    required AbstractPrefsRepository prefsRepository,
+    required ThemeModeNotifier themeNotifier
+  })
     : _authRepository = authRepository,
-      _prefsRepository = prefsRepository {
+      _prefsRepository = prefsRepository,
+      _themeNotifier = themeNotifier {
     // 1. Initialize and subscribe to ALL Repository streams
     _subscribeToLoadingStatus(); 
     _subscribeToAuthStatus();
@@ -51,6 +59,8 @@ class LoginViewModel extends ChangeNotifier {
     // Command setup
     login = CommandWithArgs<void, (String employeeCode, String password, String userRole)>(_loginWithCode);
     setRememberMe = CommandWithArgs<void, bool>(_setRememberMe);
+
+    loadSavedTheme();
   }
 
   // --- Subscription Management ---
@@ -161,5 +171,10 @@ class LoginViewModel extends ChangeNotifier {
     }
 
     return Result.error(CustomMessageException("Failed to set 'Remember Me'"));
+  }
+
+  void loadSavedTheme() async {
+    final themeMode = await _prefsRepository.getThemeMode();
+    _themeNotifier.setThemeMode(themeMode);
   }
 }

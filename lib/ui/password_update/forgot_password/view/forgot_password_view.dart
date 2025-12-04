@@ -56,24 +56,17 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: AlignmentGeometry.bottomLeft,
-            end: AlignmentGeometry.topRight,
-            colors: [
-              Color(0xffac575d),
-              Color(0xffC68380),
-              Color(0xffE0B0A4),
-              Color(0xffC68380),
-              Color(0xffac575d),
-            ],
-            stops: [
-              0.00,
-              0.08,
-              0.50,
-              0.75,
-              1.00
-            ]
-          ),
+          image: DecorationImage(
+            image: AssetImage("assets/images/school.jpg"),
+            fit: BoxFit.fill,
+            opacity: isMobile ? 0.1 : 0.4,
+            colorFilter: ColorFilter.mode(
+              Theme.of(context).colorScheme.primary.withAlpha(
+                isMobile ? 20 : 80
+              ), 
+              BlendMode.color
+            )
+          )
         ),
         child: Center(
           child: SingleChildScrollView(
@@ -81,9 +74,14 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                width: isMobile ? MediaQuery.of(context).size.width * 0.9 : 500,
                padding: const EdgeInsets.all(32),
                decoration: BoxDecoration(
-                 color: Theme.of(context).colorScheme.surface.withAlpha(127),
+                 color: Theme.of(context).colorScheme.surfaceContainerLowest.withAlpha(224),
                  borderRadius: BorderRadius.circular(24),
-                 boxShadow: const [BoxShadow(blurRadius: 10, color: Colors.black12)],
+                 boxShadow: [
+                  BoxShadow(
+                    blurRadius: 10, 
+                    color: Theme.of(context).colorScheme.onSurface.withAlpha(31)
+                  )
+                ],
                ),
                child: Form(
                  key: _formKey,
@@ -155,7 +153,10 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
       CustomMessageException ex = error.error as CustomMessageException;
       widget.viewModel.sendLinkCommand.clearResult();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(ex.message), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(ex.message), 
+          backgroundColor: Theme.of(context).colorScheme.error
+        ),
       );
     }
   }
