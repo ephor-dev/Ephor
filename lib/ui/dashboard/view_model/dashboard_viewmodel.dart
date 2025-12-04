@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:ephor/data/repositories/auth/auth_repository.dart';
+import 'package:ephor/data/repositories/shared_prefs/abstract_prefs_repository.dart';
 import 'package:ephor/data/services/supabase/supabase_service.dart';
 import 'package:ephor/domain/enums/auth_status.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
+import 'package:ephor/ui/core/themes/theme_mode_notifier.dart';
 import 'package:ephor/utils/command.dart';
+import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 class DashboardViewModel extends ChangeNotifier {
   bool _isLoading = false;
@@ -15,8 +18,7 @@ class DashboardViewModel extends ChangeNotifier {
   bool _isAuthenticated = false;
   bool get isAuthenticated => _isAuthenticated;
 
-  // EmployeeModel? _currentUser;
-  // EmployeeModel? get currentUser => _currentUser;
+  final ThemeModeNotifier _themeNotifier;
 
   final ValueNotifier<EmployeeModel?> _currentUser = ValueNotifier<EmployeeModel?>(null);
   ValueNotifier<EmployeeModel?> get currentUser => _currentUser;
@@ -28,15 +30,24 @@ class DashboardViewModel extends ChangeNotifier {
   late final StreamSubscription<AuthStatus> _authStatusSubscription; 
 
   final AuthRepository _authRepository;
+  final AbstractPrefsRepository _prefsRepository;
   late CommandNoArgs logout;
   late CommandWithArgs checkPassword;
+  late CommandWithArgs setDarkMode;
 
-  DashboardViewModel({required AuthRepository authRepository})
-    : _authRepository = authRepository {
+  DashboardViewModel({
+    required AuthRepository authRepository, 
+    required AbstractPrefsRepository prefsRepository,
+    required ThemeModeNotifier themeNotifier
+  })
+    : _authRepository = authRepository, 
+    _prefsRepository = prefsRepository,
+    _themeNotifier = themeNotifier {
     _subscribeToLoadingStatus(); 
     _subscribeToAuthStatus();
     logout = CommandNoArgs<void>(_logout);
     checkPassword = CommandWithArgs<void, String>(_checkPassword);
+    setDarkMode = CommandWithArgs<void, ThemeMode>(_setDarkMode);
 
     _getUserImage();
   }
@@ -112,5 +123,20 @@ class DashboardViewModel extends ChangeNotifier {
     final result = await _authRepository.checkPassword(password);
 
     return result;
+  }
+
+  Future<Result<void>> _setDarkMode(ThemeMode themeMode) async {
+    try {
+      _themeNotifier.setThemeMode(themeMode);
+      final result = await _prefsRepository.setThemeMode(themeMode);
+
+      if (!result) {
+        return Result.error(CustomMessageException("Failed to set Theme Mode"));
+      }
+      
+      return Result.ok(null);
+    } on Error {
+      return Result.error(CustomMessageException("Can't set Dark Mode"));
+    }
   }
 }

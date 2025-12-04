@@ -1,5 +1,7 @@
 import 'package:ephor/data/repositories/shared_prefs/abstract_prefs_repository.dart';
 import 'package:ephor/data/services/shared_prefs/prefs_service.dart';
+import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 
 // Keys used by the application (Domain Constants)
 abstract class PrefsKeys {
@@ -28,13 +30,20 @@ class PrefsRepository implements AbstractPrefsRepository {
   // --- Settings Data (Example: Boolean) ---
 
   @override
-  Future<bool> getIsDarkMode() async {
-    return _prefsService.getBool(PrefsKeys.darkMode);
+  Future<ThemeMode> getThemeMode() async {
+    final themeString = _prefsService.getString(PrefsKeys.darkMode);
+    ThemeMode? themeMode = ThemeMode.values.firstWhereOrNull((e) => e.name == themeString);
+    
+    if (themeMode == null) {
+      return ThemeMode.system;
+    }
+
+    return themeMode;
   }
 
   @override
-  Future<bool> setIsDarkMode(bool isDarkMode) async {
-    return await _prefsService.setBool(PrefsKeys.darkMode, isDarkMode);
+  Future<bool> setThemeMode(ThemeMode themeMode) async {
+    return await _prefsService.setString(PrefsKeys.darkMode, themeMode.name);
   }
 
   // --- Clear/Logout Action ---

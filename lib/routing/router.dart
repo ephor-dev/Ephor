@@ -51,7 +51,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
         return LoginView(
           viewModel: LoginViewModel(
             authRepository: context.read(),
-            prefsRepository: context.read()
+            prefsRepository: context.read(),
+            themeNotifier: context.read()
           ),
         );
       },
@@ -79,7 +80,11 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
     ShellRoute(
       builder: (BuildContext context, GoRouterState state, Widget child) {
         return DashboardView(
-          viewModel: DashboardViewModel(authRepository: context.read()),
+          viewModel: DashboardViewModel(
+            authRepository: context.read(),
+            prefsRepository: context.read(),
+            themeNotifier: context.read()
+          ),
           child: child
         );
       },

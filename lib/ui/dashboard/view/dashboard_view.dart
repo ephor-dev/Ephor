@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/routing/routes.dart';
-import 'package:ephor/ui/core/themes/theme_mode_notifier.dart';
 import 'package:ephor/ui/core/ui/confirm_identity_dialog/confirm_identity_dialog.dart';
 import 'package:ephor/ui/core/ui/dashboard_menu_item/dashboard_menu_item.dart';
 import 'package:ephor/ui/core/ui/edit_profile_dialog/edit_profile_dialog.dart';
@@ -10,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:ephor/utils/responsiveness.dart';
-import 'package:provider/provider.dart';
 
 class DashboardView extends StatefulWidget {
   final DashboardViewModel viewModel;
@@ -257,7 +255,6 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   PreferredSizeWidget _buildAppBar({required bool isMobile}) {
-    final themeNotifier = Provider.of<ThemeModeNotifier>(context, listen: false);
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest, 
       elevation: 1.0, 
@@ -485,13 +482,13 @@ class _DashboardViewState extends State<DashboardView> {
                           _handleLogout(context);
                           break;
                         case 'light_mode':
-                          themeNotifier.setThemeMode(ThemeMode.light);
+                          widget.viewModel.setDarkMode.execute(ThemeMode.light);
                           break;
                         case 'dark_mode':
-                          themeNotifier.setThemeMode(ThemeMode.dark);
+                          widget.viewModel.setDarkMode.execute(ThemeMode.dark);
                           break;
                         case 'follow_system_mode':
-                          themeNotifier.setThemeMode(ThemeMode.system);
+                          widget.viewModel.setDarkMode.execute(ThemeMode.system);
                           break;
                       }
                     },
