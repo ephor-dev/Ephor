@@ -3,9 +3,7 @@ import 'package:ephor/data/repositories/catna/catna_repository.dart';
 import 'package:flutter/material.dart';
 
 class CatnaForm1ViewModel extends ChangeNotifier {
-
   Map<String, dynamic>? _identifyingData;
-
   Map<String, dynamic>? get identifyingData => _identifyingData;
 
   // Text Controllers
@@ -35,8 +33,8 @@ class CatnaForm1ViewModel extends ChangeNotifier {
     _restoreFromShared();
   }
 
-  void saveIdentifyingData(Map<String, dynamic> data) async {
-    await _catnaRepository.keepInMemoryIdentifyingData(Map<String, dynamic>.from(data));
+  void saveIdentifyingData(Map<String, dynamic> data) {
+    _catnaRepository.keepInMemoryIdentifyingData(Map<String, dynamic>.from(data));
     notifyListeners();
   }
 

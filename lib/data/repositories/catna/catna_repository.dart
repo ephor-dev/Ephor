@@ -7,8 +7,8 @@ import 'package:ephor/utils/results.dart';
 /// assessments. Wraps low-level Supabase calls in a simple Result API.
 class CatnaRepository extends AbstractCATNARepository {
   final SupabaseService _supabaseService;
-  late Map<String, dynamic> identifyingData;
-  late Map<String, dynamic> competencyRatings;
+  Map<String, dynamic> identifyingData = {};
+  Map<String, dynamic> competencyRatings = {};
 
   CatnaRepository({required SupabaseService supabaseService})
       : _supabaseService = supabaseService;
@@ -26,7 +26,7 @@ class CatnaRepository extends AbstractCATNARepository {
   }
   
   @override
-  Future<Result<void>> keepInMemoryIdentifyingData(Map<String, dynamic> data) async {
+  Result<void> keepInMemoryIdentifyingData(Map<String, dynamic> data) {
     try {
       identifyingData = data;
       return Result.ok(null);
@@ -36,7 +36,7 @@ class CatnaRepository extends AbstractCATNARepository {
   }
   
   @override
-  Future<Result<void>> keepInMemoryCompetencyRating(Map<String, dynamic> data) async {
+  Result<void> keepInMemoryCompetencyRating(Map<String, dynamic> data) {
     try {
       competencyRatings = data;
       return Result.ok(null);

@@ -892,7 +892,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Colors.white,
+                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(cornerRadius),
                               ),

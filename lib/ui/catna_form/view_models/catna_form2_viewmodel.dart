@@ -1,11 +1,18 @@
-import 'package:ephor/data/repositories/catna/abstract_catna_repository.dart';
+import 'package:ephor/data/repositories/auth/auth_repository.dart';
 import 'package:ephor/data/repositories/catna/catna_repository.dart';
+import 'package:ephor/domain/enums/employee_role.dart';
+import 'package:ephor/utils/custom_message_exception.dart';
+import 'package:ephor/utils/results.dart';
 import 'package:flutter/foundation.dart';
 
 class CatnaForm2ViewModel extends ChangeNotifier {
-
+  Map<String, dynamic>? _identifyingData;
+  Map<String, dynamic>? get identifyingData => _identifyingData;
   Map<String, dynamic>? _competencyRatings;
   Map<String, dynamic>? get competencyRatings => _competencyRatings;
+
+  bool _isSubmitting = false;
+  bool get isSubmitting => _isSubmitting;
 
   // Assessment response map: item text -> rating (1-4)
   final Map<String, int?> assessmentResponse = {};
@@ -47,17 +54,30 @@ class CatnaForm2ViewModel extends ChangeNotifier {
     '3.9. (ACS) Represents the University in promoting its vision, mission and strategic direction in any customer and stakeholders transaction or engagement.',
   ];
 
-  final AbstractCATNARepository _catnaRepository;
+  final CatnaRepository _catnaRepository;
+  final AuthRepository _authRepository;
 
-  CatnaForm2ViewModel({required CatnaRepository catnaRepository})
-    : _catnaRepository = catnaRepository {
+  CatnaForm2ViewModel({
+    required CatnaRepository catnaRepository,
+    required AuthRepository authRepository
+  })
+    : _catnaRepository = catnaRepository,
+      _authRepository = authRepository {
     _initializeResponseMap();
     _restoreFromShared();
+
+    getSavedData();
   }
 
-  void saveCompetencyRatings(Map<String, dynamic> data) async {
+  void getSavedData() {
+    _identifyingData = _catnaRepository.identifyingData;
+    _competencyRatings = _catnaRepository.competencyRatings;
+    notifyListeners();
+  }
+
+  void saveCompetencyRatings(Map<String, dynamic> data) {
     // _competencyRatings = Map<String, dynamic>.from(data);
-    await _catnaRepository.keepInMemoryCompetencyRating(Map<String, dynamic>.from(data));
+    _catnaRepository.keepInMemoryCompetencyRating(Map<String, dynamic>.from(data));
     notifyListeners();
   }
 
@@ -137,6 +157,45 @@ class CatnaForm2ViewModel extends ChangeNotifier {
     return values.reduce((a, b) => a + b) / values.length;
   }
 
+  String? validateAllForms({
+    required Map<String, dynamic>? identifyingData,
+    required Map<String, dynamic>? competencyRatings,
+  }) {
+
+    if (identifyingData == null ||
+        identifyingData['first_name']?.toString().trim().isEmpty == true ||
+        identifyingData['last_name']?.toString().trim().isEmpty == true ||
+        identifyingData['designation'] == null ||
+        identifyingData['office'] == null ||
+        identifyingData['operating_unit'] == null ||
+        identifyingData['years_in_current_position'] == null ||
+        identifyingData['review_start_date'] == null ||
+        identifyingData['review_end_date'] == null ||
+        identifyingData['assessment_date'] == null ||
+        identifyingData['purpose_of_assessment'] == null) {
+      return 'All fields in Form 1 must be filled before submitting';
+    }
+
+    // Validate Form 2 data - ALL items must be rated
+    if (competencyRatings == null) {
+      return 'All competency ratings in Form 2 must be completed before submitting';
+    }
+
+    final knowledgeRatings = competencyRatings['knowledge'] as Map<String, dynamic>? ?? {};
+    final skillsRatings = competencyRatings['skills'] as Map<String, dynamic>? ?? {};
+    final attitudeRatings = competencyRatings['attitudes'] as Map<String, dynamic>? ?? {};
+
+    // Each category should have exactly 9 items rated (all competency items)
+    const expectedItemsPerCategory = 9;
+    if (knowledgeRatings.length < expectedItemsPerCategory ||
+        skillsRatings.length < expectedItemsPerCategory ||
+        attitudeRatings.length < expectedItemsPerCategory) {
+      return 'All competency items in Form 2 must be rated before submitting. Each category requires $expectedItemsPerCategory ratings.';
+    }
+
+    return null;
+  }
+
   /// Validates that ALL competency ratings are filled.
   String? validateForm() {
     // Require ALL items in each category to be rated
@@ -189,5 +248,47 @@ class CatnaForm2ViewModel extends ChangeNotifier {
         'overall': overallAvg,
       },
     };
+  }
+
+  bool get canSubmitAssessment {
+    final currentUser = _authRepository.currentUser;
+    if (currentUser == null) return false;
+    return currentUser.role == EmployeeRole.humanResource ||
+           currentUser.role == EmployeeRole.supervisor;
+  }
+
+  Future<Result<void>> submitCatna(Map<String, dynamic> payload) async {
+    if (_isSubmitting) {
+      return const Result.ok(null);
+    }
+
+    _isSubmitting = true;
+    notifyListeners();
+
+    // Check user authentication
+    final currentUser = _authRepository.currentUser;
+    if (currentUser == null) {
+      _isSubmitting = false;
+      notifyListeners();
+      return Result.error(CustomMessageException('User authentication required. Please log in again.'));
+    }
+
+    // Check role-based permissions for CATNA submission
+    if (!canSubmitAssessment) {
+      _isSubmitting = false;
+      notifyListeners();
+      return Result.error(CustomMessageException(
+        'You do not have permission to submit CATNA assessments. Only HR and Supervisors can submit assessments.'
+      ));
+    }
+
+    payload['employee_code'] = currentUser.employeeCode;
+
+    final result = await _catnaRepository.submitAssessment(payload);
+
+    _isSubmitting = false;
+    notifyListeners();
+
+    return result;
   }
 }

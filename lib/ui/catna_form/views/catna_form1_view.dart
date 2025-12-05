@@ -508,7 +508,6 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                       onPressed: () {
                         final validationError = widget.viewModel.validateForm();
                         if (validationError != null) {
-                          print('Form 1 Validation Error: $validationError'); // Debug log
                           _showValidationDialog(context, validationError);
                           return;
                         }

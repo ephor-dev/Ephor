@@ -41,9 +41,7 @@ class _DashboardViewState extends State<DashboardView> {
     final index = menuItems.indexWhere((item) {
       final path = item['path'];
 
-      _showSearch = (location.contains(path) && path == Routes.dashboardEmployeeList)
-        ? true
-        : false;
+      _showSearch = (location.contains(path) && path == Routes.dashboardEmployeeList);
 
       return path != null && location.contains(path);
     });

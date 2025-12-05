@@ -1,5 +1,7 @@
 import 'package:ephor/routing/routes.dart';
 import 'package:ephor/ui/catna_form/view_models/catna_form2_viewmodel.dart';
+import 'package:ephor/utils/custom_message_exception.dart';
+import 'package:ephor/utils/results.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -354,27 +356,57 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
 
                         const SizedBox(width: buttonSpacing),
                         ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             final validationError = widget.viewModel.validateForm();
                             if (validationError != null) {
-                              print('Form 2 Validation Error: $validationError'); // Debug log
                               _showValidationDialog(context, validationError);
                               return;
                             }
 
                             widget.viewModel.saveCompetencyRatings(widget.viewModel.buildCompetencyRatings());
-                            context.go(Routes.getCATNAForm3Path());
+
+                            final payload = <String, dynamic>{
+                                if (widget.viewModel.identifyingData != null)
+                                  'identifying_data': widget.viewModel.identifyingData,
+                                if (widget.viewModel.competencyRatings != null)
+                                  'competency_ratings':
+                                      widget.viewModel.competencyRatings
+                              };
+
+                              final Result<void> result =
+                                  await widget.viewModel.submitCatna(payload);
+
+                              if (!mounted) return;
+
+                              switch (result) {
+                                case Ok():
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'CATNA training needs submitted successfully.',
+                                      ),
+                                    ),
+                                  );
+                                  context.go(Routes.dashboard);
+                                case Error(error: final e):
+                                  final message = e is CustomMessageException
+                                      ? e.message
+                                      : 'Failed to submit CATNA training needs.';
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(message)),
+                                  );
+                              }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.surface,
-                            foregroundColor: Theme.of(context).colorScheme.primary,
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            foregroundColor: Theme.of(context).colorScheme.onPrimary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(cornerRadius),
                             ),
                           ),
                           child: Text(
-                            'Next',
-                            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                            'Submit',
+                            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
                           ),
                         ),
                       ],
