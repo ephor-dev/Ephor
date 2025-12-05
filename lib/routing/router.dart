@@ -186,7 +186,7 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           ),
         ),
         GoRoute(
-          path: Routes.getCatnaFormCreatorPath(),
+          path: Routes.getCatnaFormEditorPath(),
           builder: (context, state) {
             final formId = state.uri.queryParameters['formId'];
             return CatnaFormCreatorView(

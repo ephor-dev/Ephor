@@ -484,12 +484,12 @@ class _MyFormsViewState extends State<MyFormsView> {
   // ============================================
   
   void _handleCreateForm(BuildContext context) {
-    context.go(Routes.getCatnaFormCreatorPath());
+    context.go(Routes.getCatnaFormEditorPath());
   }
   
   void _handleEditForm(BuildContext context, FormModel form) {
     // Navigate to form editor with form ID to load existing form
-    context.go(Routes.getCatnaFormCreatorPath(formId: form.id));
+    context.go(Routes.getCatnaFormEditorPath(formId: form.id));
   }
   
   void _handleViewResponses(BuildContext context, FormModel form) {
