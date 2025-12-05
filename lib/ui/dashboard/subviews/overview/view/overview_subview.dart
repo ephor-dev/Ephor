@@ -142,7 +142,6 @@ class _StatCard extends StatelessWidget {
   final String value;
   final String subtitle;
   final Color? color;
-  final Gradient? gradient;
   final Color textColor;
   final Widget iconOrChart;
 
@@ -151,7 +150,6 @@ class _StatCard extends StatelessWidget {
     required this.value,
     required this.subtitle,
     this.color,
-    this.gradient,
     this.textColor = Colors.white,
     required this.iconOrChart,
   });
