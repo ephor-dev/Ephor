@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/routing/routes.dart';
 import 'package:ephor/ui/core/ui/confirm_identity_dialog/confirm_identity_dialog.dart';
@@ -26,7 +27,8 @@ class _DashboardViewState extends State<DashboardView> {
   final List<Map<String, dynamic>> menuItems = [
     {'title': 'Overview', 'icon': Icons.description_outlined, 'selected': true, 'path': Routes.dashboardOverview},
     {'title': 'Employee List', 'icon': Icons.list, 'selected': false, 'path': Routes.dashboardEmployeeList},
-    {'title': 'CATNA Form Editor', 'icon': Icons.note_add_outlined, 'selected': false, 'path': Routes.dashboardCatnaFormCreator},
+    {'title': 'CATNA Form Editor', 'icon': Icons.note_add_outlined, 'selected': false, 'path': Routes.dashboardCatnaFormEditor},
+    {'title': 'IA Form Editor', 'icon': Icons.note_add_outlined, 'selected': false, 'path': Routes.dashboardIAFormEditor},
     {'title': 'Upcoming Schedules', 'icon': Icons.schedule_outlined, 'selected': false, 'path': Routes.dashboardSchedules},
     {'title': 'Finished Assessments', 'icon': Icons.check_box_outlined, 'selected': false, 'path': Routes.dashboardAssessments},
     {'title': 'Finished Trainings', 'icon': Icons.check_outlined, 'selected': false, 'path': Routes.dashboardFinishedTrainings},
@@ -95,6 +97,18 @@ class _DashboardViewState extends State<DashboardView> {
       itemCount: menuItems.length,
       itemBuilder: (context, index) {
         final item = menuItems[index];
+
+        EmployeeRole? currentUserRole = widget.viewModel.currentUser.value?.role;
+        if (currentUserRole != null ) {
+          if (currentUserRole == EmployeeRole.supervisor 
+            && (item['path'] == Routes.dashboardCatnaFormEditor 
+              || item['path'] == Routes.dashboardIAFormEditor)) {
+                return const SizedBox.shrink();
+          } else {
+            // Do not show answerable CATNA Forms to Human Resource
+          }
+        }
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
           child: DashboardMenuItem(

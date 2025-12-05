@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:ephor/data/repositories/auth/auth_repository.dart';
 import 'package:ephor/data/repositories/shared_prefs/abstract_prefs_repository.dart';
-import 'package:ephor/data/services/supabase/supabase_service.dart';
 import 'package:ephor/domain/enums/auth_status.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/ui/core/themes/theme_mode_notifier.dart';
@@ -71,7 +70,7 @@ class DashboardViewModel extends ChangeNotifier {
   void _getUserImage() async {
     final currentUserLocal = await _authRepository.getAuthenticatedUserData();
 
-    if (currentUserLocal?.email == _currentUser.value?.email) { // DONT UPDATE PIC WHEN YOU DONT HAVE TO :>
+    if (currentUserLocal?.email == _currentUser.value?.email) {
       return;
     }
 
@@ -106,9 +105,10 @@ class DashboardViewModel extends ChangeNotifier {
     _checkInitialAuthState();
   }
 
-  void _checkInitialAuthState() {
-    var currentUser = SupabaseService.auth.currentUser;
+  void _checkInitialAuthState() async {
+    var currentUser = await _authRepository.getAuthenticatedUserData();
     _isAuthenticated = currentUser != null;
+    _currentUser.value = currentUser;
     notifyListeners();
   }
 
