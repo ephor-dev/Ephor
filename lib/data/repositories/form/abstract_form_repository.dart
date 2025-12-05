@@ -1,7 +1,7 @@
 // data/repositories/form/abstract_form_repository.dart
 
-import 'package:ephor/domain/models/form/form_model.dart';
-import 'package:ephor/domain/models/form/form_response_summary.dart';
+import 'package:ephor/domain/models/form_creator/form_model.dart';
+import 'package:ephor/domain/models/form_creator/form_response_summary.dart';
 import 'package:ephor/utils/results.dart';
 
 /// Abstract interface for form data operations.

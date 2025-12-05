@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ephor/ui/catna_form_creator/view_model/catna_form_creator_view_model.dart';
-import 'package:ephor/domain/models/form/form_model.dart';
+import 'package:ephor/domain/models/form_creator/form_model.dart';
 import 'package:ephor/utils/responsiveness.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:go_router/go_router.dart';

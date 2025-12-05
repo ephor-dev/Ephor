@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:ephor/ui/my_forms/view_model/my_forms_view_model.dart';
-import 'package:ephor/domain/models/form/form_model.dart';
+import 'package:ephor/domain/models/form_creator/form_model.dart';
 import 'package:ephor/utils/responsiveness.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:go_router/go_router.dart';

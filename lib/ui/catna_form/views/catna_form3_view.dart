@@ -1,7 +1,13 @@
+import 'package:ephor/routing/routes.dart';
+import 'package:ephor/ui/catna_form/view_models/catna_form3_viewmodel.dart';
+import 'package:ephor/utils/custom_message_exception.dart';
+import 'package:ephor/utils/results.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CatnaForm3View extends StatefulWidget {
-  const CatnaForm3View({super.key});
+  final CatnaForm3ViewModel viewModel;
+  const CatnaForm3View({super.key, required this.viewModel});
 
   @override
   State<CatnaForm3View> createState() => _CatnaForm3ViewState();
@@ -11,7 +17,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
   final List<bool> _knowledgeCheckStates = List.generate(4, (index) => false);
   final List<bool> _skillCheckStates = List.generate(4, (index) => false);
   final List<bool> _attitudeCheckStates = List.generate(4, (index) => false);
-  final List<bool> _categoryCheckStatesQ1 = List.generate(4, (index) => false);
+  final List<bool> _categoryCheckStatesQ1   = List.generate(4, (index) => false);
   final List<bool> _categoryCheckStatesQ2 = List.generate(4, (index) => false);
   final List<bool> _categoryCheckStatesQ3 = List.generate(4, (index) => false);
   final List<bool> _categoryCheckStatesQ4 = List.generate(4, (index) => false);
@@ -38,18 +44,21 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
       'Needs training on functional know-how relating to administration services',
       'Needs other learning and development intervention (e.g. coaching, counselling, mentoring, job rotation, etc.)',
     ];
+
     final List<String> skillTrainingItems = [
       'Needs practical/work-based skill trainings related to academic programs',
       'Needs practical/work-based skill trainings related to organizational effectiveness (e.g. teamwork, problem-solving, conflict resolution, etc.)',
       'Needs practical/work-based skill training related to effective personal management (e.g. time & stress management, communication, etc.)',
       'Needs other learning and development intervention (e.g. coaching, counselling, mentoring, job rotation, etc.)',
     ];
+
     final List<String> attitudeTrainingItems = [
       'Needs conceptual and/or work-based trainings related to further development of attitude and work effectiveness',
       'Needs conceptual and/or work-based trainings related to further development of attitude and work relationship',
       'Needs conceptual and/or work-based trainings related to further development of attitude and customer service',
       'Needs other learning and development intervention (e.g. coaching, counselling, mentoring, job rotation, etc.)',
     ];
+
     final List<String> categoryItems = [
       'Mandatory',
       'Knowledge Based',
@@ -777,7 +786,7 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pop(context);
+                            context.go(Routes.getCATNAForm2Path());
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(context).colorScheme.surface,
@@ -792,20 +801,107 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
                           ),
                         ),
                         const SizedBox(width: buttonSpacing),
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                            foregroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(cornerRadius),
+                        if (widget.viewModel.canSubmitAssessment)
+                          ElevatedButton(
+                            onPressed: () async {
+                              // Build training_needs JSON
+                              final trainingNeeds = <String, dynamic>{
+                                'knowledge': [
+                                  for (var i = 0; i < knowledgeTrainingItems.length; i++)
+                                    if (_knowledgeCheckStates[i]) knowledgeTrainingItems[i],
+                                ],
+                                'skills': [
+                                  for (var i = 0; i < skillTrainingItems.length; i++)
+                                    if (_skillCheckStates[i]) skillTrainingItems[i],
+                                ],
+                                'attitudes': [
+                                  for (var i = 0; i < attitudeTrainingItems.length; i++)
+                                    if (_attitudeCheckStates[i]) attitudeTrainingItems[i],
+                                ],
+                              };
+
+                              // Build quarter_plans JSON (titles are not yet captured in the UI)
+                              Map<String, dynamic> buildQuarterPlan(
+                                List<bool> categoryStates,
+                              ) {
+                                return {
+                                  'title': null,
+                                  'categories': {
+                                    'mandatory': categoryStates[0],
+                                    'knowledge_based': categoryStates[1],
+                                    'skill_based': categoryStates[2],
+                                    'attitudinal_based': categoryStates[3],
+                                  },
+                                };
+                              }
+
+                              final quarterPlans = <String, dynamic>{
+                                'q1': buildQuarterPlan(_categoryCheckStatesQ1),
+                                'q2': buildQuarterPlan(_categoryCheckStatesQ2),
+                                'q3': buildQuarterPlan(_categoryCheckStatesQ3),
+                                'q4': buildQuarterPlan(_categoryCheckStatesQ4),
+                              };
+
+                              // Validate all form data before submission
+                              final validationError = widget.viewModel.validateAllForms(
+                                identifyingData: widget.viewModel.identifyingData,
+                                competencyRatings: widget.viewModel.competencyRatings,
+                                trainingNeeds: trainingNeeds,
+                                quarterPlans: quarterPlans,
+                              );
+
+                              if (validationError != null) {
+                                print('Form 3 Validation Error: $validationError'); // Debug log
+                                _showValidationDialog(context, validationError);
+                                return;
+                              }
+
+                              final payload = <String, dynamic>{
+                                if (widget.viewModel.identifyingData != null)
+                                  'identifying_data': widget.viewModel.identifyingData,
+                                if (widget.viewModel.competencyRatings != null)
+                                  'competency_ratings':
+                                      widget.viewModel.competencyRatings,
+                                'training_needs': trainingNeeds,
+                                'quarter_plans': quarterPlans,
+                              };
+
+                              final Result<void> result =
+                                  await widget.viewModel.submitCatna(payload);
+
+                              if (!mounted) return;
+
+                              switch (result) {
+                                case Ok():
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'CATNA training needs submitted successfully.',
+                                      ),
+                                    ),
+                                  );
+                                  context.go(Routes.dashboard);
+                                case Error(error: final e):
+                                  final message = e is CustomMessageException
+                                      ? e.message
+                                      : 'Failed to submit CATNA training needs.';
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(message)),
+                                  );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(cornerRadius),
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            'Submit',
-                            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
-                          ),
-                        ),
+                            child: Text(
+                              'Submit',
+                                style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                              ),
+                            ),
                       ],
                     ),
                   ),
@@ -815,6 +911,26 @@ class _CatnaForm3ViewState extends State<CatnaForm3View> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showValidationDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Validation Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

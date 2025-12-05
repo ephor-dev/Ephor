@@ -319,4 +319,10 @@ class SupabaseService {
 
     return null;
   }
+
+  // CATNA THINGS
+
+  Future<void> insertCatnaAssessment(Map<String, dynamic> payload) async {
+    await _client.from('catna_assessments').insert(payload);
+  }
 }
