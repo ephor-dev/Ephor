@@ -58,9 +58,15 @@ class _TopStatsRow extends StatelessWidget {
                   title: "Pending Training Requests",
                   value: "3",
                   subtitle: "Pending Training",
-                  color: const Color.fromARGB(255, 238, 238, 238),
-                  textColor: Colors.black87,
-                  iconOrChart: Icon(Icons.description_outlined, size: 48, color: Colors.black54),
+                  color: Theme.brightnessOf(context) == Brightness.light 
+                    ? const Color.fromARGB(255, 238, 238, 238)
+                    : Theme.of(context).colorScheme.surfaceContainerHigh,
+                  textColor: Theme.of(context).colorScheme.onSurface.withAlpha(222),
+                  iconOrChart: Icon(
+                    Icons.description_outlined, 
+                    size: 48, 
+                    color: Theme.of(context).colorScheme.onSurface.withAlpha(138)
+                  ),
                 ),
               ),
               const SizedBox(width: 20),
@@ -69,9 +75,15 @@ class _TopStatsRow extends StatelessWidget {
                   title: "Skills Gap Analysis",
                   value: "136",
                   subtitle: "Skills Gap Analysis",
-                  color: const Color.fromARGB(255, 255, 255, 255),
-                  textColor: Colors.black87,
-                  iconOrChart: Icon(Icons.track_changes_outlined, size: 48, color: const Color.fromARGB(60, 0, 0, 0)),
+                  color: Theme.brightnessOf(context) == Brightness.light 
+                    ? Colors.white
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
+                  textColor: Theme.of(context).colorScheme.onSurface.withAlpha(222),
+                  iconOrChart: Icon(
+                    Icons.track_changes_outlined, 
+                    size: 48, 
+                    color: Theme.of(context).colorScheme.onSurface.withAlpha(138)
+                  ),
                 ),
               ),
             ],
@@ -92,18 +104,30 @@ class _TopStatsRow extends StatelessWidget {
                 title: "Pending Training Requests",
                 value: "3",
                 subtitle: "Pending Training",
-                color: const Color.fromARGB(255, 242, 236, 233),
-                textColor: Colors.black87,
-                iconOrChart: const Icon(Icons.description_outlined, size: 48, color: Colors.black54),
+                color: Theme.brightnessOf(context) == Brightness.light 
+                  ? const Color.fromARGB(255, 238, 238, 238)
+                  : Theme.of(context).colorScheme.surfaceContainerHigh,
+                textColor: Theme.of(context).colorScheme.onSurface.withAlpha(222),
+                iconOrChart: Icon(
+                  Icons.description_outlined, 
+                  size: 48, 
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(138)
+                ),
               ),
               const SizedBox(height: 16),
               _StatCard(
                 title: "Skills Gap Analysis",
                 value: "136",
                 subtitle: "Skills Gap Analysis",
-                color: const Color.fromARGB(255, 255, 255, 255),
-                textColor: Colors.black87,
-                iconOrChart: const Icon(Icons.track_changes_outlined, size: 48, color: Colors.white24),
+                color: Theme.brightnessOf(context) == Brightness.light 
+                  ? Colors.white
+                  : Theme.of(context).colorScheme.surfaceContainerHighest,
+                textColor: Theme.of(context).colorScheme.onSurface.withAlpha(222),
+                iconOrChart: Icon(
+                  Icons.track_changes_outlined, 
+                  size: 48, 
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(138)
+                ),
               ),
             ],
           );
@@ -214,8 +238,10 @@ class _TrainingNeedsChartCard extends StatelessWidget {
       height: 350,
       width: double.infinity,
       child: Card(
-        color: Colors.white,
-        shadowColor: Colors.black,
+        color: Theme.brightnessOf(context) == Brightness.light
+          ? Colors.white
+          : Theme.of(context).colorScheme.surfaceContainerHighest,
+        shadowColor: Theme.of(context).colorScheme.onSurface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20)
         ),
@@ -224,15 +250,18 @@ class _TrainingNeedsChartCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 "Training Needs by Department",
-                style: TextStyle(color: Color.fromARGB(255, 0, 0, 0), fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 18, fontWeight: FontWeight.bold
+                ),
               ),
               Expanded(
                 child: Row(
                   children: [
                     // Donut Chart Mockup
-                    const Expanded(
+                    Expanded(
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
@@ -242,11 +271,22 @@ class _TrainingNeedsChartCard extends StatelessWidget {
                             child: CircularProgressIndicator(
                               value: 0.76,
                               strokeWidth: 25,
-                              backgroundColor: Color.fromARGB(31, 114, 114, 114),
-                              color: const Color.from(alpha: 0.867, red: 139, green: 0, blue: 0),
+                              backgroundColor: Theme.brightnessOf(context) == Brightness.light
+                                ? Color.fromARGB(31, 114, 114, 114)
+                                : Theme.of(context).colorScheme.outlineVariant,
+                              color: Theme.brightnessOf(context) == Brightness.light 
+                                ? Color.from(alpha: 0.867, red: 139, green: 0, blue: 0)
+                                : Theme.of(context).colorScheme.primaryContainer,
                             ),
                           ),
-                          Text("76%", style: TextStyle(color: Color.fromARGB(255, 0, 0, 0), fontSize: 24, fontWeight: FontWeight.bold)),
+                          Text(
+                            "76%", 
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface, 
+                              fontSize: 24, 
+                              fontWeight: FontWeight.bold
+                            )
+                          ),
                         ],
                       ),
                     ),
@@ -291,7 +331,15 @@ class _LegendItem extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Expanded(
-              child: Text(label, style: const TextStyle(color: Color.fromARGB(179, 0, 0, 0), fontSize: 12), overflow: TextOverflow.ellipsis)),
+            child: Text(
+              label, 
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface, 
+                fontSize: 12
+              ), 
+            overflow: TextOverflow.ellipsis
+            )
+          ),
         ],
       ),
     );
@@ -307,11 +355,13 @@ class _RecentActivityCard extends StatelessWidget {
       height: 350,
       width: double.infinity,
       child: Card(
-        color: Colors.white,
+        color: Theme.brightnessOf(context) == Brightness.light
+          ? Colors.white
+          : Theme.of(context).colorScheme.surfaceContainerHighest,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
-        shadowColor: Colors.black,
+        shadowColor: Theme.of(context).colorScheme.onSurface,
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -327,9 +377,36 @@ class _RecentActivityCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Row(
                   children: [
-                    Expanded(flex: 3, child: Text("Employee", style: TextStyle(color: const Color.fromARGB(255, 0, 0, 0), fontSize: 12))),
-                    Expanded(flex: 2, child: Text("Enrolled", style: TextStyle(color: const Color.fromARGB(255, 0, 0, 0), fontSize: 12))),
-                    Expanded(flex: 2, child: Text("Status", style: TextStyle(color: const Color.fromARGB(255, 0, 0, 0), fontSize: 12))),
+                    Expanded(
+                      flex: 3, 
+                      child: Text(
+                        "Employee", 
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface, 
+                          fontSize: 12
+                        )
+                      )
+                    ),
+                    Expanded(
+                      flex: 2, 
+                      child: Text(
+                        "Enrolled", 
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface, 
+                          fontSize: 12
+                        )
+                      )
+                    ),
+                    Expanded(
+                      flex: 2, 
+                      child: Text(
+                        "Status", 
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface, 
+                          fontSize: 12
+                        )
+                      )
+                    ),
                   ],
                 ),
               ),
@@ -403,7 +480,7 @@ class _ActivityRow extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 6),
-                Text(status, style: TextStyle(color: Colors.grey[800], fontSize: 12)),
+                Text(status, style: TextStyle(color: Colors.grey, fontSize: 12)),
               ],
             ),
           ),
