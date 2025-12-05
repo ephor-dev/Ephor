@@ -48,15 +48,7 @@ class _TopStatsRow extends StatelessWidget {
                   title: "Training Needs Identified",
                   value: "205",
                   subtitle: "Training Identified",
-                  // Gradient Red
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.primary, 
-                      Theme.of(context).colorScheme.secondary
-                    ],
-                    begin: Alignment.bottomLeft,
-                    end: Alignment.topRight,
-                  ),
+                  color: const Color.from(alpha: 0.867, red: 139, green: 0, blue: 0),
                   iconOrChart: _MockLineChart(),
                 ),
               ),
@@ -66,13 +58,14 @@ class _TopStatsRow extends StatelessWidget {
                   title: "Pending Training Requests",
                   value: "3",
                   subtitle: "Pending Training",
-                  // Salmon/Pink
-                  color: Theme.of(context).colorScheme.tertiaryFixedDim,
+                  color: Theme.brightnessOf(context) == Brightness.light 
+                    ? const Color.fromARGB(255, 238, 238, 238)
+                    : Theme.of(context).colorScheme.surfaceContainerHigh,
                   textColor: Theme.of(context).colorScheme.onSurface.withAlpha(222),
                   iconOrChart: Icon(
-                    Icons.description_outlined,
+                    Icons.description_outlined, 
                     size: 48, 
-                    color: Theme.of(context).colorScheme.onSurface.withAlpha(139)
+                    color: Theme.of(context).colorScheme.onSurface.withAlpha(138)
                   ),
                 ),
               ),
@@ -82,9 +75,15 @@ class _TopStatsRow extends StatelessWidget {
                   title: "Skills Gap Analysis",
                   value: "136",
                   subtitle: "Skills Gap Analysis",
-                  // Dark Maroon
-                  color: Theme.of(context).colorScheme.primaryFixedDim,
-                  iconOrChart: Icon(Icons.track_changes_outlined, size: 48, color: Colors.white24),
+                  color: Theme.brightnessOf(context) == Brightness.light 
+                    ? Colors.white
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
+                  textColor: Theme.of(context).colorScheme.onSurface.withAlpha(222),
+                  iconOrChart: Icon(
+                    Icons.track_changes_outlined, 
+                    size: 48, 
+                    color: Theme.of(context).colorScheme.onSurface.withAlpha(138)
+                  ),
                 ),
               ),
             ],
@@ -97,12 +96,7 @@ class _TopStatsRow extends StatelessWidget {
                 title: "Training Needs Identified",
                 value: "205",
                 subtitle: "Training Identified",
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).colorScheme.primary, 
-                    Theme.of(context).colorScheme.secondary
-                  ]
-                ),
+                color: const Color.from(alpha: 0.867, red: 139, green: 0, blue: 0),
                 iconOrChart: _MockLineChart(),
               ),
               const SizedBox(height: 16),
@@ -110,12 +104,14 @@ class _TopStatsRow extends StatelessWidget {
                 title: "Pending Training Requests",
                 value: "3",
                 subtitle: "Pending Training",
-                color: Theme.of(context).colorScheme.tertiaryFixedDim,
+                color: Theme.brightnessOf(context) == Brightness.light 
+                  ? const Color.fromARGB(255, 238, 238, 238)
+                  : Theme.of(context).colorScheme.surfaceContainerHigh,
                 textColor: Theme.of(context).colorScheme.onSurface.withAlpha(222),
                 iconOrChart: Icon(
                   Icons.description_outlined, 
                   size: 48, 
-                  color: Theme.of(context).colorScheme.onSurface.withAlpha(139)
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(138)
                 ),
               ),
               const SizedBox(height: 16),
@@ -123,8 +119,15 @@ class _TopStatsRow extends StatelessWidget {
                 title: "Skills Gap Analysis",
                 value: "136",
                 subtitle: "Skills Gap Analysis",
-                color: Theme.of(context).colorScheme.primaryFixedDim,
-                iconOrChart: const Icon(Icons.track_changes_outlined, size: 48, color: Colors.white24),
+                color: Theme.brightnessOf(context) == Brightness.light 
+                  ? Colors.white
+                  : Theme.of(context).colorScheme.surfaceContainerHighest,
+                textColor: Theme.of(context).colorScheme.onSurface.withAlpha(222),
+                iconOrChart: Icon(
+                  Icons.track_changes_outlined, 
+                  size: 48, 
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(138)
+                ),
               ),
             ],
           );
@@ -155,42 +158,38 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 180,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+      width: double.infinity,
+      child: Card(
         color: color,
-        gradient: gradient,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.onSurface.withAlpha(13),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // Content
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        shadowColor: Colors.black,
+        elevation: 1.0,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Stack(
             children: [
-              Text(title, style: TextStyle(color: textColor.withAlpha(230), fontSize: 16)),
-              const Spacer(),
-              Text(value, style: TextStyle(color: textColor, fontSize: 36, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text(subtitle, style: TextStyle(color: textColor.withAlpha(179), fontSize: 12)),
+              // Content
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TextStyle(color: textColor.withOpacity(0.9), fontSize: 16)),
+                  const Spacer(),
+                  Text(value, style: TextStyle(color: textColor, fontSize: 36, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text(subtitle, style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 12)),
+                ],
+              ),
+              // Icon or Chart Positioned
+              Positioned(
+                right: 0,
+                bottom: 0,
+                top: 0, // Stretch to allow chart to fill height if needed
+                child: Center(child: iconOrChart),
+              ),
             ],
           ),
-          // Icon or Chart Positioned
-          Positioned(
-            right: 0,
-            bottom: 0,
-            top: 0, // Stretch to allow chart to fill height if needed
-            child: Center(child: iconOrChart),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -235,76 +234,81 @@ class _TrainingNeedsChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 350,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        // Dark gradient background for chart card
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).colorScheme.secondaryFixedDim, 
-            Theme.of(context).colorScheme.onSecondaryContainer
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+      width: double.infinity,
+      child: Card(
+        color: Theme.brightnessOf(context) == Brightness.light
+          ? Colors.white
+          : Theme.of(context).colorScheme.surfaceContainerHighest,
+        shadowColor: Theme.of(context).colorScheme.onSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20)
         ),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Training Needs by Department",
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.surfaceContainerLowest, 
-              fontSize: 18, 
-              fontWeight: FontWeight.bold
-            ),
-          ),
-          Expanded(
-            child: Row(
-              children: [
-                // Donut Chart Mockup
-                Expanded(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      SizedBox(
-                        width: 140,
-                        height: 140,
-                        child: CircularProgressIndicator(
-                          value: 0.76,
-                          strokeWidth: 25,
-                          backgroundColor: Colors.white12,
-                          color: Theme.of(context).colorScheme.primary, // Red progress
-                        ),
-                      ),
-                      Text("76%", style: TextStyle(
-                        color: Theme.of(context).colorScheme.surfaceContainerLowest, 
-                        fontSize: 24, 
-                        fontWeight: FontWeight.bold
-                        )
-                      ),
-                    ],
-                  ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Training Needs by Department",
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 18, fontWeight: FontWeight.bold
                 ),
-                // Legend
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _LegendItem(color: Theme.of(context).colorScheme.primary, label: "Business Developer"),
-                      _LegendItem(color: Colors.white24, label: "Educator"),
-                      _LegendItem(color: Colors.white24, label: "Development Needs"),
-                      _LegendItem(color: Colors.white10, label: "Others"),
-                    ],
-                  ),
-                )
-              ],
-            ),
-          )
-        ],
+              ),
+              Expanded(
+                child: Row(
+                  children: [
+                    // Donut Chart Mockup
+                    Expanded(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            width: 140,
+                            height: 140,
+                            child: CircularProgressIndicator(
+                              value: 0.76,
+                              strokeWidth: 25,
+                              backgroundColor: Theme.brightnessOf(context) == Brightness.light
+                                ? Color.fromARGB(31, 114, 114, 114)
+                                : Theme.of(context).colorScheme.outlineVariant,
+                              color: Theme.brightnessOf(context) == Brightness.light 
+                                ? Color.from(alpha: 0.867, red: 139, green: 0, blue: 0)
+                                : Theme.of(context).colorScheme.primaryContainer,
+                            ),
+                          ),
+                          Text(
+                            "76%", 
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface, 
+                              fontSize: 24, 
+                              fontWeight: FontWeight.bold
+                            )
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Legend
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _LegendItem(color: Color.from(alpha: 0.867, red: 139, green: 0, blue: 0), label: "Business Developer"),
+                          _LegendItem(color: Color.fromARGB(221, 0, 0, 0), label: "Educator"),
+                          _LegendItem(color: Color.fromARGB(221, 54, 54, 54), label: "Development Needs"),
+                          _LegendItem(color: Color.fromARGB(221, 88, 88, 88), label: "Others"),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -327,7 +331,15 @@ class _LegendItem extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Expanded(
-              child: Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12), overflow: TextOverflow.ellipsis)),
+            child: Text(
+              label, 
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface, 
+                fontSize: 12
+              ), 
+            overflow: TextOverflow.ellipsis
+            )
+          ),
         ],
       ),
     );
@@ -339,53 +351,81 @@ class _RecentActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 350,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.onSurface.withAlpha(13),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+      width: double.infinity,
+      child: Card(
+        color: Theme.brightnessOf(context) == Brightness.light
+          ? Colors.white
+          : Theme.of(context).colorScheme.surfaceContainerHighest,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        shadowColor: Theme.of(context).colorScheme.onSurface,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Recent Activity",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              // Header Row
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 3, 
+                      child: Text(
+                        "Employee", 
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface, 
+                          fontSize: 12
+                        )
+                      )
+                    ),
+                    Expanded(
+                      flex: 2, 
+                      child: Text(
+                        "Enrolled", 
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface, 
+                          fontSize: 12
+                        )
+                      )
+                    ),
+                    Expanded(
+                      flex: 2, 
+                      child: Text(
+                        "Status", 
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface, 
+                          fontSize: 12
+                        )
+                      )
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(),
+              // List Items
+              Expanded(
+                child: ListView(
+                  children: const [
+                    _ActivityRow(name: "Dady Ruman", time: "14 hours ago", status: "Completed", isCompleted: true),
+                    _ActivityRow(name: "Jall Kantin", time: "2 Forametes ago", status: "Pending", isCompleted: false),
+                    _ActivityRow(name: "Fhronel Woolk", time: "14 hours ago", status: "Completed", isCompleted: true),
+                    _ActivityRow(name: "Mrmiort Smith", time: "14 hours ago", status: "Completed", isCompleted: true),
+                    _ActivityRow(name: "Grinother Groman", time: "21 hours ago", status: "Pending", isCompleted: false),
+                  ],
+                ),
+              )
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Recent Activity",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          // Header Row
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: Row(
-              children: [
-                Expanded(flex: 3, child: Text("Employee", style: TextStyle(color: Colors.grey[600], fontSize: 12))),
-                Expanded(flex: 2, child: Text("Enrolled", style: TextStyle(color: Colors.grey[600], fontSize: 12))),
-                Expanded(flex: 2, child: Text("Status", style: TextStyle(color: Colors.grey[600], fontSize: 12))),
-              ],
-            ),
-          ),
-          const Divider(),
-          // List Items
-          Expanded(
-            child: ListView(
-              children: const [
-                _ActivityRow(name: "Dady Ruman", time: "14 hours ago", status: "Completed", isCompleted: true),
-                _ActivityRow(name: "Jall Kantin", time: "2 Forametes ago", status: "Pending", isCompleted: false),
-                _ActivityRow(name: "Fhronel Woolk", time: "14 hours ago", status: "Completed", isCompleted: true),
-                _ActivityRow(name: "Mrmiort Smith", time: "14 hours ago", status: "Completed", isCompleted: true),
-                _ActivityRow(name: "Grinother Groman", time: "21 hours ago", status: "Pending", isCompleted: false),
-              ],
-            ),
-          )
-        ],
+        ),
       ),
     );
   }
@@ -435,12 +475,12 @@ class _ActivityRow extends StatelessWidget {
                 Container(
                   width: 8, height: 8,
                   decoration: BoxDecoration(
-                    color: isCompleted ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.tertiaryFixed,
+                    color: isCompleted ? Color.from(alpha: 0.867, red: 139, green: 0, blue: 0) : const Color.fromARGB(255, 122, 122, 122),
                     shape: BoxShape.circle,
                   ),
                 ),
                 const SizedBox(width: 6),
-                Text(status, style: TextStyle(color: Colors.grey[800], fontSize: 12)),
+                Text(status, style: TextStyle(color: Colors.grey, fontSize: 12)),
               ],
             ),
           ),
