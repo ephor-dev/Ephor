@@ -1,4 +1,7 @@
-import 'package:ephor/domain/enums/employee_role.dart';
+import 'package:ephor/domain/lists/designation_choices.dart';
+import 'package:ephor/domain/lists/office_choices.dart';
+import 'package:ephor/domain/lists/operating_unit_choices.dart';
+import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/ui/catna_form/view_model/catna_viewmodel.dart';
 import 'package:ephor/ui/core/ui/date_picker/date_picker.dart';
 import 'package:flutter/material.dart';
@@ -43,29 +46,8 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
     const double spacing1 = 16;
     const double spacing2 = 8;
     const double spacing3 = 4;
-    final List<String> designationChoices = EmployeeRole.values
-      .map((role) => role.displayName)
-      .toList();;
-    final List<String> officeChoices = [
-      'College of Engineering (CoE)',
-      'College of Informatics and Computing Sciences (CICS)',
-      'College of Engineering Technology (CET)',
-    ];
-    final List<String> operatingUnitChoices = [
-      'Alangilan',
-      'Balayan',
-      'ARASOF-Nasugbu',
-      'Lemery',
-      'Lipa',
-      'LIMA',
-      'Lobo',
-      'Mabini',
-      'Malvar',
-      'Pablo Borbon',
-      'Rosario',
-      'San Juan',
-    ];
     final List<String> purposeChoices = ['Annual Review', 'Random Assessment'];
+    final departmentEmployees = widget.viewModel.departmentEmployees;
 
     return Scaffold(
       backgroundColor: Color.alphaBlend(
@@ -177,38 +159,33 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                         ),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: widget.viewModel.firstNameController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'First Name',
-                                    border: OutlineInputBorder(),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: spacing2),
-                              Expanded(
-                                child: TextField(
-                                  controller: widget.viewModel.lastNameController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Last Name',
-                                    border: OutlineInputBorder(),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: spacing2),
-                              Expanded(
-                                child: TextField(
-                                  controller: widget.viewModel.middleNameController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Middle Name',
-                                    border: OutlineInputBorder(),
-                                  ),
-                                ),
-                              ),
-                            ],
+                          child: DropdownButtonFormField<String>(
+                            initialValue: widget.viewModel.selectedEmployeeName,
+                            isExpanded: true,
+                            selectedItemBuilder: (BuildContext context) {
+                              return departmentEmployees.map<Widget>((
+                                EmployeeModel employee,
+                              ) {
+                                return Text(
+                                  employee.fullName,
+                                  overflow: TextOverflow.ellipsis,
+                                  softWrap: false,
+                                );
+                              }).toList();
+                            },
+                            items: departmentEmployees.map((EmployeeModel employee) {
+                              return DropdownMenuItem<String>(
+                                value: employee.fullName,
+                                child: Text(employee.fullName),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              widget.viewModel.setEmployeeName(value);
+                            },
+                            decoration: const InputDecoration(
+                              labelText: 'Personnel Name',
+                              border: OutlineInputBorder(),
+                            ),
                           ),
                         ),
                         Row(

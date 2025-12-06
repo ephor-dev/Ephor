@@ -18,7 +18,6 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   static const double _formSpacing = 16.0;
-  bool _rememberMe = false;
   bool _isPasswordVisible = false;
   bool _isForgetPasswordHovered = false;
   final TextEditingController _employeeCodeController = TextEditingController();
@@ -227,12 +226,11 @@ class _LoginViewState extends State<LoginView> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Checkbox(
-                value: _rememberMe,
+                value: widget.viewModel.rememberMe,
                 onChanged: (value) {
                   setState(() {
-                    _rememberMe = value!;
+                    widget.viewModel.setRememberMe.execute(value!);
                   });
-                  widget.viewModel.setRememberMe.execute(_rememberMe);
                 },
               ),
               const Text('Remember Me'),

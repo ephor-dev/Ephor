@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:ephor/data/repositories/auth/auth_repository.dart';
-import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
+import 'package:ephor/data/repositories/employee/employee_repository.dart';
 import 'package:ephor/data/repositories/shared_prefs/abstract_prefs_repository.dart';
 import 'package:ephor/domain/enums/auth_status.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
@@ -31,7 +31,7 @@ class DashboardViewModel extends ChangeNotifier {
 
   final AuthRepository _authRepository;
   final AbstractPrefsRepository _prefsRepository;
-  final AbstractEmployeeRepository _employeeRepository;
+  final EmployeeRepository _employeeRepository;
 
   late CommandNoArgs logout;
   late CommandWithArgs checkPassword;
@@ -41,7 +41,7 @@ class DashboardViewModel extends ChangeNotifier {
   DashboardViewModel({
     required AuthRepository authRepository, 
     required AbstractPrefsRepository prefsRepository,
-    required AbstractEmployeeRepository employeeRepository,
+    required EmployeeRepository employeeRepository,
     required ThemeModeNotifier themeNotifier
   })
     : _authRepository = authRepository, 
@@ -121,6 +121,7 @@ class DashboardViewModel extends ChangeNotifier {
 
   Future<Result<void>> _logout() async {
     final result = _authRepository.logout();
+    await _prefsRepository.setKeepLoggedIn(false);
     notifyListeners();
 
     return result;

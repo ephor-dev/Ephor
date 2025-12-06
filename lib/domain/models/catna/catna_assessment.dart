@@ -25,9 +25,7 @@ class CatnaAssessmentModel {
 /// Form 1: Identifying Data
 @immutable
 class CatnaIdentifyingData {
-  final String? firstName;
-  final String? lastName;
-  final String? middleName;
+  final String? fullName;
   final String? designation;
   final String? office;
   final String? operatingUnit;
@@ -38,9 +36,7 @@ class CatnaIdentifyingData {
   final String? purposeOfAssessment;
 
   const CatnaIdentifyingData({
-    this.firstName,
-    this.lastName,
-    this.middleName,
+    this.fullName,
     this.designation,
     this.office,
     this.operatingUnit,
@@ -53,9 +49,7 @@ class CatnaIdentifyingData {
 
   Map<String, dynamic> toJson() {
     return {
-      if (firstName != null) 'first_name': firstName,
-      if (lastName != null) 'last_name': lastName,
-      if (middleName != null) 'middle_name': middleName,
+      if (fullName != null) 'full_name': fullName,
       if (designation != null) 'designation': designation,
       if (office != null) 'office': office,
       if (operatingUnit != null) 'operating_unit': operatingUnit,
@@ -69,9 +63,7 @@ class CatnaIdentifyingData {
 
   factory CatnaIdentifyingData.fromJson(Map<String, dynamic> json) {
     return CatnaIdentifyingData(
-      firstName: json['first_name'] as String?,
-      lastName: json['last_name'] as String?,
-      middleName: json['middle_name'] as String?,
+      fullName: json['full_name'] as String?,
       designation: json['designation'] as String?,
       office: json['office'] as String?,
       operatingUnit: json['operating_unit'] as String?,
