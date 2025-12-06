@@ -81,6 +81,7 @@ class _CatnaViewState extends State<CatnaView> {
           duration: const Duration(seconds: 3),
         ),
       );
+      context.go(Routes.getOverviewPath());
       return;
     }
 

@@ -7,6 +7,8 @@ import 'package:ephor/ui/catna_form/view/catna_view.dart';
 import 'package:ephor/ui/catna_form/view_model/catna_viewmodel.dart';
 import 'package:ephor/ui/catna_form_creator/view/catna_form_creator_view.dart';
 import 'package:ephor/ui/catna_form_creator/view_model/catna_form_creator_view_model.dart';
+import 'package:ephor/ui/dashboard/view/dashboard_view.dart';
+import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
 import 'package:ephor/ui/my_forms/view/my_forms_view.dart';
 import 'package:ephor/ui/my_forms/view_model/my_forms_view_model.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_assessment/view/finished_assessment_subview.dart';
@@ -77,12 +79,21 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
     ),
     ShellRoute(
       builder: (BuildContext context, GoRouterState state, Widget child) {
-        return DashboardContainer(
-          authRepository: context.read(),
-          prefsRepository: context.read(),
-          themeNotifier: context.read(),
-          employeeRepository: context.read(),
-          child: child,
+        // return DashboardContainer(
+        //   authRepository: context.read(),
+        //   prefsRepository: context.read(),
+        //   themeNotifier: context.read(),
+        //   employeeRepository: context.read(),
+        //   child: child,
+        // );
+        return DashboardView(
+          viewModel: DashboardViewModel(
+            authRepository: authRepository, 
+            prefsRepository: context.read(), 
+            employeeRepository: context.read(), 
+            themeNotifier: context.read()
+          ), 
+          child: child
         );
       },
       routes: [
@@ -100,7 +111,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: Routes.getCatnaFormsPath(),
           builder: (context, state) => CatnaView(
             viewModel: CatnaViewModel(
-              catnaRepository: context.read(), 
+              catnaRepository: context.read(),
+              employeeRepository: context.read(),
               authRepository: authRepository
             )
           )

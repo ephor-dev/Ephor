@@ -1,4 +1,6 @@
+import 'package:ephor/data/repositories/employee/employee_repository.dart';
 import 'package:ephor/domain/enums/employee_role.dart';
+import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/command.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
@@ -19,15 +21,13 @@ class CatnaViewModel extends ChangeNotifier {
   Map<String, dynamic>? get competencyRatings => _competencyRatings;
 
   // --- FORM 1: Identifying Data Controllers ---
-  final TextEditingController firstNameController = TextEditingController();
-  final TextEditingController lastNameController = TextEditingController();
-  final TextEditingController middleNameController = TextEditingController();
   final TextEditingController yearsInCurrentPositionController = TextEditingController();
   final TextEditingController dateStartedController = TextEditingController();
   final TextEditingController dateFinishedController = TextEditingController();
   final TextEditingController assessmentDateController = TextEditingController();
 
   // Dropdown selections
+  String? _selectedEmployeeName;
   String? _selectedDesignation;
   String? _selectedOffice;
   String? _selectedOperatingUnit;
@@ -82,8 +82,15 @@ class CatnaViewModel extends ChangeNotifier {
   bool _isSubmitting = false;
   bool get isSubmitting => _isSubmitting;
 
+  List<EmployeeModel> _departmentEmployees = [];
+  List<EmployeeModel> get departmentEmployees => _departmentEmployees;
+
+  EmployeeModel? _currentUser;
+  EmployeeModel? get currentUser => _currentUser;
+
   final AuthRepository _authRepository;
   final CatnaRepository _catnaRepository;
+  final EmployeeRepository _employeeRepository;
 
   late CommandNoArgs validateCurrentStep;
   late CommandNoArgs saveIdentifyingData;
@@ -92,9 +99,13 @@ class CatnaViewModel extends ChangeNotifier {
 
   CatnaViewModel({
     required CatnaRepository catnaRepository, 
-    required AuthRepository authRepository
+    required AuthRepository authRepository,
+    required EmployeeRepository employeeRepository
+
   }) : _catnaRepository = catnaRepository,
-       _authRepository = authRepository {
+       _authRepository = authRepository,
+       _employeeRepository = employeeRepository {
+    _loadEmployees();
 
     validateCurrentStep = CommandNoArgs<String?>(_validateCurrentStep);
     saveIdentifyingData = CommandNoArgs<void>(_saveIdentifyingData);
@@ -102,10 +113,44 @@ class CatnaViewModel extends ChangeNotifier {
     submitCatna = CommandNoArgs(_submitCatna);
     
     _initializeResponseMap();
-    getSavedData();
+    _getSavedData();
+    _getCurrentUser();
   }
 
-  // --- Navigation & Setters ---
+  Future<Result<void>> _loadEmployees() async {
+    final result = await _employeeRepository.fetchAllEmployees();
+
+    if (result case Ok(value: final list)) {
+      List<EmployeeModel> departmentEmployeeList = [];
+
+      for (EmployeeModel employee in list) {
+        if (currentUser?.role == EmployeeRole.supervisor && (
+          employee.role == EmployeeRole.humanResource 
+          || employee.department != currentUser?.department)) {
+          continue;
+        }
+
+        departmentEmployeeList.add(employee);
+      }
+
+      _departmentEmployees = departmentEmployeeList;
+      notifyListeners();
+      return const Result.ok(null);
+    } else {
+      _departmentEmployees = [];
+      return result;
+    }
+  }
+
+  void _getCurrentUser() {
+    final currentUser = _authRepository.currentUser;
+    if (currentUser == null) {
+      _currentUser = null;
+    } else {
+      _currentUser = currentUser;
+    }
+    notifyListeners();
+  }
 
   set currentIndex(int index) {
     _currentIndex = index;
@@ -130,7 +175,7 @@ class CatnaViewModel extends ChangeNotifier {
     }
   }
 
-  void getSavedData() {
+  void _getSavedData() {
     _identifyingData = _catnaRepository.identifyingData;
     _competencyRatings = _catnaRepository.competencyRatings;
     
@@ -149,8 +194,14 @@ class CatnaViewModel extends ChangeNotifier {
   DateTime? get dateStarted => _dateStarted;
   DateTime? get dateFinished => _dateFinished;
   DateTime? get assessmentDate => _assessmentDate;
+  String? get selectedEmployeeName => _selectedEmployeeName;
 
   // --- Setters for Form 1 ---
+  void setEmployeeName(String? value) {
+    _selectedEmployeeName = value;
+    notifyListeners();
+  }
+
   void setSelectedDesignation(String? value) {
     _selectedDesignation = value;
     notifyListeners();
@@ -211,9 +262,7 @@ class CatnaViewModel extends ChangeNotifier {
     final saved = identifyingData;
     if (saved == null) return;
 
-    firstNameController.text = saved['first_name'] as String? ?? '';
-    lastNameController.text = saved['last_name'] as String? ?? '';
-    middleNameController.text = saved['middle_name'] as String? ?? '';
+    _selectedEmployeeName = saved['full_name'] as String?;
     yearsInCurrentPositionController.text =
         (saved['years_in_current_position'] as int?)?.toString() ?? '';
 
@@ -333,8 +382,7 @@ class CatnaViewModel extends ChangeNotifier {
   }
 
   String? _validateIdentifyingData() {
-    if (firstNameController.text.trim().isEmpty ||
-        lastNameController.text.trim().isEmpty ||
+    if (_selectedEmployeeName == null ||
         _selectedDesignation == null ||
         _selectedOffice == null ||
         _selectedOperatingUnit == null ||
@@ -379,9 +427,7 @@ class CatnaViewModel extends ChangeNotifier {
 
   Map<String, dynamic> buildIdentifyingData() {
     return {
-      'first_name': firstNameController.text.trim(),
-      'last_name': lastNameController.text.trim(),
-      'middle_name': middleNameController.text.trim(),
+      'full_name': _selectedEmployeeName,
       'designation': _selectedDesignation,
       'office': _selectedOffice,
       'operating_unit': _selectedOperatingUnit,
@@ -471,9 +517,6 @@ class CatnaViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    firstNameController.dispose();
-    lastNameController.dispose();
-    middleNameController.dispose();
     yearsInCurrentPositionController.dispose();
     dateStartedController.dispose();
     dateFinishedController.dispose();
