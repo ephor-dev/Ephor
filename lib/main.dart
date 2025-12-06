@@ -4,6 +4,7 @@ import 'package:ephor/ui/core/themes/theme_util.dart';
 import 'package:ephor/config/supabase_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'ui/core/themes/theme.dart';
 import 'routing/router.dart';
@@ -34,10 +35,12 @@ class EphorApp extends StatefulWidget {
 }
 
 class _EphorState extends State<EphorApp> with WidgetsBindingObserver {
+  late final GoRouter _router;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _router = router(context.read());
   }
 
   @override
@@ -58,7 +61,7 @@ class _EphorState extends State<EphorApp> with WidgetsBindingObserver {
       theme: ephorTheme.light(),
       darkTheme: ephorTheme.dark(),
       themeMode: themeModeNotifier.currentThemeMode,
-      routerConfig: router(context.read()),
+      routerConfig: _router,
     );
   }
 }

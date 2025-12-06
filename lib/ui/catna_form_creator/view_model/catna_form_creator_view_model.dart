@@ -9,9 +9,6 @@ import 'package:ephor/utils/results.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 
 class CatnaFormCreatorViewModel extends ChangeNotifier {
-  // ============================================
-  // DEPENDENCIES
-  // ============================================
   final IFormRepository _formRepository;
   final AbstractAuthRepository _authRepository;
   final String? _formIdToLoad;
@@ -26,19 +23,14 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
     _initializeForm();
   }
   
-  // ============================================
-  // STATE - Form Data
-  // ============================================
   FormModel? _currentForm;
   FormModel? get currentForm => _currentForm;
   
   String get formId => _currentForm?.id ?? '';
-  
-  // Form controllers
+
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
-  
-  // List to hold form sections with questions (for UI compatibility)
+
   final List<Map<String, dynamic>> _sections = [];
   List<Map<String, dynamic>> get sections => _sections;
   

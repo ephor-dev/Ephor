@@ -56,6 +56,7 @@ class _DashboardViewState extends State<DashboardView> {
     super.initState();
     widget.viewModel.logout.addListener(_onResult);
     widget.viewModel.checkPassword.addListener(_onPasswordChecked);
+    widget.viewModel.setDarkMode.addListener(_onDarkModePrefsChanged);
     _searchController.addListener(_updateListFromSearch);
   }
 
@@ -68,8 +69,13 @@ class _DashboardViewState extends State<DashboardView> {
     }
 
     if (oldWidget.viewModel.checkPassword != widget.viewModel.checkPassword) {
-      oldWidget.viewModel.logout.removeListener(_onPasswordChecked);
+      oldWidget.viewModel.checkPassword.removeListener(_onPasswordChecked);
       widget.viewModel.checkPassword.addListener(_onPasswordChecked);
+    }
+
+    if (oldWidget.viewModel.setDarkMode != widget.viewModel.setDarkMode) {
+      oldWidget.viewModel.setDarkMode.removeListener(_onDarkModePrefsChanged);
+      widget.viewModel.setDarkMode.addListener(_onDarkModePrefsChanged);
     }
   }
 
@@ -77,6 +83,7 @@ class _DashboardViewState extends State<DashboardView> {
   void dispose() {
     widget.viewModel.logout.removeListener(_onResult);
     widget.viewModel.checkPassword.removeListener(_onPasswordChecked);
+    widget.viewModel.setDarkMode.removeListener(_onDarkModePrefsChanged);
     _searchController.dispose();
     _searchController.removeListener(_updateListFromSearch);
     super.dispose();
@@ -276,6 +283,26 @@ class _DashboardViewState extends State<DashboardView> {
     }
   }
 
+  void _onDarkModePrefsChanged() {
+    if (widget.viewModel.setDarkMode.completed) {
+      widget.viewModel.setDarkMode.clearResult();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Successfully changed the dark mode preference."),
+        ),
+      );
+    }
+
+    if (widget.viewModel.setDarkMode.error) {
+      widget.viewModel.setDarkMode.clearResult();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Dark Mode preference Change had some issues. Please try again."),
+        ),
+      );
+    }
+  }
+
   PreferredSizeWidget _buildAppBar({required bool isMobile}) {
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest, 
@@ -425,77 +452,79 @@ class _DashboardViewState extends State<DashboardView> {
                     ),
                     
                     // Menu Items 
-                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                      PopupMenuItem<String>(
-                        enabled: false,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(username, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                            Text(email, style: TextStyle(color: Colors.grey, fontSize: 12)),
-                            Divider(height: 15),
-                          ],
+                    itemBuilder: (BuildContext context) {
+                      return <PopupMenuEntry<String>>[
+                        PopupMenuItem<String>(
+                          enabled: false,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(username, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                              Text(email, style: TextStyle(color: Colors.grey, fontSize: 12)),
+                              Divider(height: 15),
+                            ],
+                          ),
                         ),
-                      ),
-                      PopupMenuItem(
-                        onTap: null,
-                        child: Row(
-                          children: [
-                            PopupMenuItem(
-                              value: 'light_mode',
-                              child: Icon(
-                                Icons.light_mode,
-                                color: Theme.of(context).colorScheme.onSurface,
+                        PopupMenuItem(
+                          onTap: null,
+                          child: Row(
+                            children: [
+                              PopupMenuItem(
+                                value: 'light_mode',
+                                child: Icon(
+                                  Icons.light_mode,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                )
+                              ),
+                              PopupMenuItem(
+                                value: 'dark_mode',
+                                child: Icon(
+                                  Icons.dark_mode,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                )
+                              ),
+                              PopupMenuItem(
+                                value: 'follow_system_mode',
+                                child: Icon(
+                                  Icons.brightness_auto,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                )
                               )
-                            ),
-                            PopupMenuItem(
-                              value: 'dark_mode',
-                              child: Icon(
-                                Icons.dark_mode,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              )
-                            ),
-                            PopupMenuItem(
-                              value: 'follow_system_mode',
-                              child: Icon(
-                                Icons.brightness_auto,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              )
-                            )
-                          ],
-                        )
-                      ),
-                      PopupMenuItem<String>(
-                        value: 'edit_profile',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.settings_outlined, 
-                              color: Theme.of(context).colorScheme.onSurface
-                            ), 
-                            SizedBox(
-                              width: 8
-                            ), 
-                            Text('Edit Profile')
-                          ]
+                            ],
+                          )
                         ),
-                      ),
-                      PopupMenuItem<String>(
-                        value: 'logout',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.logout, 
-                              color: Theme.of(context).colorScheme.onSurface
-                            ), 
-                            SizedBox(
-                              width: 8
-                            ), 
-                            Text('Logout')
-                          ]
+                        PopupMenuItem<String>(
+                          value: 'edit_profile',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.settings_outlined, 
+                                color: Theme.of(context).colorScheme.onSurface
+                              ), 
+                              SizedBox(
+                                width: 8
+                              ), 
+                              Text('Edit Profile')
+                            ]
+                          ),
                         ),
-                      ),
-                    ],
+                        PopupMenuItem<String>(
+                          value: 'logout',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.logout, 
+                                color: Theme.of(context).colorScheme.onSurface
+                              ), 
+                              SizedBox(
+                                width: 8
+                              ), 
+                              Text('Logout')
+                            ]
+                          ),
+                        ),
+                      ];
+                    },
                     onSelected: (String result) {
                       switch (result) {
                         case 'edit_profile':
@@ -514,7 +543,7 @@ class _DashboardViewState extends State<DashboardView> {
                           widget.viewModel.setDarkMode.execute(ThemeMode.system);
                           break;
                       }
-                    },
+                    }
                   ),
                   const SizedBox(width: 8.0), 
                 ],

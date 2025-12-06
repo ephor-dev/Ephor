@@ -58,6 +58,12 @@ class DashboardViewModel extends ChangeNotifier {
     _getUserImage();
   }
 
+  String? _currentPath;
+  String? get currentPath => _currentPath;
+  set currentPath(String? currentPath) {
+    _currentPath = currentPath;
+  }
+
   @override
   void dispose() {
     _loadingSubscription.cancel(); 
