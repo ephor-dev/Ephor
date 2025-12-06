@@ -1,10 +1,10 @@
+import 'package:ephor/routing/bindings/dashboard_container.dart';
 import 'package:ephor/ui/add_employee/view/add_employee_view.dart';
 import 'package:ephor/ui/add_employee/view_model/add_employee_viewmodel.dart';
 import 'package:ephor/ui/batch_add_employees/view/batch_add_employees_view.dart';
 import 'package:ephor/ui/batch_add_employees/view_model/batch_add_employees_viewmodel.dart';
-import 'package:ephor/ui/catna_form/catna_form1_view.dart';
-import 'package:ephor/ui/catna_form/catna_form2_view.dart';
-import 'package:ephor/ui/catna_form/catna_form3_view.dart';
+import 'package:ephor/ui/catna_form/view/catna_view.dart';
+import 'package:ephor/ui/catna_form/view_model/catna_viewmodel.dart';
 import 'package:ephor/ui/catna_form_creator/view/catna_form_creator_view.dart';
 import 'package:ephor/ui/catna_form_creator/view_model/catna_form_creator_view_model.dart';
 import 'package:ephor/ui/my_forms/view/my_forms_view.dart';
@@ -19,7 +19,6 @@ import 'package:ephor/ui/dashboard/subviews/recommended_trainings/view/recommend
 import 'package:ephor/ui/dashboard/subviews/recommended_trainings/view_model/recommended_trainings_viewmodel.dart';
 import 'package:ephor/ui/dashboard/subviews/upcoming_schedules/view/upcoming_schedules_subview.dart';
 import 'package:ephor/ui/dashboard/subviews/upcoming_schedules/view_model/upcoming_schedules_viewmodel.dart';
-import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
 import 'package:ephor/ui/edit_employee/view/edit_employee_view.dart';
 import 'package:ephor/ui/edit_employee/view_model/edit_employee_viewmodel.dart';
 import 'package:ephor/ui/employee_management/view/employees_view.dart';
@@ -36,7 +35,6 @@ import 'package:provider/provider.dart';
 import 'package:ephor/data/repositories/auth/auth_repository.dart';
 import 'package:ephor/ui/login/view_model/login_viewmodel.dart';
 import 'package:ephor/ui/login/view/login_view.dart';
-import 'package:ephor/ui/dashboard/view/dashboard_view.dart';
 import 'routes.dart';
 
 GoRouter router(AuthRepository authRepository) => GoRouter(
@@ -79,13 +77,11 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
     ),
     ShellRoute(
       builder: (BuildContext context, GoRouterState state, Widget child) {
-        return DashboardView(
-          viewModel: DashboardViewModel(
-            authRepository: context.read(),
-            prefsRepository: context.read(),
-            themeNotifier: context.read()
-          ),
-          child: child
+        return DashboardContainer(
+          authRepository: context.read(),
+          prefsRepository: context.read(),
+          themeNotifier: context.read(),
+          child: child,
         );
       },
       routes: [
@@ -100,16 +96,13 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           ),
         ),
         GoRoute(
-          path: Routes.getCATNAForm1Path(),
-          builder: (context, state) => CatnaForm1View()
-        ),
-        GoRoute(
-          path: Routes.getCATNAForm2Path(),
-          builder: (context, state) => CatnaForm2View()
-        ),
-        GoRoute(
-          path: Routes.getCATNAForm3Path(),
-          builder: (context, state) => CatnaForm3View()
+          path: Routes.getCatnaFormsPath(),
+          builder: (context, state) => CatnaView(
+            viewModel: CatnaViewModel(
+              catnaRepository: context.read(), 
+              authRepository: authRepository
+            )
+          )
         ),
         GoRoute(
           path: Routes.getImpactAssessmentPath(),

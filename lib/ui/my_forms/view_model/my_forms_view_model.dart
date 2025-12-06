@@ -2,7 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:ephor/data/repositories/form/abstract_form_repository.dart';
-import 'package:ephor/domain/models/form/form_model.dart';
+import 'package:ephor/domain/models/form_creator/form_model.dart';
 import 'package:ephor/utils/results.dart';
 
 /// ViewModel for My Forms screen.

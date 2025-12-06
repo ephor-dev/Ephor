@@ -1,4 +1,5 @@
 import 'package:ephor/data/repositories/auth/auth_repository.dart';
+import 'package:ephor/data/repositories/catna/catna_repository.dart';
 import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
 import 'package:ephor/data/repositories/employee/employee_repository.dart';
 import 'package:ephor/data/repositories/form/abstract_form_repository.dart';
@@ -24,7 +25,12 @@ List<SingleChildWidget> get providers {
           employeeService: context.read<SupabaseService>(), 
         ),
     ),
-    // Form Repository - Using Mock for now, swap to Supabase later
+    ChangeNotifierProvider<CatnaRepository>(
+      create: (context) => 
+        CatnaRepository(
+          supabaseService: context.read()
+        )
+    ),
     Provider<IFormRepository>(
       create: (context) => MockFormRepository(),
     ),

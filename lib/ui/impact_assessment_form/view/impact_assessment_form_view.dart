@@ -73,11 +73,11 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
       width: 600,
       margin: const EdgeInsets.symmetric(horizontal: 25.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(4.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(13),
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(13),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -118,11 +118,11 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
       margin: const EdgeInsets.only(
           top: 15.0, bottom: 0.0, left: 25.0, right: 25.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(4.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(13),
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(13),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -137,10 +137,10 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
                 const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
             child: Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: Theme.of(context).colorScheme.onSurface.withAlpha(222),
               ),
             ),
           ),
@@ -167,11 +167,11 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
           top: 15.0, bottom: 0.0, left: 25.0, right: 25.0),
       padding: const EdgeInsets.all(35.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(4.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(13),
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(13),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -188,11 +188,11 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
       margin: const EdgeInsets.only(
           top: 15.0, bottom: 0.0, left: 25.0, right: 25.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(4.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(13),
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(13),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -256,7 +256,7 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
           controller: controller,
           readOnly: isDate,
           onTap: isDate ? () => _selectDate(context) : null,
-          style: const TextStyle(color: Colors.black),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: hint,
             suffixIcon: isDate
@@ -288,7 +288,7 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
               borderSide: BorderSide(color: Colors.grey),
             ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
           ),
@@ -309,18 +309,18 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
           ),
         ),
         DropdownButtonFormField<String>(
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(4.0)),
               borderSide: BorderSide(color: Colors.grey),
             ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
             contentPadding:
                 EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
             hintText: 'Select',
           ),
-          dropdownColor: Colors.white,
+          dropdownColor: Theme.of(context).colorScheme.surfaceContainerLowest,
           itemHeight: 48.0,
           menuMaxHeight: 300,
           alignment: AlignmentDirectional.centerStart,
@@ -386,7 +386,7 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 15.0, vertical: 15.0),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
       ),
     );
   }
@@ -394,7 +394,7 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE0E0E0),
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -489,11 +489,11 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
                   ),
                   _buildCombinedSectionBlock(
                     title: 'II. Assessment and Impact',
-                    child: const Text(
+                    child: Text(
                       'Instruction: Kindly assess the impact/benefits gained by the above participant in attending the intervention.',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.black87,
+                        color: Theme.of(context).colorScheme.onSurface.withAlpha(222),
                         height: 1.4,
                       ),
                     ),
@@ -661,7 +661,7 @@ class _ImpactAssessmentFormState extends State<ImpactAssessmentForm> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(
                             0xFF8F3237),
-                        foregroundColor: Colors.white,
+                        foregroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 24.0, vertical: 12.0),
                         shape: RoundedRectangleBorder(
