@@ -26,13 +26,13 @@ class CatnaStartView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade50, // Light red background
+                  color: Theme.of(context).colorScheme.surfaceContainer, // Light red background
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.assignment_turned_in_outlined,
                   size: 64,
-                  color: Colors.red.shade700, // Accent Red
+                  color: Theme.of(context).colorScheme.primary, // Accent Red
                 ),
               ),
               const SizedBox(height: 32),
