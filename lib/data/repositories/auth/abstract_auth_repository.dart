@@ -25,4 +25,6 @@ abstract class AbstractAuthRepository extends ChangeNotifier {
   Future<Result<void>> changePassword(String password);
   Future<Result<void>> sendPasswordResetEmail(String email);
   Future<Result<void>> checkPassword(String password);
+
+  Future<Result<String?>> getGeminiKey();
 }
