@@ -1,6 +1,5 @@
 import 'package:ephor/data/repositories/auth/auth_repository.dart';
 import 'package:ephor/data/repositories/catna/catna_repository.dart';
-import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
 import 'package:ephor/data/repositories/employee/employee_repository.dart';
 import 'package:ephor/data/repositories/form/abstract_form_repository.dart';
 import 'package:ephor/data/repositories/form/mock_form_repository.dart';
@@ -19,7 +18,7 @@ List<SingleChildWidget> get providers {
     ChangeNotifierProvider<ThemeModeNotifier>(
       create: (_) => ThemeModeNotifier(),
     ),
-    Provider<AbstractEmployeeRepository>(
+    ChangeNotifierProvider<EmployeeRepository>(
       create: (context) => 
         EmployeeRepository(
           employeeService: context.read<SupabaseService>(), 

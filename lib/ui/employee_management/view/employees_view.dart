@@ -261,6 +261,8 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
 
     final bool canEditUsers = viewModel.currentUser?.role == EmployeeRole.humanResource;
     List<EmployeeModel> employeeList = viewModel.employees;
+    String? searchKeyword = viewModel.searchKeyword;
+    employeeList = widget.viewModel.searchEmployees(employeeList, searchKeyword);
 
     switch(sortMethodKey) {
       case 'name_ascending':

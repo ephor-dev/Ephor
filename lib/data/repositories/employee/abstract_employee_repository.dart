@@ -1,9 +1,11 @@
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/results.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-abstract interface class AbstractEmployeeRepository {
+abstract class AbstractEmployeeRepository extends ChangeNotifier{
   /// Fetches all employees, returning a Result to handle potential errors.
+  ValueNotifier<String?> get searchKeyword;
   Future<Result<List<EmployeeModel>>> fetchAllEmployees();
   
   /// Adds a new employee entry.
@@ -19,4 +21,5 @@ abstract interface class AbstractEmployeeRepository {
 
   Future<Result<String>> uploadEmployeePhoto(XFile file);
   Future<Result<String>> deleteOldPhoto(String path);
+  Future<Result<void>> setSearchKeyword(String? keyword);
 }

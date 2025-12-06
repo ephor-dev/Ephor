@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:ephor/data/repositories/auth/abstract_auth_repository.dart';
-import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
+import 'package:ephor/data/repositories/employee/employee_repository.dart';
 import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/domain/types/add_employee_params.dart';
@@ -15,7 +15,7 @@ import 'package:flutter/foundation.dart';
 import 'package:file_picker/file_picker.dart';
 
 class BatchAddEmployeesViewModel extends ChangeNotifier {
-  final AbstractEmployeeRepository _employeeRepository;
+  final EmployeeRepository _employeeRepository;
   final AbstractAuthRepository _authRepository;
 
   final List<String> _errorMessages = [];
@@ -32,7 +32,7 @@ class BatchAddEmployeesViewModel extends ChangeNotifier {
   int get addProgress => _addProgress;
 
   BatchAddEmployeesViewModel({
-    required AbstractEmployeeRepository employeeRepository,
+    required EmployeeRepository employeeRepository,
     required AbstractAuthRepository authRepository
   }) : _employeeRepository = employeeRepository,
       _authRepository = authRepository{

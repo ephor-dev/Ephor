@@ -3,15 +3,21 @@ import 'package:ephor/data/repositories/employee/abstract_employee_repository.da
 import 'package:ephor/data/services/supabase/supabase_service.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; 
 import 'package:supabase_flutter/supabase_flutter.dart'; 
 
-class EmployeeRepository implements AbstractEmployeeRepository {
+class EmployeeRepository extends AbstractEmployeeRepository {
   
   final SupabaseService _supabaseService;
+  late ValueNotifier<String?> _searchKeyword;
+  @override
+  ValueNotifier<String?> get searchKeyword => _searchKeyword;
 
   EmployeeRepository({required SupabaseService employeeService})
-      : _supabaseService = employeeService;
+      : _supabaseService = employeeService {
+    _searchKeyword = ValueNotifier<String?>('');
+  }
 
   @override
   Future<Result<String>> uploadEmployeePhoto(XFile file) async {
@@ -147,5 +153,15 @@ class EmployeeRepository implements AbstractEmployeeRepository {
     }
 
     return Result.error(CustomMessageException('Image delete failed'));
+  }
+  
+  @override
+  Future<Result<void>> setSearchKeyword(String? keyword) async {
+    try {
+      _searchKeyword.value = keyword;
+      return Result.ok(null);
+    } on Error {
+      return Result.error(CustomMessageException("Oops. Can't save"));
+    }
   }
 }

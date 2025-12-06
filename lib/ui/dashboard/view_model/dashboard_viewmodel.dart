@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:ephor/data/repositories/auth/auth_repository.dart';
+import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
 import 'package:ephor/data/repositories/shared_prefs/abstract_prefs_repository.dart';
 import 'package:ephor/domain/enums/auth_status.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
@@ -30,23 +31,29 @@ class DashboardViewModel extends ChangeNotifier {
 
   final AuthRepository _authRepository;
   final AbstractPrefsRepository _prefsRepository;
+  final AbstractEmployeeRepository _employeeRepository;
+
   late CommandNoArgs logout;
   late CommandWithArgs checkPassword;
   late CommandWithArgs setDarkMode;
+  late CommandWithArgs setEmployeeManagementSearchKeyword;
 
   DashboardViewModel({
     required AuthRepository authRepository, 
     required AbstractPrefsRepository prefsRepository,
+    required AbstractEmployeeRepository employeeRepository,
     required ThemeModeNotifier themeNotifier
   })
     : _authRepository = authRepository, 
     _prefsRepository = prefsRepository,
+    _employeeRepository = employeeRepository,
     _themeNotifier = themeNotifier {
     _subscribeToLoadingStatus(); 
     _subscribeToAuthStatus();
     logout = CommandNoArgs<void>(_logout);
     checkPassword = CommandWithArgs<void, String>(_checkPassword);
     setDarkMode = CommandWithArgs<void, ThemeMode>(_setDarkMode);
+    setEmployeeManagementSearchKeyword = CommandWithArgs<void, String?>(_setSearchKeyword);
 
     _getUserImage();
   }
@@ -137,6 +144,16 @@ class DashboardViewModel extends ChangeNotifier {
       return Result.ok(null);
     } on Error {
       return Result.error(CustomMessageException("Can't set Dark Mode"));
+    }
+  }
+
+  Future<Result<void>> _setSearchKeyword(String? keyword) async {
+    try {
+      final result = await _employeeRepository.setSearchKeyword(keyword);
+
+      return result;
+    } on Error {
+      return Result.error(CustomMessageException("Can't set keyword"));
     }
   }
 }
