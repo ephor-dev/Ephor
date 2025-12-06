@@ -26,10 +26,11 @@ class _DashboardViewState extends State<DashboardView> {
 
   final List<Map<String, dynamic>> menuItems = [
     {'title': 'Overview', 'icon': Icons.description_outlined, 'selected': true, 'path': Routes.dashboardOverview},
-    {'title': 'Employee List', 'icon': Icons.list, 'selected': false, 'path': Routes.dashboardEmployeeList},
+    {'title': 'Employee Management', 'icon': Icons.list, 'selected': false, 'path': Routes.dashboardEmployeeList},
     {'title': 'CATNA Form Editor', 'icon': Icons.note_add_outlined, 'selected': false, 'path': Routes.dashboardCatnaFormEditor},
     {'title': 'IA Form Editor', 'icon': Icons.note_add_outlined, 'selected': false, 'path': Routes.dashboardIAFormEditor},
-    {'title': 'CATNA Forms', 'icon': Icons.assessment_outlined, 'selected': false, 'path': Routes.dashboardCatnaForms},
+    {'title': 'Fill CATNA Forms', 'icon': Icons.assessment_outlined, 'selected': false, 'path': Routes.dashboardCatnaForms},
+    {'title': 'Fill IA Form', 'icon': Icons.assessment_outlined, 'selected': false, 'path': Routes.dashboardIAForm},
     {'title': 'Upcoming Schedules', 'icon': Icons.schedule_outlined, 'selected': false, 'path': Routes.dashboardSchedules},
     {'title': 'Finished Assessments', 'icon': Icons.check_box_outlined, 'selected': false, 'path': Routes.dashboardAssessments},
     {'title': 'Finished Trainings', 'icon': Icons.check_outlined, 'selected': false, 'path': Routes.dashboardFinishedTrainings},
@@ -88,7 +89,6 @@ class _DashboardViewState extends State<DashboardView> {
     }
   }
 
-  // Helper to build the core menu list (used inside the Drawer)
   Widget _buildMenuList(int selectedIndex) {
     return ListView.builder(
       shrinkWrap: true,
@@ -98,13 +98,14 @@ class _DashboardViewState extends State<DashboardView> {
         final item = menuItems[index];
 
         EmployeeRole? currentUserRole = widget.viewModel.currentUser.value?.role;
-        if (currentUserRole != null ) {
+        if (currentUserRole != null) {
           if (currentUserRole == EmployeeRole.supervisor 
             && (item['path'] == Routes.dashboardCatnaFormEditor 
               || item['path'] == Routes.dashboardIAFormEditor)) {
                 return const SizedBox.shrink();
           } else if (currentUserRole == EmployeeRole.humanResource
-            && item['path'] == Routes.dashboardCatnaForms) {
+            && (item['path'] == Routes.dashboardCatnaForms
+              || item['path'] == Routes.dashboardIAForm)) {
               return const SizedBox.shrink();
           }
         }
@@ -527,8 +528,8 @@ class _DashboardViewState extends State<DashboardView> {
         return Scaffold(
           key: _scaffoldKey,
           appBar: _buildAppBar(isMobile: isMobile),
-          drawer: _buildDrawer(), // Hidden drawer used for navigation
-          body: widget.child, // The main content area is now fully expanded
+          drawer: _buildDrawer(),
+          body: widget.child,
         );
       }
     );
