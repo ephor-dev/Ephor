@@ -6,6 +6,8 @@ import 'package:ephor/ui/catna_form/view/catna_view.dart';
 import 'package:ephor/ui/catna_form/view_model/catna_viewmodel.dart';
 import 'package:ephor/ui/form_editor/view/form_editor_view.dart';
 import 'package:ephor/ui/form_editor/view_model/form_editor_view_model.dart';
+import 'package:ephor/ui/chatbot/chatbot_view/chatbot_view.dart';
+import 'package:ephor/ui/chatbot/chatbot_viewmodel/chatbot_viewmodel.dart';
 import 'package:ephor/ui/dashboard/view/dashboard_view.dart';
 import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
 import 'package:ephor/ui/forms_management/view/forms_view.dart';
@@ -114,6 +116,14 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
               employeeRepository: context.read()
             ),
           ),
+        ),
+        GoRoute(
+          path: Routes.getChatbotPath(),
+          builder: (context, state) => ChatbotView(
+            viewModel: ChatbotViewModel(
+              authRepository: authRepository
+            )
+          )
         ),
         GoRoute(
           path: Routes.getEmployeeListPath(),

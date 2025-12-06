@@ -342,6 +342,21 @@ class SupabaseService {
     return response;
   }
 
+  // Chatbot Things
+  Future<String?> getGeminiKey() async {
+    try {
+      final response = await _client
+          .from('app_config')
+          .select('secret_value')
+          .eq('id', 'gemini_api_key')
+          .single();
+      
+      return response['secret_value'] as String;
+    } catch (e) {
+      return null;
+    }
+  }
+
   // Form Things
   Future<PostgrestMap> upsertForm(Map<String, dynamic> formData) async {
     final response = await _client

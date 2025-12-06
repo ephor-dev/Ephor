@@ -650,10 +650,21 @@ class _DashboardViewState extends State<DashboardView> {
       builder: (context, _) {
         final isMobile = Responsive.isMobile(context);
 
+        final currentRoute = GoRouterState.of(context).uri.toString();
+
         return Scaffold(
           key: _scaffoldKey,
           appBar: _buildAppBar(isMobile: isMobile),
           drawer: _buildDrawer(), // Hidden drawer used for navigation
+          floatingActionButton: currentRoute.contains(Routes.getChatbotPath())
+            ? null
+            : FloatingActionButton.extended(
+              onPressed: () {
+                context.go(Routes.getChatbotPath());
+              },
+              label: Text("Ask Augusta"),
+              icon: Icon(Icons.auto_awesome),
+            ),
           body: widget.child, // The main content area is now fully expanded
         );
       }
