@@ -1,12 +1,12 @@
-import 'package:ephor/routing/routes.dart';
-import 'package:ephor/ui/catna_form/view_models/catna_form1_viewmodel.dart';
+import 'package:ephor/domain/enums/employee_role.dart';
+import 'package:ephor/ui/catna_form/view_model/catna_viewmodel.dart';
 import 'package:ephor/ui/core/ui/date_picker/date_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter/services.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
 class CatnaForm1View extends StatefulWidget {
-  final CatnaForm1ViewModel viewModel;
+  final CatnaViewModel viewModel;
   const CatnaForm1View({super.key, required this.viewModel});
 
   @override
@@ -35,26 +35,6 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
     }
   }
 
-  void _showValidationDialog(BuildContext context, String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Validation Error'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     const double cornerRadius = 8;
@@ -63,17 +43,28 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
     const double spacing1 = 16;
     const double spacing2 = 8;
     const double spacing3 = 4;
-    final List<String> designationChoices = [
-      'Software Engineer',
-      'Product Manager',
-      'UX Designer',
-      'Data Scientist',
-    ];
+    final List<String> designationChoices = EmployeeRole.values
+      .map((role) => role.displayName)
+      .toList();;
     final List<String> officeChoices = [
       'College of Engineering (CoE)',
       'College of Informatics and Computing Sciences (CICS)',
+      'College of Engineering Technology (CET)',
     ];
-    final List<String> operatingUnitChoices = ['Alangilan', 'Pablo Borbon'];
+    final List<String> operatingUnitChoices = [
+      'Alangilan',
+      'Balayan',
+      'ARASOF-Nasugbu',
+      'Lemery',
+      'Lipa',
+      'LIMA',
+      'Lobo',
+      'Mabini',
+      'Malvar',
+      'Pablo Borbon',
+      'Rosario',
+      'San Juan',
+    ];
     final List<String> purposeChoices = ['Annual Review', 'Random Assessment'];
 
     return Scaffold(
@@ -400,6 +391,8 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                                     ),
                                     const SizedBox(height: spacing1),
                                     TextField(
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                       controller:
                                           widget.viewModel.yearsInCurrentPositionController,
                                       decoration: const InputDecoration(
@@ -482,7 +475,7 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                                   widget.viewModel.setSelectedPurpose(value);
                                 },
                                 decoration: const InputDecoration(
-                                  labelText: 'Office/College',
+                                  labelText: 'Purpose of Assessment',
                                   floatingLabelBehavior:
                                       FloatingLabelBehavior.never,
                                   border: OutlineInputBorder(),
@@ -492,40 +485,6 @@ class _CatnaForm1ViewState extends State<CatnaForm1View> {
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: panelSpacing),
-              Center(
-                child: SizedBox(
-                  height: 50, // Increased height to prevent clipping
-                  width: 640,
-                  // Use Align to push the button to the left
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        final validationError = widget.viewModel.validateForm();
-                        if (validationError != null) {
-                          _showValidationDialog(context, validationError);
-                          return;
-                        }
-
-                        widget.viewModel.saveIdentifyingData(widget.viewModel.buildIdentifyingData());
-                        context.go(Routes.getCATNAForm2Path());
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.surface,
-                        foregroundColor: Theme.of(context).colorScheme.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(cornerRadius),
-                        ),
-                      ),
-                      child: Text(
-                        'Next',
-                        style: TextStyle(color: Theme.of(context).colorScheme.primary),
-                      ),
                     ),
                   ),
                 ),

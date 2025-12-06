@@ -1,12 +1,8 @@
-import 'package:ephor/routing/routes.dart';
-import 'package:ephor/ui/catna_form/view_models/catna_form2_viewmodel.dart';
-import 'package:ephor/utils/custom_message_exception.dart';
-import 'package:ephor/utils/results.dart';
+import 'package:ephor/ui/catna_form/view_model/catna_viewmodel.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class CatnaForm2View extends StatefulWidget {
-  final CatnaForm2ViewModel viewModel;
+  final CatnaViewModel viewModel;
   const CatnaForm2View({super.key, required this.viewModel});
 
   @override
@@ -14,26 +10,6 @@ class CatnaForm2View extends StatefulWidget {
 }
 
 class _CatnaForm2ViewState extends State<CatnaForm2View> {
-
-  void _showValidationDialog(BuildContext context, String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Validation Error'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +19,6 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
     const double spacing1 = 16;
     const double spacing2 = 8;
     const double spacing3 = 4;
-    const double buttonSpacing = 24;
 
     final Map<String, int> assessmentRatings = const {
       '4(A)': 4,
@@ -322,93 +297,6 @@ class _CatnaForm2ViewState extends State<CatnaForm2View> {
                         ),
                         const SizedBox(height: spacing2),
                         ...buildAssessmentItems(widget.viewModel.attitudeItems),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: panelSpacing),
-              Center(
-                child: SizedBox(
-                  height: 50, // Increased height to prevent clipping
-                  width: 640,
-                  // Use Align to push the button to the left
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            context.go(Routes.getCATNAForm1Path());
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.surface,
-                            foregroundColor: Theme.of(context).colorScheme.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(cornerRadius),
-                            ),
-                          ),
-                          child: Text(
-                            'Back',
-                            style: TextStyle(color: Theme.of(context).colorScheme.primary),
-                          ),
-                        ),
-
-                        const SizedBox(width: buttonSpacing),
-                        ElevatedButton(
-                          onPressed: () async {
-                            final validationError = widget.viewModel.validateForm();
-                            if (validationError != null) {
-                              _showValidationDialog(context, validationError);
-                              return;
-                            }
-
-                            widget.viewModel.saveCompetencyRatings(widget.viewModel.buildCompetencyRatings());
-
-                            final payload = <String, dynamic>{
-                                if (widget.viewModel.identifyingData != null)
-                                  'identifying_data': widget.viewModel.identifyingData,
-                                if (widget.viewModel.competencyRatings != null)
-                                  'competency_ratings':
-                                      widget.viewModel.competencyRatings
-                              };
-
-                              final Result<void> result =
-                                  await widget.viewModel.submitCatna(payload);
-
-                              if (!mounted) return;
-
-                              switch (result) {
-                                case Ok():
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'CATNA training needs submitted successfully.',
-                                      ),
-                                    ),
-                                  );
-                                  context.go(Routes.dashboard);
-                                case Error(error: final e):
-                                  final message = e is CustomMessageException
-                                      ? e.message
-                                      : 'Failed to submit CATNA training needs.';
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(message)),
-                                  );
-                              }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(cornerRadius),
-                            ),
-                          ),
-                          child: Text(
-                            'Submit',
-                            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
-                          ),
-                        ),
                       ],
                     ),
                   ),

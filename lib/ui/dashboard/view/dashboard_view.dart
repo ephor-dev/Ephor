@@ -29,6 +29,7 @@ class _DashboardViewState extends State<DashboardView> {
     {'title': 'Employee List', 'icon': Icons.list, 'selected': false, 'path': Routes.dashboardEmployeeList},
     {'title': 'CATNA Form Editor', 'icon': Icons.note_add_outlined, 'selected': false, 'path': Routes.dashboardCatnaFormEditor},
     {'title': 'IA Form Editor', 'icon': Icons.note_add_outlined, 'selected': false, 'path': Routes.dashboardIAFormEditor},
+    {'title': 'CATNA Forms', 'icon': Icons.assessment_outlined, 'selected': false, 'path': Routes.dashboardCatnaForms},
     {'title': 'Upcoming Schedules', 'icon': Icons.schedule_outlined, 'selected': false, 'path': Routes.dashboardSchedules},
     {'title': 'Finished Assessments', 'icon': Icons.check_box_outlined, 'selected': false, 'path': Routes.dashboardAssessments},
     {'title': 'Finished Trainings', 'icon': Icons.check_outlined, 'selected': false, 'path': Routes.dashboardFinishedTrainings},
@@ -102,8 +103,9 @@ class _DashboardViewState extends State<DashboardView> {
             && (item['path'] == Routes.dashboardCatnaFormEditor 
               || item['path'] == Routes.dashboardIAFormEditor)) {
                 return const SizedBox.shrink();
-          } else {
-            // Do not show answerable CATNA Forms to Human Resource
+          } else if (currentUserRole == EmployeeRole.humanResource
+            && item['path'] == Routes.dashboardCatnaForms) {
+              return const SizedBox.shrink();
           }
         }
 

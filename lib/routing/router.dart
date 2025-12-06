@@ -3,10 +3,8 @@ import 'package:ephor/ui/add_employee/view/add_employee_view.dart';
 import 'package:ephor/ui/add_employee/view_model/add_employee_viewmodel.dart';
 import 'package:ephor/ui/batch_add_employees/view/batch_add_employees_view.dart';
 import 'package:ephor/ui/batch_add_employees/view_model/batch_add_employees_viewmodel.dart';
-import 'package:ephor/ui/catna_form/view_models/catna_form1_viewmodel.dart';
-import 'package:ephor/ui/catna_form/view_models/catna_form2_viewmodel.dart';
-import 'package:ephor/ui/catna_form/views/catna_form1_view.dart';
-import 'package:ephor/ui/catna_form/views/catna_form2_view.dart';
+import 'package:ephor/ui/catna_form/view/catna_view.dart';
+import 'package:ephor/ui/catna_form/view_model/catna_viewmodel.dart';
 import 'package:ephor/ui/catna_form_creator/view/catna_form_creator_view.dart';
 import 'package:ephor/ui/catna_form_creator/view_model/catna_form_creator_view_model.dart';
 import 'package:ephor/ui/my_forms/view/my_forms_view.dart';
@@ -98,18 +96,10 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           ),
         ),
         GoRoute(
-          path: Routes.getCATNAForm1Path(),
-          builder: (context, state) => CatnaForm1View(
-            viewModel: CatnaForm1ViewModel(
-              catnaRepository: context.read()
-            )
-          )
-        ),
-        GoRoute(
-          path: Routes.getCATNAForm2Path(),
-          builder: (context, state) => CatnaForm2View(
-            viewModel: CatnaForm2ViewModel(
-              catnaRepository: context.read(),
+          path: Routes.getCatnaFormsPath(),
+          builder: (context, state) => CatnaView(
+            viewModel: CatnaViewModel(
+              catnaRepository: context.read(), 
               authRepository: authRepository
             )
           )
