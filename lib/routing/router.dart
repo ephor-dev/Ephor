@@ -7,6 +7,8 @@ import 'package:ephor/ui/catna_form/view/catna_view.dart';
 import 'package:ephor/ui/catna_form/view_model/catna_viewmodel.dart';
 import 'package:ephor/ui/catna_form_creator/view/catna_form_creator_view.dart';
 import 'package:ephor/ui/catna_form_creator/view_model/catna_form_creator_view_model.dart';
+import 'package:ephor/ui/chatbot/chatbot_view/chatbot_view.dart';
+import 'package:ephor/ui/chatbot/chatbot_viewmodel/chatbot_viewmodel.dart';
 import 'package:ephor/ui/my_forms/view/my_forms_view.dart';
 import 'package:ephor/ui/my_forms/view_model/my_forms_view_model.dart';
 import 'package:ephor/ui/dashboard/subviews/finished_assessment/view/finished_assessment_subview.dart';
@@ -108,6 +110,14 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
         GoRoute(
           path: Routes.getImpactAssessmentPath(),
           builder: (context, state) => ImpactAssessmentForm(),
+        ),
+        GoRoute(
+          path: Routes.getChatbotPath(),
+          builder: (context, state) => ChatbotView(
+            viewModel: ChatbotViewModel(
+              authRepository: authRepository
+            )
+          )
         ),
         GoRoute(
           path: Routes.getEmployeeListPath(),
