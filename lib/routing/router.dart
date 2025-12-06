@@ -1,4 +1,3 @@
-import 'package:ephor/routing/bindings/dashboard_container.dart';
 import 'package:ephor/ui/add_employee/view/add_employee_view.dart';
 import 'package:ephor/ui/add_employee/view_model/add_employee_viewmodel.dart';
 import 'package:ephor/ui/batch_add_employees/view/batch_add_employees_view.dart';
@@ -79,13 +78,6 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
     ),
     ShellRoute(
       builder: (BuildContext context, GoRouterState state, Widget child) {
-        // return DashboardContainer(
-        //   authRepository: context.read(),
-        //   prefsRepository: context.read(),
-        //   themeNotifier: context.read(),
-        //   employeeRepository: context.read(),
-        //   child: child,
-        // );
         return DashboardView(
           viewModel: DashboardViewModel(
             authRepository: authRepository, 
