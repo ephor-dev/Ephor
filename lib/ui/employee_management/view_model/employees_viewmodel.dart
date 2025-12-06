@@ -1,15 +1,17 @@
 import 'dart:async';
 
 import 'package:ephor/data/repositories/auth/abstract_auth_repository.dart';
-import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
+import 'package:ephor/data/repositories/employee/employee_repository.dart';
+import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/utils/command.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:flutter/foundation.dart';
+import 'package:fuzzy/fuzzy.dart';
 
 class EmployeeListViewModel extends ChangeNotifier {
-  final AbstractEmployeeRepository _employeeRepository;
+  final EmployeeRepository _employeeRepository;
   final AbstractAuthRepository _authRepository;
 
   EmployeeModel? _currentUser;
@@ -25,7 +27,7 @@ class EmployeeListViewModel extends ChangeNotifier {
   late CommandNoArgs loadEmployees;
 
   EmployeeListViewModel({
-    required AbstractEmployeeRepository employeeRepository,
+    required EmployeeRepository employeeRepository,
     required AbstractAuthRepository authRepository
   }) : _employeeRepository = employeeRepository,
       _authRepository = authRepository {
@@ -36,11 +38,22 @@ class EmployeeListViewModel extends ChangeNotifier {
     deleteBatchEmployees = CommandWithArgs<void, List<EmployeeModel>>(_deleteBatchEmployees);
 
     _getCurrentUser();
+    _listenToSearchKeywords();
   }
 
   // Exposed State
   List<EmployeeModel> get employees => _employees;
   bool get isLoading => _isLoading;
+
+  String? _searchKeyword;
+  String? get searchKeyword => _searchKeyword;
+
+  void _listenToSearchKeywords() {
+   _employeeRepository.searchKeyword.addListener(() {
+      _searchKeyword = _employeeRepository.searchKeyword.value;
+      notifyListeners();
+   });
+  }
 
   @override
   void dispose() {
@@ -109,5 +122,48 @@ class EmployeeListViewModel extends ChangeNotifier {
     }
 
     return Result.ok('Batch Employee Deletion successfully finished!');
+  }
+
+  List<EmployeeModel> searchEmployees(List<EmployeeModel> allEmployees, String? query) {
+    if (query == null || query.isEmpty) {
+      return allEmployees;
+    }
+
+    final fuse = Fuzzy<EmployeeModel>(
+      allEmployees,
+      options: FuzzyOptions(
+        keys: [
+          WeightedKey(
+            name: 'fullName',
+            getter: (employee) => '${employee.firstName} ${employee.lastName} ${employee.middleName ?? ''}',
+            weight: 1.0, 
+          ),
+          WeightedKey(
+            name: 'email',
+            getter: (employee) => employee.email,
+            weight: 0.8,
+          ),
+          WeightedKey(
+            name: 'tags',
+            getter: (employee) => employee.extraTags.join(' '), 
+            weight: 0.8,
+          ),
+          WeightedKey(
+            name: 'role',
+            getter: (employee) => employee.role.displayName, 
+            weight: 0.5,
+          ),
+          WeightedKey(
+            name: 'department',
+            getter: (employee) => employee.department,
+            weight: 0.5,
+          ),
+        ],
+        threshold: 0.4, 
+      ),
+    );
+
+    final result = fuse.search(query);
+    return result.map((r) => r.item).toList();
   }
 }

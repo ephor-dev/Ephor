@@ -1,3 +1,4 @@
+import 'package:ephor/data/repositories/employee/employee_repository.dart';
 import 'package:ephor/data/repositories/shared_prefs/abstract_prefs_repository.dart';
 import 'package:ephor/ui/core/themes/theme_mode_notifier.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ class DashboardContainer extends StatefulWidget {
   final Widget child;
   final AuthRepository authRepository;
   final AbstractPrefsRepository prefsRepository;
+  final EmployeeRepository employeeRepository;
   final ThemeModeNotifier themeNotifier;
 
   const DashboardContainer({
@@ -16,6 +18,7 @@ class DashboardContainer extends StatefulWidget {
     required this.child,
     required this.authRepository,
     required this.prefsRepository,
+    required this.employeeRepository,
     required this.themeNotifier,
   });
 
@@ -32,7 +35,8 @@ class _DashboardContainerState extends State<DashboardContainer> {
     _viewModel = DashboardViewModel(
       authRepository: widget.authRepository,
       prefsRepository: widget.prefsRepository,
-      themeNotifier: widget.themeNotifier,
+      themeNotifier: widget.themeNotifier, 
+      employeeRepository: widget.employeeRepository,
     );
   }
 

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:ephor/data/repositories/auth/abstract_auth_repository.dart';
-import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
+import 'package:ephor/data/repositories/employee/employee_repository.dart';
 import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/domain/types/add_employee_params.dart';
 import 'package:ephor/domain/use_cases/employee_model_creator.dart';
@@ -15,7 +15,7 @@ import 'package:image_picker/image_picker.dart';
 
 class AddEmployeeViewModel extends ChangeNotifier { 
   
-  final AbstractEmployeeRepository _employeeRepository;
+  final EmployeeRepository _employeeRepository;
   final AbstractAuthRepository _authRepository;
 
   late CommandWithArgs addEmployee;
@@ -23,7 +23,7 @@ class AddEmployeeViewModel extends ChangeNotifier {
   late CommandNoArgs clearImage;
 
   AddEmployeeViewModel({
-    required AbstractEmployeeRepository employeeRepository,
+    required EmployeeRepository employeeRepository,
     required AbstractAuthRepository authRepository
   }) : _employeeRepository = employeeRepository,
       _authRepository = authRepository{

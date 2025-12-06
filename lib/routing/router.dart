@@ -81,6 +81,7 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           authRepository: context.read(),
           prefsRepository: context.read(),
           themeNotifier: context.read(),
+          employeeRepository: context.read(),
           child: child,
         );
       },

@@ -23,6 +23,7 @@ class DashboardView extends StatefulWidget {
 class _DashboardViewState extends State<DashboardView> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _showSearch = false;
+  final TextEditingController _searchController = TextEditingController();
 
   final List<Map<String, dynamic>> menuItems = [
     {'title': 'Overview', 'icon': Icons.description_outlined, 'selected': true, 'path': Routes.dashboardOverview},
@@ -55,6 +56,7 @@ class _DashboardViewState extends State<DashboardView> {
     super.initState();
     widget.viewModel.logout.addListener(_onResult);
     widget.viewModel.checkPassword.addListener(_onPasswordChecked);
+    _searchController.addListener(_updateListFromSearch);
   }
 
   @override
@@ -75,6 +77,8 @@ class _DashboardViewState extends State<DashboardView> {
   void dispose() {
     widget.viewModel.logout.removeListener(_onResult);
     widget.viewModel.checkPassword.removeListener(_onPasswordChecked);
+    _searchController.dispose();
+    _searchController.removeListener(_updateListFromSearch);
     super.dispose();
   }
 
@@ -86,6 +90,10 @@ class _DashboardViewState extends State<DashboardView> {
     if (_scaffoldKey.currentState?.isDrawerOpen == true) {
       Navigator.pop(context);
     }
+  }
+
+  void _updateListFromSearch() {
+    widget.viewModel.setEmployeeManagementSearchKeyword.execute(_searchController.text);
   }
 
   // Helper to build the core menu list (used inside the Drawer)
@@ -325,6 +333,7 @@ class _DashboardViewState extends State<DashboardView> {
                         // Max width ensures search bar doesn't look too wide on huge screens
                         constraints: const BoxConstraints(maxWidth: 500), 
                         child: TextField(
+                          controller: _searchController,
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: Theme.of(context).brightness == Brightness.dark

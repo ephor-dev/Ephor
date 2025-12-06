@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:ephor/data/repositories/employee/abstract_employee_repository.dart';
+import 'package:ephor/data/repositories/employee/employee_repository.dart';
 import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +24,7 @@ typedef EditEmployeeParams = ({
 
 class EditEmployeeViewModel extends ChangeNotifier { 
   
-  final AbstractEmployeeRepository _employeeRepository;
+  final EmployeeRepository _employeeRepository;
   final bool fromUser;
   final String employeeCode;
 
@@ -36,7 +36,7 @@ class EditEmployeeViewModel extends ChangeNotifier {
   EmployeeModel? get targetUser => _targetUser;
 
   EditEmployeeViewModel({
-    required AbstractEmployeeRepository employeeRepository,
+    required EmployeeRepository employeeRepository,
     required bool fromUserQuery,
     required String targetEmployeeCode
   }) : _employeeRepository = employeeRepository,
