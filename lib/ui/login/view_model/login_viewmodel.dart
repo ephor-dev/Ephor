@@ -38,6 +38,9 @@ class LoginViewModel extends ChangeNotifier {
   User? _currentUser;
   User? get currentUser => _currentUser;
 
+  bool _rememberMe = false;
+  bool get rememberMe => _rememberMe;
+
   EmployeeModel? _employeeData;
   EmployeeModel? get employeeData => _employeeData;
 
@@ -60,7 +63,7 @@ class LoginViewModel extends ChangeNotifier {
     login = CommandWithArgs<void, (String employeeCode, String password, String userRole)>(_loginWithCode);
     setRememberMe = CommandWithArgs<void, bool>(_setRememberMe);
 
-    loadSavedTheme();
+    loadSavedData();
   }
 
   // --- Subscription Management ---
@@ -167,14 +170,18 @@ class LoginViewModel extends ChangeNotifier {
     final result = await _prefsRepository.setKeepLoggedIn(setRememberMe);
 
     if (result) {
+      _rememberMe = setRememberMe;
       return Result.ok(null);
     }
 
     return Result.error(CustomMessageException("Failed to set 'Remember Me'"));
   }
 
-  void loadSavedTheme() async {
+  void loadSavedData() async {
     final themeMode = await _prefsRepository.getThemeMode();
     _themeNotifier.setThemeMode(themeMode);
+
+    _rememberMe = await _prefsRepository.getKeepLoggedIn();
+
   }
 }

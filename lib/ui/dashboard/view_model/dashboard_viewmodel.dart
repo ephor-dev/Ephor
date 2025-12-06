@@ -58,12 +58,6 @@ class DashboardViewModel extends ChangeNotifier {
     _getUserImage();
   }
 
-  String? _currentPath;
-  String? get currentPath => _currentPath;
-  set currentPath(String? currentPath) {
-    _currentPath = currentPath;
-  }
-
   @override
   void dispose() {
     _loadingSubscription.cancel(); 
@@ -127,6 +121,7 @@ class DashboardViewModel extends ChangeNotifier {
 
   Future<Result<void>> _logout() async {
     final result = _authRepository.logout();
+    await _prefsRepository.setKeepLoggedIn(false);
     notifyListeners();
 
     return result;
