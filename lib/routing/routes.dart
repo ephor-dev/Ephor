@@ -21,6 +21,7 @@ abstract final class Routes {
   static const dashboardIAFormEditor = 'ia-form-editor';
   static const dashboardMyForms = 'my-forms';
   static const dashboardCatnaForms = 'catna-forms';
+  static const dashboardChatbot = 'chatbot';
 
   static String getOverviewPath() => '$dashboard/$dashboardOverview';
   static String getSchedulesPath() => '$dashboard/$dashboardSchedules';
@@ -45,4 +46,5 @@ abstract final class Routes {
   }
   static String getMyFormsPath() => '$dashboard/$dashboardMyForms';
   static String getCatnaFormsPath() => '$dashboard/$dashboardCatnaForms';
+  static String getChatbotPath() => '$dashboard/$dashboardChatbot';
 }
