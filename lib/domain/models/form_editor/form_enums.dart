@@ -4,6 +4,8 @@ enum QuestionType {
   checkbox,
   ratingScale,
   date,
+  dropdown,
+  number,
   fileUpload;
 
   String toJson() => name;
@@ -15,4 +17,3 @@ enum QuestionType {
     );
   }
 }
-

@@ -359,4 +359,14 @@ class SupabaseService {
   Future<void> deleteForm(String formId) async {
     await _client.from('forms').delete().eq('id', formId);
   }
+
+  Future<PostgrestMap?> fetchActiveCatnaForm() async {
+    final response = await _client
+      .from('forms')
+      .select()
+      .eq('title', 'CATNA_TEST')
+      .maybeSingle();
+    
+    return response;
+  }
 }

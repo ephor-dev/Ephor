@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:ephor/ui/catna_form_creator/view_model/catna_form_creator_view_model.dart';
+import 'package:ephor/ui/catna_form_editor/view_model/catna_form_editor_view_model.dart';
 import 'package:ephor/domain/models/form_editor/form_model.dart';
 import 'package:ephor/utils/responsiveness.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ephor/routing/routes.dart';
 
-class CatnaFormCreatorView extends StatefulWidget {
-  final CatnaFormCreatorViewModel viewModel;
+class CatnaFormEditorView extends StatefulWidget {
+  final CatnaFormEditorViewModel viewModel;
   
-  const CatnaFormCreatorView({super.key, required this.viewModel});
+  const CatnaFormEditorView({super.key, required this.viewModel});
 
   @override
-  State<CatnaFormCreatorView> createState() => _CatnaFormCreatorViewState();
+  State<CatnaFormEditorView> createState() => _CatnaFormEditorViewState();
 }
 
-class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
+class _CatnaFormEditorViewState extends State<CatnaFormEditorView> {
   // Material 3 Color Scheme - Red Theme
   Color get primaryColor => Theme.of(context).colorScheme.primary; // Primary Red (matches app theme)
   Color get primaryContainerColor => Theme.of(context).colorScheme.surfaceContainer; // Light Red Container
@@ -569,6 +569,12 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
       case 'Checkbox':
         return _buildOptionsEditor(context, sectionIndex, questionIndex, question, questionType);
       
+      case 'Dropdown':
+        return _buildDropdownConfig(context, sectionIndex, questionIndex, question);
+      
+      case 'Number':
+        return _buildNumberConfig(context, sectionIndex, questionIndex, question);
+      
       case 'Rating Scale':
         return _buildRatingScaleConfig(context, sectionIndex, questionIndex, question);
       
@@ -1077,6 +1083,141 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
       ),
     ];
   }
+
+  List<Widget> _buildDropdownConfig(
+    BuildContext context,
+    int sectionIndex,
+    int questionIndex,
+    Map<String, dynamic> question,
+  ) {
+    final config = question['config'] as Map<String, dynamic>? ?? {};
+    final currentSource = config['dataSource'] as String? ?? 'employees';
+
+    // Map backend IDs to readable labels for the user
+    final Map<String, String> sourceLabels = {
+      'employees': 'List of Personnel / Employees',
+      'designations': 'Positions / Designations',
+      'offices': 'Offices / Colleges',
+      'operating_units': 'Operating Units / Campuses',
+      'purpose_choices': 'Purpose of Assessment Options',
+    };
+
+    return [
+      const SizedBox(height: 16),
+      const Divider(),
+      const SizedBox(height: 8),
+
+      // Header
+      Row(
+        children: [
+          Icon(Icons.dynamic_form, size: 18, color: onSurfaceVariantColor),
+          const SizedBox(width: 8),
+          Text(
+            'Dynamic Data Source',
+            style: TextStyle(
+              color: onSurfaceVariantColor,
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+
+      // Data Source Dropdown
+      DropdownButtonFormField<String>(
+        value: currentSource,
+        decoration: InputDecoration(
+          labelText: 'Select List Source',
+          helperText: 'This list is populated automatically at runtime.',
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        ),
+        items: widget.viewModel.availableDataSources.map((source) {
+          return DropdownMenuItem(
+            value: source,
+            child: Text(sourceLabels[source] ?? source),
+          );
+        }).toList(),
+        onChanged: (value) {
+          if (value != null) {
+            widget.viewModel.updateDropdownConfig(sectionIndex, questionIndex, value);
+          }
+        },
+      ),
+      
+      // Info Box to explain functionality
+      const SizedBox(height: 12),
+      Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: surfaceColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: outlineColor.withValues(alpha: outlineColor.a * 0.3)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.info_outline, size: 16, color: primaryColor),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'When the user opens this form, they will see a searchable dropdown containing all entries from the "${sourceLabels[currentSource] ?? currentSource}" database.',
+                style: TextStyle(fontSize: 12, color: onSurfaceVariantColor),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _buildNumberConfig(
+    BuildContext context,
+    int sectionIndex,
+    int questionIndex,
+    Map<String, dynamic> question,
+  ) {
+    final config = question['config'] as Map<String, dynamic>? ?? {};
+    final allowDecimals = config['allowDecimals'] as bool? ?? false;
+
+    return [
+      const SizedBox(height: 16),
+      const Divider(),
+      const SizedBox(height: 8),
+
+      Row(
+        children: [
+          Icon(Icons.settings_input_component, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          const SizedBox(width: 8),
+          Text(
+            'Input Constraints',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+
+      SwitchListTile(
+        title: const Text('Allow Decimals'),
+        subtitle: const Text('If disabled, only whole numbers (integers) will be accepted.'),
+        value: allowDecimals,
+        onChanged: (value) {
+          widget.viewModel.updateNumberConfig(
+            sectionIndex, 
+            questionIndex, 
+            allowDecimals: value
+          );
+        },
+        contentPadding: EdgeInsets.zero,
+        dense: true,
+      ),
+    ];
+  }
   
   /// Builds file upload question configuration
   List<Widget> _buildFileUploadConfig(
@@ -1331,6 +1472,10 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
         return Icons.calendar_today;
       case 'File Upload':
         return Icons.upload_file;
+      case 'Dropdown':
+        return Icons.arrow_drop_down_circle;
+      case 'Number':
+        return Icons.onetwothree;
       default:
         return Icons.help_outline;
     }
@@ -1367,13 +1512,13 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: onPrimaryContainerColor, size: 20),
+                  Icon(Icons.info_outline, color: onSurfaceColor, size: 20),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'You can still edit it after saving, but changes will be visible immediately.',
                       style: TextStyle(
-                        color: onPrimaryContainerColor,
+                        color: onSurfaceColor,
                         fontSize: 14,
                       ),
                     ),

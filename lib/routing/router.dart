@@ -4,8 +4,8 @@ import 'package:ephor/ui/batch_add_employees/view/batch_add_employees_view.dart'
 import 'package:ephor/ui/batch_add_employees/view_model/batch_add_employees_viewmodel.dart';
 import 'package:ephor/ui/catna_form/view/catna_view.dart';
 import 'package:ephor/ui/catna_form/view_model/catna_viewmodel.dart';
-import 'package:ephor/ui/catna_form_creator/view/catna_form_creator_view.dart';
-import 'package:ephor/ui/catna_form_creator/view_model/catna_form_creator_view_model.dart';
+import 'package:ephor/ui/catna_form_editor/view/catna_form_editor_view.dart';
+import 'package:ephor/ui/catna_form_editor/view_model/catna_form_editor_view_model.dart';
 import 'package:ephor/ui/dashboard/view/dashboard_view.dart';
 import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
 import 'package:ephor/ui/forms_management/view/forms_view.dart';
@@ -187,10 +187,9 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: Routes.getCatnaFormEditorPath(),
           builder: (context, state) {
             final formId = state.uri.queryParameters['formId'];
-            return CatnaFormCreatorView(
-              viewModel: CatnaFormCreatorViewModel(
+            return CatnaFormEditorView(
+              viewModel: CatnaFormEditorViewModel(
                 formRepository: context.read(),
-                authRepository: authRepository,
                 formIdToLoad: formId,
               ),
             );

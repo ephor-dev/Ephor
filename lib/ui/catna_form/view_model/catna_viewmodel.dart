@@ -1,524 +1,322 @@
+import 'package:ephor/data/repositories/auth/auth_repository.dart';
+import 'package:ephor/data/repositories/catna/catna_repository.dart';
 import 'package:ephor/data/repositories/employee/employee_repository.dart';
 import 'package:ephor/domain/enums/employee_role.dart';
+import 'package:ephor/domain/lists/designation_choices.dart';
+import 'package:ephor/domain/lists/office_choices.dart';
+import 'package:ephor/domain/lists/operating_unit_choices.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
+import 'package:ephor/domain/models/form/form_definitions.dart'; 
 import 'package:ephor/utils/command.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:flutter/material.dart';
-import 'package:ephor/data/repositories/auth/auth_repository.dart';
-import 'package:ephor/data/repositories/catna/catna_repository.dart';
 
 class CatnaViewModel extends ChangeNotifier {
   int _currentIndex = 0;
   int get currentIndex => _currentIndex;
-  
-  final int totalSteps = 3;
 
-  Map<String, dynamic>? _identifyingData;
-  Map<String, dynamic>? get identifyingData => _identifyingData;
+  bool _isLoading = true;
+  bool get isLoading => _isLoading;
 
-  Map<String, dynamic>? _competencyRatings;
-  Map<String, dynamic>? get competencyRatings => _competencyRatings;
-
-  // --- FORM 1: Identifying Data Controllers ---
-  final TextEditingController yearsInCurrentPositionController = TextEditingController();
-  final TextEditingController dateStartedController = TextEditingController();
-  final TextEditingController dateFinishedController = TextEditingController();
-  final TextEditingController assessmentDateController = TextEditingController();
-
-  // Dropdown selections
-  String? _selectedEmployeeName;
-  String? _selectedDesignation;
-  String? _selectedOffice;
-  String? _selectedOperatingUnit;
-  String? _selectedPurpose;
-
-  // Date fields
-  DateTime? _dateStarted;
-  DateTime? _dateFinished;
-  DateTime? _assessmentDate;
-
-  // --- FORM 2: Competency Data ---
-  // Assessment response map: item text -> rating (1-4)
-  final Map<String, int?> assessmentResponse = {};
-
-  final List<String> knowledgeItems = [
-    '1.1. (CK) Manifests foundation knowledge in the performance of assigned tasks in the academic area or work area.',
-    '1.2. (CK) Has basic knowledge required to successfully and accurately accomplish duties and tasks.',
-    '1.3. (CK) Possesses taught and learned facts and principles from academic area or work area.',
-    '1.4. (FK) Manifests knowledge on quality, safety and professional regulatory standards.',
-    '1.5. (FK) Has know-how in following University policies, rules and standards.',
-    '1.6. (FK) Possesses understanding of how to describe and implement the rules or step to follow instructions at work.',
-    '1.7. (SK) Shows knowledge competence in the field of work OR academic specialization in theory/constructs.',
-    '1.8. (SK) Has knowledge and understanding on concepts for a particular work purpose OR academic discipline resulted from training or from self-initiated development',
-    '1.9. (SK) Possesses specialized knowledge in contributing concepts/frameworks/methodology for work OR academic purposes.',
-  ];
-
-  final List<String> skillsItems = [
-    '2.1. (OS) Uses resources appropriately and conscientiously to avoid wastage.',
-    '2.2. (OS) Maintains privacy and confidentiality as required.',
-    '2.3. (OS) Shows ability in integrating own work strategies and activities with the University vision, mission and goals.',
-    '2.4. (FS) When conflict arises, goes to the source of conflict to achieve the best possible resolution.',
-    '2.5. (FS) Communicates the right information, in the right manner, to the right people (co-workers, customers & other stakeholders) at the right time.',
-    '2.6. (FS) Exhibits skills required to successfully and accurately accomplish duties and tasks in a timely manner.',
-    '2.7. (SMS) Works efficiently under pressure and is able to balance multiple priorities.',
-    '2.8. (SMS) Shows the initiative to develop skills and enhance knowledge for better work performance.',
-    '2.9. (SMS) Practices active listening skills and follows instructions accurately.',
-  ];
-
-  final List<String> attitudeItems = [
-    '3.1. (AW) Meets expectations related to attendance, punctuality, breaks and attendance to the flag raisingceremony.',
-    '3.2. (AW) Demonstrates appreciation of the University strategic direction and its pursuit to the institutional goals and objectives.',
-    '3.3. (AW) Promotes excellence and continuous improvement at work surpassing standards of expectations.',
-    '3.4. (ACW) Shares pertinent information and knowledge to assist co-workers.',
-    '3.5. (ACW) Exhibits dependability in co-worker or team while observing business decorum and aprofessional approach at work.',
-    '3.6. (ACW) Engages in co-worker/team in any and other collective activities organized by the department/college/University.',
-    '3.7. (ACS) Shows service-oriented attitude in attending to the needs and requirement of customers and other stakeholders.',
-    '3.8. (ACS) Demonstrates flexibility when dealing with customers and other stakeholders of different demographic profiles (e.g., minority, orientation, nationality, economic condition, etc.).',
-    '3.9. (ACS) Represents the University in promoting its vision, mission and strategic direction in any customer and stakeholders transaction or engagement.',
-  ];
-
-  // --- General State ---
   bool _isSubmitting = false;
   bool get isSubmitting => _isSubmitting;
+
+  List<FormSection> _sections = [];
+  List<FormSection> get sections => _sections;
+
+  final Map<String, dynamic> _formData = {};
+  Map<String, dynamic> get formData => _formData;
+
+  final Map<String, TextEditingController> _controllers = {};
 
   List<EmployeeModel> _departmentEmployees = [];
   List<EmployeeModel> get departmentEmployees => _departmentEmployees;
 
-  EmployeeModel? _currentUser;
-  EmployeeModel? get currentUser => _currentUser;
-
-  final AuthRepository _authRepository;
   final CatnaRepository _catnaRepository;
+  final AuthRepository _authRepository;
   final EmployeeRepository _employeeRepository;
 
-  late CommandNoArgs saveIdentifyingData;
-  late CommandNoArgs saveCompetencyRatings;
+  final List<String> _offices = officeChoices;
+  final List<String> _designations = designationChoices;
+  final List<String> _operatingUnits = operatingUnitChoices;
+  final List<String> _purposes = ['Annual Review', 'Random Assessment'];
+
   late CommandNoArgs submitCatna;
+  late CommandNoArgs saveStepData;
 
   CatnaViewModel({
-    required CatnaRepository catnaRepository, 
+    required CatnaRepository catnaRepository,
     required AuthRepository authRepository,
-    required EmployeeRepository employeeRepository
-
-  }) : _catnaRepository = catnaRepository,
-       _authRepository = authRepository,
-       _employeeRepository = employeeRepository {
-    _loadEmployees();
-
-    saveIdentifyingData = CommandNoArgs<void>(_saveIdentifyingData);
-    saveCompetencyRatings = CommandNoArgs<void>(_saveCompetencyRatings);
-    submitCatna = CommandNoArgs(_submitCatna);
+    required EmployeeRepository employeeRepository,
+  })  : _catnaRepository = catnaRepository,
+        _authRepository = authRepository,
+        _employeeRepository = employeeRepository {
     
-    _initializeResponseMap();
-    _getSavedData();
-    _getCurrentUser();
+    submitCatna = CommandNoArgs(_submitCatna);
+    saveStepData = CommandNoArgs(_saveStepData);
+    
+    _loadData();
   }
 
-  Future<Result<void>> _loadEmployees() async {
-    final result = await _employeeRepository.fetchAllEmployees();
-
-    if (result case Ok(value: final list)) {
-      List<EmployeeModel> departmentEmployeeList = [];
-
-      for (EmployeeModel employee in list) {
-        if (currentUser?.role == EmployeeRole.supervisor && (
-          employee.role == EmployeeRole.humanResource 
-          || employee.department != currentUser?.department)) {
-          continue;
-        }
-
-        departmentEmployeeList.add(employee);
-      }
-
-      _departmentEmployees = departmentEmployeeList;
+  Future<void> _loadData() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await Future.wait([
+        _loadEmployees(), 
+        _loadFormDefinition()
+      ]);
+    } catch (e) {
+      debugPrint("Error loading data: $e");
+    } finally {
+      _isLoading = false;
       notifyListeners();
-      return const Result.ok(null);
-    } else {
-      _departmentEmployees = [];
-      return result;
     }
   }
 
-  void _getCurrentUser() {
+  List<FormOption> getOptionsFor(String? dataSource) {
+    if (dataSource == null) return [];
+    switch (dataSource) {
+      case 'employees': return _departmentEmployees.map((e) => FormOption(label: e.fullName, value: e.fullName)).toList();
+      case 'designations': return _designations.map((e) => FormOption(label: e, value: e)).toList();
+      case 'offices': return _offices.map((e) => FormOption(label: e, value: e)).toList();
+      case 'operating_units': return _operatingUnits.map((e) => FormOption(label: e, value: e)).toList();
+      case 'purpose_choices': return _purposes.map((e) => FormOption(label: e, value: e)).toList();
+      default: return [];
+    }
+  }
+
+  Future<void> _loadFormDefinition() async {
+    final result = await _catnaRepository.fetchActiveCatnaForm();
+    if (result case Ok(value: final jsonMap)) {
+      try {
+        final rawSections = jsonMap['sections'] as List? ?? [];
+        _sections = rawSections.map((s) => FormSection.fromJson(Map<String, dynamic>.from(s as Map))).toList();
+        if (jsonMap.containsKey('draft_data') && jsonMap['draft_data'] != null) {
+          _formData.addAll(jsonMap['draft_data']);
+        }
+      } catch (e) {
+        debugPrint("JSON PARSING ERROR: $e");
+      }
+    }
+  }
+
+  Future<void> _loadEmployees() async {
     final currentUser = _authRepository.currentUser;
-    if (currentUser == null) {
-      _currentUser = null;
-    } else {
-      _currentUser = currentUser;
+    final result = await _employeeRepository.fetchAllEmployees();
+    if (result case Ok(value: final list)) {
+      _departmentEmployees = list.where((employee) {
+        if (currentUser?.role == EmployeeRole.supervisor) {
+          return employee.department == currentUser?.department && employee.role != EmployeeRole.humanResource;
+        }
+        return true;
+      }).toList();
+    }
+  }
+
+  // --- Dynamic Form Logic ---
+
+  void updateValue(String key, dynamic value) {
+    _formData[key] = value;
+    if (_controllers.containsKey(key)) {
+      final textValue = value?.toString() ?? '';
+      if (_controllers[key]!.text != textValue) {
+        _controllers[key]!.text = textValue;
+      }
     }
     notifyListeners();
   }
+
+  /// Lazy getter for TextEditingControllers
+  TextEditingController getController(String key) {
+    if (!_controllers.containsKey(key)) {
+      final initialValue = _formData[key]?.toString() ?? '';
+      final controller = TextEditingController(text: initialValue);
+      controller.addListener(() { _formData[key] = controller.text; });
+      _controllers[key] = controller;
+    }
+    return _controllers[key]!;
+  }
+
+  // --- Navigation & Validation ---
 
   set currentIndex(int index) {
     _currentIndex = index;
     notifyListeners();
   }
 
-  Future<Result<void>> _saveIdentifyingData() async {
+  Future<Result<String?>> validateCurrentStep() async {
+    final int sectionIndex = _currentIndex - 1;
+    if (sectionIndex < 0 || sectionIndex >= _sections.length) return const Result.ok(null);
+    final FormSection currentSection = _sections[sectionIndex];
+    for (final FormItem item in currentSection.items) {
+      if (item.type == FormInputType.header) continue;
+      if (item.required) {
+        final value = _formData[item.key];
+        if (value == null || (value is String && value.trim().isEmpty)) {
+          return Result.error(CustomMessageException("Please complete: ${item.label}"));
+        }
+      }
+    }
+    return const Result.ok(null);
+  }
+
+  // --- Saving & Submission ---
+
+  /// Persists the current progress (draft) locally or remotely
+  Future<Result<void>> _saveStepData() async {
+    final currentUser = _authRepository.currentUser;
+    if (currentUser == null) return Result.error(CustomMessageException("No user logged in"));
+
+    final payload = Map<String, dynamic>.from(_formData);
+    payload['employee_code'] = currentUser.employeeCode;
+
     try {
-      _identifyingData = buildIdentifyingData();
-      return Result.ok(null);
-    } on Error {
-      return Result.error(CustomMessageException("Can't save identifying data"));
+      return const Result.ok(null); 
+    } catch (e) {
+      return Result.error(CustomMessageException("Failed to save draft"));
     }
   }
 
-  Future<Result<void>> _saveCompetencyRatings() async {
-    try {
-      _competencyRatings = buildCompetencyRatings();
-      return Result.ok(null);
-    } on Error {
-      return Result.error(CustomMessageException("Can't save identifying data"));
-    }
-  }
+  Future<Result<void>> _submitCatna() async {
+    if (_isSubmitting) return const Result.ok(null);
 
-  void _getSavedData() {
-    _identifyingData = _catnaRepository.identifyingData;
-    _competencyRatings = _catnaRepository.competencyRatings;
-    
-    // Now that data is loaded, populate the controllers and maps
-    _restoreIdentifyingData();
-    _restoreCompetencyData();
-    
+    _isSubmitting = true;
     notifyListeners();
-  }
 
-  // --- Getters for Form 1 ---
-  String? get selectedDesignation => _selectedDesignation;
-  String? get selectedOffice => _selectedOffice;
-  String? get selectedOperatingUnit => _selectedOperatingUnit;
-  String? get selectedPurpose => _selectedPurpose;
-  DateTime? get dateStarted => _dateStarted;
-  DateTime? get dateFinished => _dateFinished;
-  DateTime? get assessmentDate => _assessmentDate;
-  String? get selectedEmployeeName => _selectedEmployeeName;
-
-  // --- Setters for Form 1 ---
-  void setEmployeeName(String? value) {
-    _selectedEmployeeName = value;
-    notifyListeners();
-  }
-
-  void setSelectedDesignation(String? value) {
-    _selectedDesignation = value;
-    notifyListeners();
-  }
-
-  void setSelectedOffice(String? value) {
-    _selectedOffice = value;
-    notifyListeners();
-  }
-
-  void setSelectedOperatingUnit(String? value) {
-    _selectedOperatingUnit = value;
-    notifyListeners();
-  }
-
-  void setSelectedPurpose(String? value) {
-    _selectedPurpose = value;
-    notifyListeners();
-  }
-
-  void setDateStarted(DateTime? date) {
-    _dateStarted = date;
-    if (date != null) {
-      dateStartedController.text =
-          '${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}/${date.year}';
-    } else {
-      dateStartedController.clear();
-    }
-    notifyListeners();
-  }
-
-  void setDateFinished(DateTime? date) {
-    _dateFinished = date;
-    if (date != null) {
-      dateFinishedController.text =
-          '${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}/${date.year}';
-    } else {
-      dateFinishedController.clear();
-    }
-    notifyListeners();
-  }
-
-  void setAssessmentDate(DateTime? date) {
-    _assessmentDate = date;
-    if (date != null) {
-      assessmentDateController.text =
-          '${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}/${date.year}';
-    } else {
-      assessmentDateController.clear();
-    }
-    notifyListeners();
-  }
-
-  // --- Restoration Logic ---
-
-  /// Restores Form 1 (Identifying Data) from memory
-  void _restoreIdentifyingData() {
-    final saved = identifyingData;
-    if (saved == null) return;
-
-    _selectedEmployeeName = saved['full_name'] as String?;
-    yearsInCurrentPositionController.text =
-        (saved['years_in_current_position'] as int?)?.toString() ?? '';
-
-    _selectedDesignation = saved['designation'] as String?;
-    _selectedOffice = saved['office'] as String?;
-    _selectedOperatingUnit = saved['operating_unit'] as String?;
-    _selectedPurpose = saved['purpose_of_assessment'] as String?;
-
-    // Restore dates
-    final startDateStr = saved['review_start_date'] as String?;
-    if (startDateStr != null) {
-      try {
-        _dateStarted = DateTime.parse(startDateStr);
-        dateStartedController.text =
-            '${_dateStarted!.month.toString().padLeft(2, '0')}/${_dateStarted!.day.toString().padLeft(2, '0')}/${_dateStarted!.year}';
-      } catch (e) { /* Invalid date, ignore */ }
+    final currentUser = _authRepository.currentUser;
+    if (currentUser == null) {
+      _isSubmitting = false;
+      notifyListeners();
+      return Result.error(CustomMessageException('User authentication required.'));
     }
 
-    final endDateStr = saved['review_end_date'] as String?;
-    if (endDateStr != null) {
-      try {
-        _dateFinished = DateTime.parse(endDateStr);
-        dateFinishedController.text =
-            '${_dateFinished!.month.toString().padLeft(2, '0')}/${_dateFinished!.day.toString().padLeft(2, '0')}/${_dateFinished!.year}';
-      } catch (e) { /* Invalid date, ignore */ }
-    }
+    // 1. Initialize Containers
+    final Map<String, dynamic> identifyingData = {};
+    final Map<String, int> knowledgeMap = {};
+    final Map<String, int> skillsMap = {};
+    final Map<String, int> attitudesMap = {};
 
-    final assessmentDateStr = saved['assessment_date'] as String?;
-    if (assessmentDateStr != null) {
-      try {
-        _assessmentDate = DateTime.parse(assessmentDateStr);
-        assessmentDateController.text =
-            '${_assessmentDate!.month.toString().padLeft(2, '0')}/${_assessmentDate!.day.toString().padLeft(2, '0')}/${_assessmentDate!.year}';
-      } catch (e) { /* Invalid date, ignore */ }
-    }
-  }
+    // 2. Iterate through Form Definitions to map data correctly
+    // We use the definitions because we need the full 'label' (Question Text) and type info
+    for (var section in _sections) {
+      for (var item in section.items) {
+        // Skip headers or items with no data
+        if (item.type == FormInputType.header) continue;
+        if (!_formData.containsKey(item.key)) continue;
 
-  /// Restores Form 2 (Competency Ratings) from memory
-  void _restoreCompetencyData() {
-    final saved = competencyRatings;
-    if (saved == null) return;
+        final dynamic value = _formData[item.key];
+        if (value == null) continue;
 
-    // Helper function to restore map to assessmentResponse
-    void restoreMap(Map<String, dynamic>? sourceMap) {
-      if (sourceMap != null) {
-        for (final entry in sourceMap.entries) {
-          if (entry.value is int) {
-            assessmentResponse[entry.key] = entry.value as int;
+        if (section.layout == SectionLayout.standard) {
+          // --- IDENTIFYING DATA MAPPING ---
+          final String mappedKey = _mapIdentifyingKey(item.key);
+          identifyingData[mappedKey] = _formatIdentifyingValue(mappedKey, value);
+        } else {
+          // --- COMPETENCY DATA MAPPING ---
+          // Ensure value is int
+          final int intValue = value is int ? value : int.tryParse(value.toString()) ?? 0;
+          final String questionText = item.label.trim();
+
+          // Categorize based on question number prefix
+          if (questionText.startsWith("1.")) {
+            knowledgeMap[questionText] = intValue;
+          } else if (questionText.startsWith("2.")) {
+            skillsMap[questionText] = intValue;
+          } else if (questionText.startsWith("3.")) {
+            attitudesMap[questionText] = intValue;
           }
         }
       }
     }
 
-    restoreMap(saved['knowledge'] as Map<String, dynamic>?);
-    restoreMap(saved['skills'] as Map<String, dynamic>?);
-    restoreMap(saved['attitudes'] as Map<String, dynamic>?);
-  }
+    // 3. Calculate Averages
+    final double knowledgeAvg = _calculateAverage(knowledgeMap.values);
+    final double skillsAvg = _calculateAverage(skillsMap.values);
+    final double attitudeAvg = _calculateAverage(attitudesMap.values);
+    
+    // Overall average of the three component averages
+    final double overallAvg = (knowledgeAvg + skillsAvg + attitudeAvg) / 3;
 
-  // --- Logic for Form 2 (Competency) ---
-
-  void _initializeResponseMap() {
-    final allItems = [...knowledgeItems, ...skillsItems, ...attitudeItems];
-    for (var item in allItems) {
-      assessmentResponse[item] = null;
-    }
-  }
-
-  void setRating(String item, int? rating) {
-    assessmentResponse[item] = rating;
-    notifyListeners();
-  }
-
-  Map<String, int> extractRatings(List<String> items) {
-    final map = <String, int>{};
-    for (final item in items) {
-      final value = assessmentResponse[item];
-      if (value != null) {
-        map[item] = value;
+    // 4. Construct Competency Payload
+    final Map<String, dynamic> competencyRatings = {
+      "knowledge": knowledgeMap,
+      "skills": skillsMap,
+      "attitudes": attitudesMap,
+      "averages": {
+        "knowledge": knowledgeAvg,
+        "skills": skillsAvg,
+        "attitude": attitudeAvg,
+        "overall": overallAvg,
       }
-    }
-    return map;
-  }
-
-  double computeAverage(List<String> items) {
-    final values = <int>[];
-    for (final item in items) {
-      final value = assessmentResponse[item];
-      if (value != null) {
-        values.add(value);
-      }
-    }
-    if (values.isEmpty) return 0.0;
-    return values.reduce((a, b) => a + b) / values.length;
-  }
-
-  // --- Validation Logic ---
-
-  /// Main validation router that checks the current page
-  Future<Result<String?>> validateCurrentStep() async {
-    if (_currentIndex == 1) {
-      final check1 = _validateIdentifyingData();
-      if (check1 != null) {
-        return Result.error(CustomMessageException(check1));
-      }
-      
-      return Result.ok(null);
-    } else if (_currentIndex == 2) {
-      final check2 = _validateCompetencyData();
-      if (check2 != null) {
-        return Result.error(CustomMessageException(check2));
-      }
-
-      return Result.ok(null);
-    }
-
-    return Result.ok(null);
-  }
-
-  String? _validateIdentifyingData() {
-    if (_selectedEmployeeName == null ||
-        _selectedDesignation == null ||
-        _selectedOffice == null ||
-        _selectedOperatingUnit == null ||
-        yearsInCurrentPositionController.text.trim().isEmpty ||
-        _dateStarted == null ||
-        _dateFinished == null ||
-        _assessmentDate == null ||
-        _selectedPurpose == null) {
-      return 'All fields must be filled before proceeding to the next form';
-    }
-    return null;
-  }
-
-  String? _validateCompetencyData() {
-    final totalKnowledgeItems = knowledgeItems.length;
-    final totalSkillsItems = skillsItems.length;
-    final totalAttitudeItems = attitudeItems.length;
-
-    final knowledgeRated = knowledgeItems.where((item) => assessmentResponse[item] != null).length;
-    final skillsRated = skillsItems.where((item) => assessmentResponse[item] != null).length;
-    final attitudeRated = attitudeItems.where((item) => assessmentResponse[item] != null).length;
-
-    if (knowledgeRated < totalKnowledgeItems) {
-      final remaining = totalKnowledgeItems - knowledgeRated;
-      return 'All knowledge competency items must be rated. $remaining item(s) remaining.';
-    }
-
-    if (skillsRated < totalSkillsItems) {
-      final remaining = totalSkillsItems - skillsRated;
-      return 'All skills competency items must be rated. $remaining item(s) remaining.';
-    }
-
-    if (attitudeRated < totalAttitudeItems) {
-      final remaining = totalAttitudeItems - attitudeRated;
-      return 'All attitude competency items must be rated. $remaining item(s) remaining.';
-    }
-
-    return null;
-  }
-
-  // --- Data Construction ---
-
-  Map<String, dynamic> buildIdentifyingData() {
-    return {
-      'full_name': _selectedEmployeeName,
-      'designation': _selectedDesignation,
-      'office': _selectedOffice,
-      'operating_unit': _selectedOperatingUnit,
-      'years_in_current_position':
-          int.tryParse(yearsInCurrentPositionController.text.trim()),
-      'review_start_date': _dateStarted?.toIso8601String().substring(0, 10),
-      'review_end_date': _dateFinished?.toIso8601String().substring(0, 10),
-      'assessment_date': _assessmentDate?.toIso8601String().substring(0, 10),
-      'purpose_of_assessment': _selectedPurpose,
     };
-  }
 
-  Map<String, dynamic> buildCompetencyRatings() {
-    final knowledgeRatings = extractRatings(knowledgeItems);
-    final skillsRatings = extractRatings(skillsItems);
-    final attitudeRatings = extractRatings(attitudeItems);
-
-    final knowledgeAvg = computeAverage(knowledgeItems);
-    final skillsAvg = computeAverage(skillsItems);
-    final attitudeAvg = computeAverage(attitudeItems);
-    final overallAvg = (knowledgeAvg + skillsAvg + attitudeAvg) / 3;
-
-    return {
-      'knowledge': knowledgeRatings,
-      'skills': skillsRatings,
-      'attitudes': attitudeRatings,
-      'averages': {
-        'knowledge': knowledgeAvg,
-        'skills': skillsAvg,
-        'attitude': attitudeAvg,
-        'overall': overallAvg,
-      },
-    };
-  }
-
-  // --- Submission ---
-
-  bool get canSubmitAssessment {
-    final currentUser = _authRepository.currentUser;
-    if (currentUser == null) return false;
-    return currentUser.role == EmployeeRole.humanResource ||
-           currentUser.role == EmployeeRole.supervisor;
-  }
-
-  Future<Result<void>> _submitCatna() async {
+    // 5. Final Payload Construction
     final payload = <String, dynamic>{
-      if (identifyingData != null)
-        'identifying_data': identifyingData,
-      if (competencyRatings != null)
-        'competency_ratings': competencyRatings
+      'employee_code': currentUser.employeeCode,
+      'identifying_data': identifyingData,
+      'competency_ratings': competencyRatings,
     };
-
-    if (_isSubmitting) {
-      return const Result.ok(null);
-    }
-
-    _isSubmitting = true;
-    notifyListeners();
-
-    // Check user authentication
-    final currentUser = _authRepository.currentUser;
-    if (currentUser == null) {
-      _isSubmitting = false;
-      notifyListeners();
-      return Result.error(CustomMessageException('User authentication required. Please log in again.'));
-    }
-
-    if (!canSubmitAssessment) {
-      _isSubmitting = false;
-      notifyListeners();
-      return Result.error(CustomMessageException(
-        'You do not have permission to submit CATNA assessments. Only HR and Supervisors can submit assessments.'
-      ));
-    }
 
     try {
-      // Ensure employee_code is attached
-      payload['employee_code'] = currentUser.employeeCode;
-      
       final result = await _catnaRepository.submitAssessment(payload);
       return result;
+    } catch (e) {
+      return Result.error(CustomMessageException("Submission failed: $e"));
     } finally {
       _isSubmitting = false;
       notifyListeners();
     }
   }
 
+  String _mapIdentifyingKey(String rawKey) {
+    if (rawKey.contains('personnel_name')) return 'full_name';
+    if (rawKey.contains('position')) return 'designation';
+    if (rawKey.contains('office')) return 'office';
+    if (rawKey.contains('operating_unit')) return 'operating_unit';
+    if (rawKey.contains('start_date')) return 'review_start_date';
+    if (rawKey.contains('finish_date')) return 'review_end_date';
+    if (rawKey.contains('assessment_date')) return 'assessment_date';
+    if (rawKey.contains('purpose')) return 'purpose_of_assessment';
+    if (rawKey.contains('years')) return 'years_in_current_position';
+    return rawKey; // Fallback
+  }
+
+  /// Formats values (Converts "12/05/2024" -> "2024-12-05" and Strings -> Ints)
+  dynamic _formatIdentifyingValue(String key, dynamic value) {
+    if (value is String) {
+      // Handle Date Conversion: MM/DD/YYYY -> YYYY-MM-DD
+      if (value.contains('/')) {
+        try {
+          final parts = value.split('/');
+          if (parts.length == 3) {
+            // parts[0]=MM, parts[1]=DD, parts[2]=YYYY
+            return "${parts[2]}-${parts[0].padLeft(2, '0')}-${parts[1].padLeft(2, '0')}";
+          }
+        } catch (_) {
+          return value; // Return original if parse fails
+        }
+      }
+      
+      // Handle Numeric String Conversion
+      if (key == 'years_in_current_position') {
+        return int.tryParse(value) ?? value;
+      }
+    }
+    return value;
+  }
+
+  double _calculateAverage(Iterable<int> values) {
+    if (values.isEmpty) return 0.0;
+    return values.reduce((a, b) => a + b) / values.length;
+  }
+
   @override
   void dispose() {
-    yearsInCurrentPositionController.dispose();
-    dateStartedController.dispose();
-    dateFinishedController.dispose();
-    assessmentDateController.dispose();
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 }

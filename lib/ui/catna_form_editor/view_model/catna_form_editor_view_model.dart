@@ -1,6 +1,5 @@
 import 'package:ephor/data/repositories/form/form_repository.dart';
 import 'package:flutter/material.dart';
-import 'package:ephor/data/repositories/auth/abstract_auth_repository.dart';
 import 'package:ephor/domain/models/form_editor/form_model.dart';
 import 'package:ephor/domain/models/form_editor/section_model.dart';
 import 'package:ephor/domain/models/form_editor/question_model.dart';
@@ -8,17 +7,14 @@ import 'package:ephor/domain/models/form_editor/form_enums.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 
-class CatnaFormCreatorViewModel extends ChangeNotifier {
+class CatnaFormEditorViewModel extends ChangeNotifier {
   final FormRepository _formRepository;
-  final AbstractAuthRepository _authRepository;
   final String? _formIdToLoad;
   
-  CatnaFormCreatorViewModel({
+  CatnaFormEditorViewModel({
     required FormRepository formRepository,
-    required AbstractAuthRepository authRepository,
     String? formIdToLoad,
   }) : _formRepository = formRepository,
-       _authRepository = authRepository,
        _formIdToLoad = formIdToLoad {
     _initializeForm();
   }
@@ -42,6 +38,16 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
     'Rating Scale',
     'Date',
     'File Upload',
+    'Dropdown',
+    'Number'
+  ];
+
+  final List<String> availableDataSources = [
+    'employees',       // List of Personnel
+    'designations',    // List of Job Titles
+    'offices',         // List of Colleges/Offices
+    'operating_units', // List of Campuses
+    'purpose_choices', // List of Purposes
   ];
   
   // ============================================
@@ -173,6 +179,20 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
           };
         }
         break;
+      case QuestionType.dropdown:
+        if (question.config != null) {
+          uiQuestion['config'] = {
+            'dataSource': question.config!['dataSource'] ?? 'employees',
+          };
+        }
+        break;
+      case QuestionType.number:
+        if (question.config != null) {
+          uiQuestion['config'] = {
+            'allowDecimals': question.config!['allowDecimals'] ?? false,
+          };
+        }
+        break;
       case QuestionType.date:
         if (question.config != null) {
           uiQuestion['config'] = {
@@ -212,6 +232,10 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
         return 'Date';
       case QuestionType.fileUpload:
         return 'File Upload';
+      case QuestionType.dropdown:
+        return 'Dropdown';
+      case QuestionType.number: 
+        return 'Number';
     }
   }
   
@@ -262,12 +286,25 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
       if (questionType == 'Multiple Choice') {
         questionData['options'] = ['Option 1', 'Option 2'];
       }
+
+      if (questionType == 'Number') {
+        questionData['config'] = {
+          'allowDecimals': false, // Default to integers only
+        };
+      }
       
       // Add options and config for Checkbox
       if (questionType == 'Checkbox') {
         questionData['options'] = ['Option 1', 'Option 2'];
         questionData['config'] = {
           'maxSelections': null, // null = no limit
+        };
+      }
+
+      if (questionType == 'Dropdown') {
+        questionData['options'] = null; // No manual options
+        questionData['config'] = {
+          'dataSource': 'employees', // Default to employees
         };
       }
       
@@ -343,6 +380,12 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
             'min': 1,
             'max': 5,
           };
+        } else if (type == 'Dropdown') {
+          questions[questionIndex]['options'] = null;
+          questions[questionIndex]['config'] = {'dataSource': 'employees'};
+        } else if (type == 'Number') {
+          questions[questionIndex]['config'] = {'allowDecimals': false};
+          questions[questionIndex]['options'] = null;
         } else if (type == 'Date') {
           questions[questionIndex]['options'] = null;
           questions[questionIndex]['config'] = {
@@ -467,6 +510,34 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
       }
     }
   }
+
+  void updateNumberConfig(int sectionIndex, int questionIndex, {bool? allowDecimals}) {
+    if (sectionIndex >= 0 && sectionIndex < _sections.length) {
+      final questions = _sections[sectionIndex]['questions'] as List<Map<String, dynamic>>;
+      if (questionIndex >= 0 && questionIndex < questions.length) {
+        final currentConfig = questions[questionIndex]['config'] as Map<String, dynamic>? ?? {};
+        questions[questionIndex]['config'] = {
+          ...currentConfig,
+          'allowDecimals': allowDecimals ?? currentConfig['allowDecimals'] ?? false,
+        };
+        notifyListeners();
+      }
+    }
+  }
+
+  void updateDropdownConfig(int sectionIndex, int questionIndex, String dataSource) {
+    if (sectionIndex >= 0 && sectionIndex < _sections.length) {
+      final questions = _sections[sectionIndex]['questions'] as List<Map<String, dynamic>>;
+      if (questionIndex >= 0 && questionIndex < questions.length) {
+        final currentConfig = questions[questionIndex]['config'] as Map<String, dynamic>? ?? {};
+        questions[questionIndex]['config'] = {
+          ...currentConfig,
+          'dataSource': dataSource,
+        };
+        notifyListeners();
+      }
+    }
+  }
   
   /// Updates file upload question configuration
   void updateFileUploadConfig(int sectionIndex, int questionIndex, {List<String>? allowedTypes, int? maxSizeMB, bool? allowMultiple}) {
@@ -558,6 +629,7 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
               ? List<String>.from(qMap['options'] as List)
               : null,
           orderIndex: qIndex,
+          config: qMap['config'], // Pass config (including dataSource) to model
         );
       }).toList();
       
@@ -591,10 +663,14 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
         return QuestionType.checkbox;
       case 'Rating Scale':
         return QuestionType.ratingScale;
+      case 'Dropdown': 
+        return QuestionType.dropdown;
       case 'Date':
         return QuestionType.date;
       case 'File Upload':
         return QuestionType.fileUpload;
+      case 'Number': 
+        return QuestionType.number;
       default:
         return QuestionType.text;
     }
