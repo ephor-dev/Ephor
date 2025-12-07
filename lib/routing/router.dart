@@ -8,6 +8,8 @@ import 'package:ephor/ui/catna_form_editor/view/catna_form_editor_view.dart';
 import 'package:ephor/ui/catna_form_editor/view_model/catna_form_editor_view_model.dart';
 import 'package:ephor/ui/chatbot/chatbot_view/chatbot_view.dart';
 import 'package:ephor/ui/chatbot/chatbot_viewmodel/chatbot_viewmodel.dart';
+import 'package:ephor/ui/chatbot/chatbot_view/chatbot_view.dart';
+import 'package:ephor/ui/chatbot/chatbot_viewmodel/chatbot_viewmodel.dart';
 import 'package:ephor/ui/dashboard/view/dashboard_view.dart';
 import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
 import 'package:ephor/ui/forms_management/view/forms_view.dart';
