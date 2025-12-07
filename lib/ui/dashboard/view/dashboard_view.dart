@@ -29,11 +29,8 @@ class _DashboardViewState extends State<DashboardView> {
     {'title': 'Overview', 'icon': Icons.description_outlined, 'selected': true, 'path': Routes.dashboardOverview},
     {'title': 'Employee List', 'icon': Icons.list, 'selected': false, 'path': Routes.dashboardEmployeeList},
     {'title': 'Forms Management', 'icon': Icons.assessment_outlined, 'selected': false, 'path': Routes.dashboardMyForms},
-    {'title': 'CATNA Forms', 'icon': Icons.assessment_outlined, 'selected': false, 'path': Routes.dashboardCatnaForms},
-    {'title': 'Upcoming Schedules', 'icon': Icons.schedule_outlined, 'selected': false, 'path': Routes.dashboardSchedules},
-    {'title': 'Finished Assessments', 'icon': Icons.check_box_outlined, 'selected': false, 'path': Routes.dashboardAssessments},
-    {'title': 'Finished Trainings', 'icon': Icons.check_outlined, 'selected': false, 'path': Routes.dashboardFinishedTrainings},
-    {'title': 'Recommended Trainings', 'icon': Icons.wb_sunny_outlined, 'selected': false, 'path': Routes.dashboardRecommendedTrainings},
+    {'title': 'Fill CATNA', 'icon': Icons.assessment_outlined, 'selected': false, 'path': Routes.dashboardCatnaForms},
+    {'title': 'Fill IA', 'icon': Icons.assessment_outlined, 'selected': false, 'path': Routes.dashboardIAForm},
   ];
 
   int _getSelectedIndex() {
@@ -117,7 +114,8 @@ class _DashboardViewState extends State<DashboardView> {
             && item['path'] == Routes.dashboardMyForms) {
               return const SizedBox.shrink();
           } else if (currentUserRole == EmployeeRole.humanResource
-            && item['path'] == Routes.dashboardCatnaForms) {
+            && (item['path'] == Routes.dashboardCatnaForms
+              || item['path'] == Routes.dashboardIAForm)) {
               return const SizedBox.shrink();
           }
         }

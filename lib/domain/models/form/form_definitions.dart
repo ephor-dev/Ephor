@@ -1,10 +1,17 @@
-enum FormInputType { text, number, date, dropdown, radioMatrix, header, unknown }
-enum SectionLayout { standard, matrix } 
+enum FormInputType { text, number, date, dropdown, radioMatrix, radio, header, unknown }
+enum SectionLayout { standard, matrix, impact_style } 
 
 class FormOption {
   final String label;
   final dynamic value;
   FormOption({required this.label, required this.value});
+
+  factory FormOption.fromJson(Map<String, dynamic> json) {
+    return FormOption(
+      label: json['label'].toString(),
+      value: json['value'],
+    );
+  }
 }
 
 class FormItem {
@@ -14,6 +21,7 @@ class FormItem {
   final bool required; // Mapped from "is_required"
   final int orderIndex; // Mapped from "order_index"
   final Map<String, dynamic> config; // Stores "dataSource", "minDate", etc.
+  final List<FormOption>? options;
 
   FormItem({
     required this.key,
@@ -22,6 +30,7 @@ class FormItem {
     this.required = true,
     this.orderIndex = 0,
     this.config = const {},
+    this.options,
   });
 
   factory FormItem.fromJson(Map<String, dynamic> json) {
@@ -38,6 +47,7 @@ class FormItem {
         case 'dropdown': return FormInputType.dropdown;
         case 'radiomatrix': return FormInputType.radioMatrix;
         case 'header': return FormInputType.header;
+        case 'radio': return FormInputType.radio;
         default: return FormInputType.unknown; // Fallback for safety
       }
     }
@@ -48,7 +58,8 @@ class FormItem {
       type: parseType(json['type']),
       required: json['is_required'] ?? false,
       orderIndex: json['order_index'] ?? 0,
-      config: json['config'] ?? {}, 
+      config: json['config'] ?? {},
+      options: (json['options'] as List?)?.map((e) => FormOption.fromJson(e)).toList(),
     );
   }
 }
@@ -70,7 +81,9 @@ class FormSection {
     // Determine layout based on title/content logic if DB doesn't have a layout column
     // For now, we default to standard. You can add logic: if title contains "Rating", use matrix.
     SectionLayout detectedLayout = SectionLayout.standard;
-    if (json['title'].toString().contains('Rating')) {
+    if (json['layout'] == 'impact_style') {
+      detectedLayout = SectionLayout.impact_style;
+    } else if (json['title'].toString().contains('Rating')) {
       detectedLayout = SectionLayout.matrix;
     }
 

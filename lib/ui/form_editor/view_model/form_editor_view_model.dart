@@ -7,11 +7,11 @@ import 'package:ephor/domain/models/form_editor/form_enums.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 
-class CatnaFormEditorViewModel extends ChangeNotifier {
+class FormEditorViewModel extends ChangeNotifier {
   final FormRepository _formRepository;
   final String? _formIdToLoad;
   
-  CatnaFormEditorViewModel({
+  FormEditorViewModel({
     required FormRepository formRepository,
     String? formIdToLoad,
   }) : _formRepository = formRepository,

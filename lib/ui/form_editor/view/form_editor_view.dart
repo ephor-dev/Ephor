@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:ephor/ui/catna_form_editor/view_model/catna_form_editor_view_model.dart';
+import 'package:ephor/ui/form_editor/view_model/form_editor_view_model.dart';
 import 'package:ephor/domain/models/form_editor/form_model.dart';
 import 'package:ephor/utils/responsiveness.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ephor/routing/routes.dart';
 
-class CatnaFormEditorView extends StatefulWidget {
-  final CatnaFormEditorViewModel viewModel;
+class FormEditorView extends StatefulWidget {
+  final FormEditorViewModel viewModel;
   
-  const CatnaFormEditorView({super.key, required this.viewModel});
+  const FormEditorView({super.key, required this.viewModel});
 
   @override
-  State<CatnaFormEditorView> createState() => _CatnaFormEditorViewState();
+  State<FormEditorView> createState() => _FormEditorViewState();
 }
 
-class _CatnaFormEditorViewState extends State<CatnaFormEditorView> {
+class _FormEditorViewState extends State<FormEditorView> {
   // Material 3 Color Scheme - Red Theme
   Color get primaryColor => Theme.of(context).colorScheme.primary; // Primary Red (matches app theme)
   Color get primaryContainerColor => Theme.of(context).colorScheme.surfaceContainer; // Light Red Container

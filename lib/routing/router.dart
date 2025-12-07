@@ -4,8 +4,8 @@ import 'package:ephor/ui/batch_add_employees/view/batch_add_employees_view.dart'
 import 'package:ephor/ui/batch_add_employees/view_model/batch_add_employees_viewmodel.dart';
 import 'package:ephor/ui/catna_form/view/catna_view.dart';
 import 'package:ephor/ui/catna_form/view_model/catna_viewmodel.dart';
-import 'package:ephor/ui/catna_form_editor/view/catna_form_editor_view.dart';
-import 'package:ephor/ui/catna_form_editor/view_model/catna_form_editor_view_model.dart';
+import 'package:ephor/ui/form_editor/view/form_editor_view.dart';
+import 'package:ephor/ui/form_editor/view_model/form_editor_view_model.dart';
 import 'package:ephor/ui/dashboard/view/dashboard_view.dart';
 import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
 import 'package:ephor/ui/forms_management/view/forms_view.dart';
@@ -24,7 +24,8 @@ import 'package:ephor/ui/edit_employee/view/edit_employee_view.dart';
 import 'package:ephor/ui/edit_employee/view_model/edit_employee_viewmodel.dart';
 import 'package:ephor/ui/employee_management/view/employees_view.dart';
 import 'package:ephor/ui/employee_management/view_model/employees_viewmodel.dart';
-import 'package:ephor/ui/impact_assessment_form/view/impact_assessment_form_view.dart';
+import 'package:ephor/ui/impact_assessment_form/view/impact_assessment_view.dart';
+import 'package:ephor/ui/impact_assessment_form/view_model/impact_assessment_viewmodel.dart';
 import 'package:ephor/ui/password_update/forgot_password/view/forgot_password_view.dart';
 import 'package:ephor/ui/password_update/forgot_password/view_model/forgot_password_viewmodel.dart';
 import 'package:ephor/ui/password_update/update_password/view/update_password_view.dart';
@@ -103,7 +104,7 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: Routes.getCatnaFormsPath(),
           builder: (context, state) => CatnaView(
             viewModel: CatnaViewModel(
-              catnaRepository: context.read(),
+              formRepository: context.read(),
               employeeRepository: context.read(),
               authRepository: authRepository
             )
@@ -111,7 +112,13 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
         ),
         GoRoute(
           path: Routes.getImpactAssessmentPath(),
-          builder: (context, state) => ImpactAssessmentForm(),
+          builder: (context, state) => ImpactAssessmentView(
+            viewModel: ImpactAssessmentViewModel(
+              formRepository: context.read(),
+              authRepository: authRepository, 
+              employeeRepository: context.read()
+            ),
+          ),
         ),
         GoRoute(
           path: Routes.getEmployeeListPath(),
@@ -187,8 +194,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: Routes.getCatnaFormEditorPath(),
           builder: (context, state) {
             final formId = state.uri.queryParameters['formId'];
-            return CatnaFormEditorView(
-              viewModel: CatnaFormEditorViewModel(
+            return FormEditorView(
+              viewModel: FormEditorViewModel(
                 formRepository: context.read(),
                 formIdToLoad: formId,
               ),

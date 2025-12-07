@@ -1,5 +1,4 @@
 import 'package:ephor/data/repositories/auth/auth_repository.dart';
-import 'package:ephor/data/repositories/catna/catna_repository.dart';
 import 'package:ephor/data/repositories/employee/employee_repository.dart';
 import 'package:ephor/data/repositories/form/form_repository.dart';
 import 'package:ephor/data/repositories/shared_prefs/abstract_prefs_repository.dart';
@@ -22,12 +21,6 @@ List<SingleChildWidget> get providers {
         EmployeeRepository(
           employeeService: context.read<SupabaseService>(), 
         ),
-    ),
-    ChangeNotifierProvider<CatnaRepository>(
-      create: (context) => 
-        CatnaRepository(
-          supabaseService: context.read()
-        )
     ),
     ChangeNotifierProvider<FormRepository>(
       create: (context) => FormRepository(

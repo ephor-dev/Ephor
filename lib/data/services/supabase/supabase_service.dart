@@ -326,6 +326,10 @@ class SupabaseService {
     await _client.from('catna_assessments').insert(payload);
   }
 
+  Future<void> insertImpactAssessment(Map<String, dynamic> payload) async {
+    await _client.from('impact_assessments').insert(payload);
+  }
+
   // Form Things
   Future<PostgrestMap> upsertForm(Map<String, dynamic> formData) async {
     final response = await _client
@@ -364,7 +368,17 @@ class SupabaseService {
     final response = await _client
       .from('forms')
       .select()
-      .eq('title', 'CATNA_TEST')
+      .eq('id', 'bd1dd8c7-3524-4f2d-8508-9c416acb2be0')
+      .maybeSingle();
+    
+    return response;
+  }
+
+  Future<PostgrestMap?> fetchActiveImpactAssessmentForm() async {
+    final response = await _client
+      .from('forms')
+      .select()
+      .eq('id', 'f6dcf61f-060d-4878-9d0e-96ad748a758c')
       .maybeSingle();
     
     return response;

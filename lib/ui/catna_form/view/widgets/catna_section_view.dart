@@ -1,7 +1,9 @@
 import 'package:ephor/domain/models/form/form_definitions.dart';
 import 'package:ephor/ui/catna_form/view_model/catna_viewmodel.dart';
+import 'package:ephor/ui/core/ui/date_picker/date_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
 class CatnaSectionView extends StatelessWidget {
   final FormSection section;
@@ -15,9 +17,6 @@ class CatnaSectionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // --- STYLING LOGIC ---
-    // If layout is 'matrix', use the style from CatnaForm2 (Tertiary colors, darker bg)
-    // If layout is 'standard', use the style from CatnaForm1 (Primary colors, lighter bg)
     final bool isMatrix = section.layout == SectionLayout.matrix;
     
     final headerGradient = isMatrix
@@ -259,11 +258,12 @@ class CatnaSectionView extends StatelessWidget {
         suffixIcon: const Icon(Icons.calendar_today),
       ),
       onTap: () async {
-        final DateTime? picked = await showDatePicker(
-          context: context,
-          initialDate: DateTime.now(),
-          firstDate: minDate,
-          lastDate: maxDate,
+        final DateTime? picked = await showEphorDatePicker(
+          context,
+          DateTime.now(),
+          minDate,
+          maxDate,
+          OmniDateTimePickerType.date
         );
         if (picked != null) {
           final val = "${picked.month}/${picked.day}/${picked.year}";
