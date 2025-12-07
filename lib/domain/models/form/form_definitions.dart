@@ -1,0 +1,91 @@
+enum FormInputType { text, number, date, dropdown, radioMatrix, header, unknown }
+enum SectionLayout { standard, matrix } 
+
+class FormOption {
+  final String label;
+  final dynamic value;
+  FormOption({required this.label, required this.value});
+}
+
+class FormItem {
+  final String key; // Generated from question_text (e.g. "Personnel Name" -> "personnel_name")
+  final String label; // Mapped from "question_text"
+  final FormInputType type;
+  final bool required; // Mapped from "is_required"
+  final int orderIndex; // Mapped from "order_index"
+  final Map<String, dynamic> config; // Stores "dataSource", "minDate", etc.
+
+  FormItem({
+    required this.key,
+    required this.label,
+    required this.type,
+    this.required = true,
+    this.orderIndex = 0,
+    this.config = const {},
+  });
+
+  factory FormItem.fromJson(Map<String, dynamic> json) {
+    // 1. Generate a valid key for saving data since DB doesn't provide one
+    final String qText = json['question_text'] ?? 'unknown_field';
+    final String generatedKey = qText.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_');
+
+    // 2. Parse Type safely
+    FormInputType parseType(String? t) {
+      switch (t?.toLowerCase()) {
+        case 'text': return FormInputType.text;
+        case 'number': return FormInputType.number;
+        case 'date': return FormInputType.date;
+        case 'dropdown': return FormInputType.dropdown;
+        case 'radiomatrix': return FormInputType.radioMatrix;
+        case 'header': return FormInputType.header;
+        default: return FormInputType.unknown; // Fallback for safety
+      }
+    }
+
+    return FormItem(
+      key: generatedKey, 
+      label: qText,
+      type: parseType(json['type']),
+      required: json['is_required'] ?? false,
+      orderIndex: json['order_index'] ?? 0,
+      config: json['config'] ?? {}, 
+    );
+  }
+}
+
+class FormSection {
+  final String title;
+  final String? description;
+  final SectionLayout layout;
+  final List<FormItem> items;
+
+  FormSection({
+    required this.title,
+    this.description,
+    required this.layout,
+    required this.items,
+  });
+
+  factory FormSection.fromJson(Map<String, dynamic> json) {
+    // Determine layout based on title/content logic if DB doesn't have a layout column
+    // For now, we default to standard. You can add logic: if title contains "Rating", use matrix.
+    SectionLayout detectedLayout = SectionLayout.standard;
+    if (json['title'].toString().contains('Rating')) {
+      detectedLayout = SectionLayout.matrix;
+    }
+
+    // MAP "questions" to "items"
+    var questionsList = json['questions'] as List? ?? [];
+    
+    // Sort items by order_index just in case DB sends them out of order
+    var parsedItems = questionsList.map((e) => FormItem.fromJson(e)).toList();
+    parsedItems.sort((a, b) => a.orderIndex.compareTo(b.orderIndex));
+
+    return FormSection(
+      title: json['title'] ?? '',
+      description: json['description'],
+      layout: detectedLayout,
+      items: parsedItems,
+    );
+  }
+}

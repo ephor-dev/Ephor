@@ -325,4 +325,48 @@ class SupabaseService {
   Future<void> insertCatnaAssessment(Map<String, dynamic> payload) async {
     await _client.from('catna_assessments').insert(payload);
   }
+
+  // Form Things
+  Future<PostgrestMap> upsertForm(Map<String, dynamic> formData) async {
+    final response = await _client
+          .from('forms')
+          .upsert(formData)
+          .select() // Return the saved row
+          .single();
+    
+    return response;
+  }
+
+  Future<PostgrestMap?> getFormById(String formId) async {
+    final response = await _client
+      .from('forms')
+      .select()
+      .eq('id', formId)
+      .maybeSingle();
+    
+    return response;
+  }
+
+  Future<List<Map<String, dynamic>>> getAllForms() async {
+    final response = await _client
+      .from('forms')
+      .select()
+      .order('updated_at', ascending: false);
+    
+    return response;
+  }
+
+  Future<void> deleteForm(String formId) async {
+    await _client.from('forms').delete().eq('id', formId);
+  }
+
+  Future<PostgrestMap?> fetchActiveCatnaForm() async {
+    final response = await _client
+      .from('forms')
+      .select()
+      .eq('title', 'CATNA_TEST')
+      .maybeSingle();
+    
+    return response;
+  }
 }

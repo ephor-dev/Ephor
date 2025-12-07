@@ -2,6 +2,7 @@ import 'package:ephor/data/repositories/catna/abstract_catna_repository.dart';
 import 'package:ephor/data/services/supabase/supabase_service.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Repository for CATNA (Competency Assessment and Training Needs Analysis)
 /// assessments. Wraps low-level Supabase calls in a simple Result API.
@@ -25,23 +26,13 @@ class CatnaRepository extends AbstractCATNARepository {
     }
   }
   
-  @override
-  Result<void> keepInMemoryIdentifyingData(Map<String, dynamic> data) {
-    try {
-      identifyingData = data;
-      return Result.ok(null);
-    } on Error {
-      return Result.error(CustomMessageException("Can't save identifying data."));
+  Future<Result<PostgrestMap>> fetchActiveCatnaForm() async {
+    final result = await _supabaseService.fetchActiveCatnaForm();
+
+    if (result != null) {
+      return Result.ok(result);
     }
-  }
-  
-  @override
-  Result<void> keepInMemoryCompetencyRating(Map<String, dynamic> data) {
-    try {
-      competencyRatings = data;
-      return Result.ok(null);
-    } on Error {
-      return Result.error(CustomMessageException("Can't save identifying data."));
-    }
+
+    return Result.error(CustomMessageException("Can't fetch active CATNA form"));
   }
 }

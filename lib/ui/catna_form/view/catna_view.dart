@@ -1,6 +1,5 @@
 import 'package:ephor/routing/routes.dart';
-import 'package:ephor/ui/catna_form/view/widgets/catna_form1_view.dart';
-import 'package:ephor/ui/catna_form/view/widgets/catna_form2_view.dart';
+import 'package:ephor/ui/catna_form/view/widgets/catna_section_view.dart';
 import 'package:ephor/ui/catna_form/view/widgets/catna_start_view.dart';
 import 'package:ephor/ui/catna_form/view_model/catna_viewmodel.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
@@ -19,27 +18,19 @@ class CatnaView extends StatefulWidget {
 
 class _CatnaViewState extends State<CatnaView> {
   bool _isGoingBack = false;
-
-  List<Widget> get _steps => [
-    CatnaStartView(viewModel: widget.viewModel),
-    CatnaForm1View(viewModel: widget.viewModel),
-    CatnaForm2View(viewModel: widget.viewModel),
-  ];
+  late ValueKey<int> _currentKey;
 
   @override
   void initState() {
-    widget.viewModel.validateCurrentStep.addListener(_onCurrentStepValidated);
-    widget.viewModel.submitCatna.addListener(_onCatnaSubmitted);
     super.initState();
+    widget.viewModel.submitCatna.addListener(_onCatnaSubmitted);
+    widget.viewModel.addListener(_update);
+    _currentKey = ValueKey(widget.viewModel.currentIndex);
   }
 
-  @override void didUpdateWidget(covariant CatnaView oldWidget) {
+  @override
+  void didUpdateWidget(covariant CatnaView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.viewModel.validateCurrentStep != widget.viewModel.validateCurrentStep) {
-      oldWidget.viewModel.validateCurrentStep.removeListener(_onCurrentStepValidated);
-      widget.viewModel.validateCurrentStep.addListener(_onCurrentStepValidated);
-    }
-
     if (oldWidget.viewModel.submitCatna != widget.viewModel.submitCatna) {
       oldWidget.viewModel.submitCatna.removeListener(_onCatnaSubmitted);
       widget.viewModel.submitCatna.addListener(_onCatnaSubmitted);
@@ -48,37 +39,23 @@ class _CatnaViewState extends State<CatnaView> {
 
   @override
   void dispose() {
-    widget.viewModel.validateCurrentStep.removeListener(_onCurrentStepValidated);
     widget.viewModel.submitCatna.removeListener(_onCatnaSubmitted);
+    widget.viewModel.removeListener(_update);
     super.dispose();
   }
 
-  void _onCurrentStepValidated() {
-    if (widget.viewModel.validateCurrentStep.completed) {
-      widget.viewModel.validateCurrentStep.clearResult();
-      return;
-    }
-
-    if (widget.viewModel.validateCurrentStep.error) {
-      Error error = widget.viewModel.validateCurrentStep.result as Error;
-      CustomMessageException messageException = error.error as CustomMessageException;
-      widget.viewModel.validateCurrentStep.clearResult();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Validation Error: ${messageException.message}"),
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    }
+  void _update() {
+    setState(() {});
   }
 
   void _onCatnaSubmitted() {
     if (widget.viewModel.submitCatna.completed) {
       widget.viewModel.submitCatna.clearResult();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text("Successfully submitted CATNA."),
-          duration: const Duration(seconds: 3),
+          duration: Duration(seconds: 3),
+          backgroundColor: Colors.green,
         ),
       );
       context.go(Routes.getOverviewPath());
@@ -87,12 +64,14 @@ class _CatnaViewState extends State<CatnaView> {
 
     if (widget.viewModel.submitCatna.error) {
       Error error = widget.viewModel.submitCatna.result as Error;
-      CustomMessageException messageException = error.error as CustomMessageException;
+      CustomMessageException messageException =
+          error.error as CustomMessageException;
       widget.viewModel.submitCatna.clearResult();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Submission Error: ${messageException.message}"),
           duration: const Duration(seconds: 3),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
@@ -100,35 +79,52 @@ class _CatnaViewState extends State<CatnaView> {
 
   Future<void> _next() async {
     final int currentIndex = widget.viewModel.currentIndex;
-    
-    if (currentIndex == 1 || currentIndex == 2) {
-      widget.viewModel.validateCurrentStep.execute();
+    // Total steps = StartView + Number of Dynamic Sections
+    final int totalSteps = widget.viewModel.sections.length + 1; 
+
+    // 1. Validate current step (Skip validation if we are on the StartView at index 0)
+    if (currentIndex > 0) {
+      final result = await widget.viewModel.validateCurrentStep();
+      
+      if (result case Error(error: CustomMessageException ex)) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(ex.message),
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+      // Save draft data before moving on
+      widget.viewModel.saveStepData.execute();
     }
 
-    if (currentIndex == 1) {
-      widget.viewModel.saveIdentifyingData.execute();
-    } else if (currentIndex == 2) {
-      widget.viewModel.saveCompetencyRatings.execute();
-      await widget.viewModel.submitCatna.execute();
-    }
-
-    if (currentIndex < _steps.length - 1) {
+    // 2. Navigate or Submit
+    if (currentIndex < totalSteps - 1) {
       setState(() {
         _isGoingBack = false;
         widget.viewModel.currentIndex++;
+        _currentKey = ValueKey(widget.viewModel.currentIndex);
       });
+    } else {
+      // We are on the last step
+      widget.viewModel.submitCatna.execute();
     }
   }
 
   void _back() {
     final int currentIndex = widget.viewModel.currentIndex;
-    
+
     if (currentIndex > 0) {
       setState(() {
         _isGoingBack = true;
         widget.viewModel.currentIndex--;
+        _currentKey = ValueKey(widget.viewModel.currentIndex);
       });
     } else {
+      // Exit the form
       context.go(Routes.dashboard);
     }
   }
@@ -139,35 +135,53 @@ class _CatnaViewState extends State<CatnaView> {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Show Loading Indicator if JSON is being fetched
+    if (widget.viewModel.isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    // 2. Generate the list of widgets dynamically
+    final List<Widget> steps = [
+      CatnaStartView(viewModel: widget.viewModel), // Index 0
+      ...widget.viewModel.sections.map((section) => CatnaSectionView(
+            section: section,
+            viewModel: widget.viewModel,
+          )),
+    ];
+
     final int currentIndex = widget.viewModel.currentIndex;
-    final int totalSteps = _steps.length;
-    final bool isFirstPage = currentIndex == 0;
+    final int totalSteps = steps.length;
     final bool isLastPage = currentIndex == totalSteps - 1;
+    final bool isFirstPage = currentIndex == 0;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          currentIndex == 0 
-            ? 'CATNA Preparation' 
-            : 'Form $currentIndex'
+          currentIndex == 0
+              ? 'CATNA Preparation'
+              : 'Form Section $currentIndex', // Adjust title as needed
         ),
         leading: Center(
           child: SizedBox(
             width: 105,
             child: FilledButton.icon(
-              icon: Icon(Icons.arrow_back, size: 18), 
+              icon: const Icon(Icons.arrow_back, size: 18),
               label: Text(isFirstPage ? 'Cancel' : 'Back'),
-              style: isFirstPage 
-                ? FilledButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.onSurface,
-                    backgroundColor: Colors.transparent, 
-                    padding: EdgeInsets.zero, 
-                  )
-                : FilledButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
-                    backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                    padding: EdgeInsets.zero,
-                  ),
+              style: isFirstPage
+                  ? FilledButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.onSurface,
+                      backgroundColor: Colors.transparent,
+                      padding: EdgeInsets.zero,
+                    )
+                  : FilledButton.styleFrom(
+                      foregroundColor:
+                          Theme.of(context).colorScheme.onSecondaryContainer,
+                      backgroundColor:
+                          Theme.of(context).colorScheme.secondaryContainer,
+                      padding: EdgeInsets.zero,
+                    ),
               onPressed: _back,
             ),
           ),
@@ -179,13 +193,15 @@ class _CatnaViewState extends State<CatnaView> {
             child: SizedBox(
               width: 105,
               child: FilledButton.icon(
-                icon: Icon(isLastPage ? Icons.check : Icons.arrow_forward, size: 18),
+                icon: Icon(isLastPage ? Icons.check : Icons.arrow_forward,
+                    size: 18),
                 label: Text(isLastPage ? 'Submit' : 'Next'),
                 style: FilledButton.styleFrom(
                   backgroundColor: isLastPage ? Colors.green.shade700 : null,
                   padding: EdgeInsets.zero,
                 ),
-                onPressed: isLastPage ? _submit : _next, // Calls _submit or _next
+                onPressed:
+                    isLastPage ? _submit : _next, // Calls _submit or _next
               ),
             ),
           ),
@@ -196,21 +212,31 @@ class _CatnaViewState extends State<CatnaView> {
         switchInCurve: Curves.easeInOutCubic,
         switchOutCurve: Curves.easeInOutCubic,
         transitionBuilder: (Widget child, Animation<double> animation) {
-          final offset = _isGoingBack 
-              ? const Offset(-1.0, 0.0) 
-              : const Offset(1.0, 0.0);
+          // Identify if this specific 'child' is the one entering based on Key
+          final isEntering = child.key == _currentKey;
+
+          final Offset enterStart =
+              _isGoingBack ? const Offset(-1.0, 0.0) : const Offset(1.0, 0.0);
+          final Offset exitEnd =
+              _isGoingBack ? const Offset(1.0, 0.0) : const Offset(-1.0, 0.0);
 
           return SlideTransition(
             position: Tween<Offset>(
-              begin: offset,
+              begin: isEntering ? enterStart : exitEnd,
               end: Offset.zero,
             ).animate(animation),
             child: child,
           );
         },
         child: Container(
-          key: ValueKey<int>(currentIndex),
-          child: _steps[currentIndex],
+          // Key is crucial for AnimatedSwitcher to detect changes
+          key: _currentKey,
+          width: double.infinity,
+          height: double.infinity,
+          // Safety check: Ensure index is within bounds
+          child: steps.length > currentIndex
+              ? steps[currentIndex]
+              : const Center(child: Text("Error: Step index out of bounds")),
         ),
       ),
     );
