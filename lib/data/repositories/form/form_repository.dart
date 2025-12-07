@@ -108,4 +108,50 @@ class FormRepository extends AbstractFormRepository {
       );
     }
   }
+  
+  @override
+  Future<Result<PostgrestMap>> fetchActiveCatnaForm() async {
+    final result = await _supabaseService.fetchActiveCatnaForm();
+
+    if (result != null) {
+      return Result.ok(result);
+    }
+
+    return Result.error(CustomMessageException("Can't fetch active CATNA form"));
+  }
+
+  @override
+  Future<Result<PostgrestMap>> fetchActiveImpactAssessmentForm() async {
+    final result = await _supabaseService.fetchActiveImpactAssessmentForm();
+
+    if (result != null) {
+      return Result.ok(result);
+    }
+
+    return Result.error(CustomMessageException("Can't fetch active Impact Assessment form"));
+  }
+  
+  @override
+  Future<Result<void>> submitCatna(Map<String, dynamic> payload) async {
+    try {
+      await _supabaseService.insertCatnaAssessment(payload);
+      return const Result.ok(null);
+    } catch (e) {
+      return Result.error(
+        CustomMessageException('Failed to submit CATNA assessment: $e'),
+      );
+    }
+  }
+
+  @override
+  Future<Result<void>> submitImpactAssessment(Map<String, dynamic> payload) async {
+    try {
+      await _supabaseService.insertImpactAssessment(payload);
+      return const Result.ok(null);
+    } catch (e) {
+      return Result.error(
+        CustomMessageException('Failed to submit Impact assessment: $e'),
+      );
+    }
+  }
 }

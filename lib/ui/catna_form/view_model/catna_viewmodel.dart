@@ -1,6 +1,6 @@
 import 'package:ephor/data/repositories/auth/auth_repository.dart';
-import 'package:ephor/data/repositories/catna/catna_repository.dart';
 import 'package:ephor/data/repositories/employee/employee_repository.dart';
+import 'package:ephor/data/repositories/form/form_repository.dart';
 import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/domain/lists/designation_choices.dart';
 import 'package:ephor/domain/lists/office_choices.dart';
@@ -33,9 +33,9 @@ class CatnaViewModel extends ChangeNotifier {
   List<EmployeeModel> _departmentEmployees = [];
   List<EmployeeModel> get departmentEmployees => _departmentEmployees;
 
-  final CatnaRepository _catnaRepository;
   final AuthRepository _authRepository;
   final EmployeeRepository _employeeRepository;
+  final FormRepository _formRepository;
 
   final List<String> _offices = officeChoices;
   final List<String> _designations = designationChoices;
@@ -46,10 +46,10 @@ class CatnaViewModel extends ChangeNotifier {
   late CommandNoArgs saveStepData;
 
   CatnaViewModel({
-    required CatnaRepository catnaRepository,
+    required FormRepository formRepository,
     required AuthRepository authRepository,
     required EmployeeRepository employeeRepository,
-  })  : _catnaRepository = catnaRepository,
+  })  : _formRepository = formRepository,
         _authRepository = authRepository,
         _employeeRepository = employeeRepository {
     
@@ -88,7 +88,7 @@ class CatnaViewModel extends ChangeNotifier {
   }
 
   Future<void> _loadFormDefinition() async {
-    final result = await _catnaRepository.fetchActiveCatnaForm();
+    final result = await _formRepository.fetchActiveCatnaForm();
     if (result case Ok(value: final jsonMap)) {
       try {
         final rawSections = jsonMap['sections'] as List? ?? [];
@@ -259,7 +259,7 @@ class CatnaViewModel extends ChangeNotifier {
     };
 
     try {
-      final result = await _catnaRepository.submitAssessment(payload);
+      final result = await _formRepository.submitCatna(payload);
       return result;
     } catch (e) {
       return Result.error(CustomMessageException("Submission failed: $e"));
