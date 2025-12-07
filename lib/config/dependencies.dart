@@ -1,8 +1,7 @@
 import 'package:ephor/data/repositories/auth/auth_repository.dart';
 import 'package:ephor/data/repositories/catna/catna_repository.dart';
 import 'package:ephor/data/repositories/employee/employee_repository.dart';
-import 'package:ephor/data/repositories/form/abstract_form_repository.dart';
-import 'package:ephor/data/repositories/form/mock_form_repository.dart';
+import 'package:ephor/data/repositories/form/form_repository.dart';
 import 'package:ephor/data/repositories/shared_prefs/abstract_prefs_repository.dart';
 import 'package:ephor/data/repositories/shared_prefs/prefs_repository.dart';
 import 'package:ephor/data/services/shared_prefs/prefs_service.dart';
@@ -30,8 +29,10 @@ List<SingleChildWidget> get providers {
           supabaseService: context.read()
         )
     ),
-    Provider<IFormRepository>(
-      create: (context) => MockFormRepository(),
+    ChangeNotifierProvider<FormRepository>(
+      create: (context) => FormRepository(
+        supabaseService: context.read()
+      ),
     ),
     ChangeNotifierProvider(
       create: (context) =>

@@ -1,27 +1,25 @@
 // ui/my_forms/view/my_forms_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:ephor/ui/my_forms/view_model/my_forms_view_model.dart';
+import 'package:ephor/ui/forms_management/view_model/forms_view_model.dart';
 import 'package:ephor/domain/models/form_creator/form_model.dart';
 import 'package:ephor/utils/responsiveness.dart';
-import 'package:ephor/utils/results.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ephor/routing/routes.dart';
 
-class MyFormsView extends StatefulWidget {
-  final MyFormsViewModel viewModel;
+class FormsView extends StatefulWidget {
+  final FormsViewModel viewModel;
   
-  const MyFormsView({super.key, required this.viewModel});
+  const FormsView({super.key, required this.viewModel});
 
   @override
-  State<MyFormsView> createState() => _MyFormsViewState();
+  State<FormsView> createState() => _FormsViewState();
 }
 
-class _MyFormsViewState extends State<MyFormsView> {
-  // Material 3 Color Scheme - Red Theme (matching app theme)
-  Color get primaryColor => Theme.of(context).colorScheme.primary; // Primary Red (matches app theme)
-  Color get primaryContainerColor => Theme.of(context).colorScheme.surfaceContainer; // Light Red Container
-  Color get onPrimaryContainerColor => Theme.of(context).colorScheme.primaryFixedDim; // Dark Red
+class _FormsViewState extends State<FormsView> {
+  Color get primaryColor => Theme.of(context).colorScheme.primary;
+  Color get primaryContainerColor => Theme.of(context).colorScheme.surfaceContainer;
+  Color get onPrimaryContainerColor => Theme.of(context).colorScheme.primaryFixedDim;
   Color get surfaceColor => Theme.of(context).colorScheme.surfaceContainerLowest;
   Color get surfaceVariantColor => Theme.of(context).colorScheme.surfaceContainerLow;
   Color get onSurfaceColor => Theme.of(context).colorScheme.onSurface;
@@ -32,7 +30,6 @@ class _MyFormsViewState extends State<MyFormsView> {
   @override
   void initState() {
     super.initState();
-    // Load forms when screen opens
     widget.viewModel.loadForms();
   }
   
@@ -53,7 +50,6 @@ class _MyFormsViewState extends State<MyFormsView> {
           backgroundColor: surfaceVariantColor,
           appBar: _buildAppBar(context),
           body: _buildBody(context, isMobile),
-          floatingActionButton: _buildCreateFormButton(context),
         );
       },
     );
@@ -70,20 +66,12 @@ class _MyFormsViewState extends State<MyFormsView> {
         tooltip: 'Back to Dashboard',
       ),
       title: Text(
-        'My Forms',
+        'Forms Management',
         style: Theme.of(context).textTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.w600,
           color: onSurfaceColor,
         ),
       ),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.refresh, color: onSurfaceColor),
-          onPressed: widget.viewModel.refresh,
-          tooltip: 'Refresh',
-        ),
-        const SizedBox(width: 8),
-      ],
     );
   }
   
@@ -115,10 +103,6 @@ class _MyFormsViewState extends State<MyFormsView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Stats Card
-                          _buildStatsCard(context, isMobile),
-                          const SizedBox(height: 24),
-                          
                           // Forms List
                           ...widget.viewModel.forms.map((form) => _buildFormCard(context, form, isMobile)),
                         ],
@@ -126,58 +110,6 @@ class _MyFormsViewState extends State<MyFormsView> {
                     ),
                   ),
                 ),
-    );
-  }
-  
-  Widget _buildStatsCard(BuildContext context, bool isMobile) {
-    final totalForms = widget.viewModel.forms.length;
-    final publishedCount = widget.viewModel.publishedForms.length;
-    final draftCount = widget.viewModel.draftForms.length;
-    
-    return Card(
-      elevation: 1,
-      color: primaryContainerColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildStatItem(Icons.description, totalForms.toString(), 'Total Forms'),
-            Container(width: 1, height: 40, color: onPrimaryContainerColor.withValues(alpha: onPrimaryContainerColor.a * 0.2)),
-            _buildStatItem(Icons.cloud_done, publishedCount.toString(), 'Published'),
-            Container(width: 1, height: 40, color: onPrimaryContainerColor.withValues(alpha: onPrimaryContainerColor.a * 0.2)),
-            _buildStatItem(Icons.edit_document, draftCount.toString(), 'Drafts'),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildStatItem(IconData icon, String value, String label) {
-    return Column(
-      children: [
-        Icon(icon, color: onPrimaryContainerColor, size: 32),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: onPrimaryContainerColor,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: onPrimaryContainerColor,
-          ),
-        ),
-      ],
     );
   }
   
@@ -212,9 +144,14 @@ class _MyFormsViewState extends State<MyFormsView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header: Title and Status
             Row(
               children: [
+                Icon(
+                  Icons.assessment_outlined,
+                  size: 64,
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                ),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,8 +175,6 @@ class _MyFormsViewState extends State<MyFormsView> {
                     ],
                   ),
                 ),
-                const SizedBox(width: 16),
-                _buildStatusBadge(form),
               ],
             ),
             
@@ -296,36 +231,6 @@ class _MyFormsViewState extends State<MyFormsView> {
                     ),
                   ),
                 ),
-                
-                // View Responses Button (only for published forms)
-                if (form.isPublished)
-                  FilledButton.icon(
-                    onPressed: () => _handleViewResponses(context, form),
-                    icon: const Icon(Icons.bar_chart, size: 16),
-                    label: const Text('View Responses'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                
-                // Delete Button
-                OutlinedButton.icon(
-                  onPressed: () => _handleDeleteForm(context, form),
-                  icon: const Icon(Icons.delete_outline, size: 16),
-                  label: const Text('Delete'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: errorColor,
-                    side: BorderSide(color: errorColor.withValues(alpha: errorColor.a * 0.5)),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
               ],
             ),
           ],
@@ -333,40 +238,7 @@ class _MyFormsViewState extends State<MyFormsView> {
       ),
     );
   }
-  
-  Widget _buildStatusBadge(FormModel form) {
-    final isPublished = form.isPublished;
-    
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isPublished ? Colors.green.shade50 : Colors.orange.shade50,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isPublished ? Colors.green.shade200 : Colors.orange.shade200,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isPublished ? Icons.cloud_done : Icons.edit_document,
-            size: 16,
-            color: isPublished ? Colors.green.shade700 : Colors.orange.shade700,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            isPublished ? 'Published' : 'Draft',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: isPublished ? Colors.green.shade700 : Colors.orange.shade700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
   
   Widget _buildEmptyState(BuildContext context) {
     return SingleChildScrollView(
@@ -399,16 +271,6 @@ class _MyFormsViewState extends State<MyFormsView> {
                     color: onSurfaceVariantColor,
                   ),
                   textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                FilledButton.icon(
-                  onPressed: () => _handleCreateForm(context),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Create Form'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  ),
                 ),
               ],
             ),
@@ -468,128 +330,13 @@ class _MyFormsViewState extends State<MyFormsView> {
     );
   }
   
-  Widget _buildCreateFormButton(BuildContext context) {
-    return FloatingActionButton.extended(
-      onPressed: () => _handleCreateForm(context),
-      icon: const Icon(Icons.add),
-      label: const Text('Create Form'),
-      backgroundColor: primaryColor,
-      foregroundColor: Colors.white,
-      elevation: 4,
-    );
-  }
-  
   // ============================================
   // ACTION HANDLERS
   // ============================================
   
-  void _handleCreateForm(BuildContext context) {
-    context.go(Routes.getCatnaFormEditorPath());
-  }
-  
   void _handleEditForm(BuildContext context, FormModel form) {
     // Navigate to form editor with form ID to load existing form
     context.go(Routes.getCatnaFormEditorPath(formId: form.id));
-  }
-  
-  void _handleViewResponses(BuildContext context, FormModel form) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('View responses for "${form.title}" - Coming soon!'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-  
-  void _handleDeleteForm(BuildContext context, FormModel form) async {
-    // Show confirmation dialog
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: errorColor),
-            const SizedBox(width: 12),
-            const Text('Delete Form?'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Are you sure you want to delete "${form.title}"?',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 12),
-            if (form.responseCount > 0)
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.shade200),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_outline, color: Colors.orange, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'This form has ${form.responseCount} responses. All data will be lost.',
-                        style: const TextStyle(
-                          color: Colors.orange,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: errorColor,
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-    
-    if (confirmed != true || !context.mounted) return;
-    
-    // Delete form
-    final result = await widget.viewModel.deleteForm(form.id);
-    
-    if (!context.mounted) return;
-    
-    switch (result) {
-      case Ok<void>():
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Form deleted successfully'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        
-      case Error<void>(:final error):
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to delete: ${error.toString()}'),
-            backgroundColor: errorColor,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-    }
   }
 }
 

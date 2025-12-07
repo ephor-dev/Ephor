@@ -1,5 +1,5 @@
+import 'package:ephor/data/repositories/form/form_repository.dart';
 import 'package:flutter/material.dart';
-import 'package:ephor/data/repositories/form/abstract_form_repository.dart';
 import 'package:ephor/data/repositories/auth/abstract_auth_repository.dart';
 import 'package:ephor/domain/models/form_creator/form_model.dart';
 import 'package:ephor/domain/models/form_creator/section_model.dart';
@@ -9,12 +9,12 @@ import 'package:ephor/utils/results.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 
 class CatnaFormCreatorViewModel extends ChangeNotifier {
-  final IFormRepository _formRepository;
+  final FormRepository _formRepository;
   final AbstractAuthRepository _authRepository;
   final String? _formIdToLoad;
   
   CatnaFormCreatorViewModel({
-    required IFormRepository formRepository,
+    required FormRepository formRepository,
     required AbstractAuthRepository authRepository,
     String? formIdToLoad,
   }) : _formRepository = formRepository,

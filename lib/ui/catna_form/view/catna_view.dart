@@ -19,6 +19,7 @@ class CatnaView extends StatefulWidget {
 
 class _CatnaViewState extends State<CatnaView> {
   bool _isGoingBack = false;
+  late ValueKey<int> _currentKey;
 
   List<Widget> get _steps => [
     CatnaStartView(viewModel: widget.viewModel),
@@ -28,18 +29,13 @@ class _CatnaViewState extends State<CatnaView> {
 
   @override
   void initState() {
-    widget.viewModel.validateCurrentStep.addListener(_onCurrentStepValidated);
     widget.viewModel.submitCatna.addListener(_onCatnaSubmitted);
+    _currentKey = ValueKey(widget.viewModel.currentIndex);
     super.initState();
   }
 
   @override void didUpdateWidget(covariant CatnaView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.viewModel.validateCurrentStep != widget.viewModel.validateCurrentStep) {
-      oldWidget.viewModel.validateCurrentStep.removeListener(_onCurrentStepValidated);
-      widget.viewModel.validateCurrentStep.addListener(_onCurrentStepValidated);
-    }
-
     if (oldWidget.viewModel.submitCatna != widget.viewModel.submitCatna) {
       oldWidget.viewModel.submitCatna.removeListener(_onCatnaSubmitted);
       widget.viewModel.submitCatna.addListener(_onCatnaSubmitted);
@@ -48,28 +44,8 @@ class _CatnaViewState extends State<CatnaView> {
 
   @override
   void dispose() {
-    widget.viewModel.validateCurrentStep.removeListener(_onCurrentStepValidated);
     widget.viewModel.submitCatna.removeListener(_onCatnaSubmitted);
     super.dispose();
-  }
-
-  void _onCurrentStepValidated() {
-    if (widget.viewModel.validateCurrentStep.completed) {
-      widget.viewModel.validateCurrentStep.clearResult();
-      return;
-    }
-
-    if (widget.viewModel.validateCurrentStep.error) {
-      Error error = widget.viewModel.validateCurrentStep.result as Error;
-      CustomMessageException messageException = error.error as CustomMessageException;
-      widget.viewModel.validateCurrentStep.clearResult();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Validation Error: ${messageException.message}"),
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    }
   }
 
   void _onCatnaSubmitted() {
@@ -99,10 +75,22 @@ class _CatnaViewState extends State<CatnaView> {
   }
 
   Future<void> _next() async {
+    if (!mounted) return;
+
     final int currentIndex = widget.viewModel.currentIndex;
     
     if (currentIndex == 1 || currentIndex == 2) {
-      widget.viewModel.validateCurrentStep.execute();
+      final result = await widget.viewModel.validateCurrentStep();
+      if (result case Error(error: CustomMessageException exception)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Validation Error: ${exception.message}"),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+
+        return;
+      }
     }
 
     if (currentIndex == 1) {
@@ -116,6 +104,7 @@ class _CatnaViewState extends State<CatnaView> {
       setState(() {
         _isGoingBack = false;
         widget.viewModel.currentIndex++;
+        _currentKey = ValueKey(widget.viewModel.currentIndex);
       });
     }
   }
@@ -127,6 +116,7 @@ class _CatnaViewState extends State<CatnaView> {
       setState(() {
         _isGoingBack = true;
         widget.viewModel.currentIndex--;
+        _currentKey = ValueKey(widget.viewModel.currentIndex);
       });
     } else {
       context.go(Routes.dashboard);
@@ -196,20 +186,31 @@ class _CatnaViewState extends State<CatnaView> {
         switchInCurve: Curves.easeInOutCubic,
         switchOutCurve: Curves.easeInOutCubic,
         transitionBuilder: (Widget child, Animation<double> animation) {
-          final offset = _isGoingBack 
-              ? const Offset(-1.0, 0.0) 
-              : const Offset(1.0, 0.0);
+          // 2. Determine if this specific 'child' is the one entering or exiting.
+          // The 'entering' child always matches the key you currently hold in your state.
+          final isEntering = child.key == _currentKey; 
 
+          // 3. Define the offsets based on direction
+          // If Back: New comes from LEFT (-1), Old goes to RIGHT (1)
+          // If Next: New comes from RIGHT (1), Old goes to LEFT (-1)
+          final Offset enterStart = _isGoingBack ? const Offset(-1.0, 0.0) : const Offset(1.0, 0.0);
+          final Offset exitEnd    = _isGoingBack ? const Offset(1.0, 0.0)  : const Offset(-1.0, 0.0);
+
+          // 4. Apply the SlideTransition
+          // AnimatedSwitcher runs the animation 0.0 -> 1.0 for Entering.
+          // It runs 1.0 -> 0.0 for Exiting.
           return SlideTransition(
             position: Tween<Offset>(
-              begin: offset,
+              // If entering: slide FROM start TO zero.
+              // If exiting:  slide FROM end   TO zero (since it runs in reverse, it looks like Zero -> End)
+              begin: isEntering ? enterStart : exitEnd,
               end: Offset.zero,
             ).animate(animation),
             child: child,
           );
         },
         child: Container(
-          key: ValueKey<int>(currentIndex),
+          key: _currentKey,
           child: _steps[currentIndex],
         ),
       ),

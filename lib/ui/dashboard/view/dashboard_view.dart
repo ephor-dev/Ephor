@@ -28,8 +28,7 @@ class _DashboardViewState extends State<DashboardView> {
   final List<Map<String, dynamic>> menuItems = [
     {'title': 'Overview', 'icon': Icons.description_outlined, 'selected': true, 'path': Routes.dashboardOverview},
     {'title': 'Employee List', 'icon': Icons.list, 'selected': false, 'path': Routes.dashboardEmployeeList},
-    {'title': 'CATNA Form Editor', 'icon': Icons.note_add_outlined, 'selected': false, 'path': Routes.dashboardCatnaFormEditor},
-    {'title': 'IA Form Editor', 'icon': Icons.note_add_outlined, 'selected': false, 'path': Routes.dashboardIAFormEditor},
+    {'title': 'Forms Management', 'icon': Icons.assessment_outlined, 'selected': false, 'path': Routes.dashboardMyForms},
     {'title': 'CATNA Forms', 'icon': Icons.assessment_outlined, 'selected': false, 'path': Routes.dashboardCatnaForms},
     {'title': 'Upcoming Schedules', 'icon': Icons.schedule_outlined, 'selected': false, 'path': Routes.dashboardSchedules},
     {'title': 'Finished Assessments', 'icon': Icons.check_box_outlined, 'selected': false, 'path': Routes.dashboardAssessments},
@@ -115,9 +114,8 @@ class _DashboardViewState extends State<DashboardView> {
         EmployeeRole? currentUserRole = widget.viewModel.currentUser.value?.role;
         if (currentUserRole != null ) {
           if (currentUserRole == EmployeeRole.supervisor 
-            && (item['path'] == Routes.dashboardCatnaFormEditor 
-              || item['path'] == Routes.dashboardIAFormEditor)) {
-                return const SizedBox.shrink();
+            && item['path'] == Routes.dashboardMyForms) {
+              return const SizedBox.shrink();
           } else if (currentUserRole == EmployeeRole.humanResource
             && item['path'] == Routes.dashboardCatnaForms) {
               return const SizedBox.shrink();

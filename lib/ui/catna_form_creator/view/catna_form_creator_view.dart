@@ -123,7 +123,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
       surfaceTintColor: Colors.transparent,
         leading: IconButton(
         icon: Icon(Icons.arrow_back, color: onSurfaceColor),
-          onPressed: () => context.go(Routes.getOverviewPath()),
+          onPressed: () => context.go(Routes.getMyFormsPath()),
         tooltip: 'Back to Dashboard',
       ),
       title: Text(

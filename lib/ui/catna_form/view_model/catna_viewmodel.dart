@@ -92,7 +92,6 @@ class CatnaViewModel extends ChangeNotifier {
   final CatnaRepository _catnaRepository;
   final EmployeeRepository _employeeRepository;
 
-  late CommandNoArgs validateCurrentStep;
   late CommandNoArgs saveIdentifyingData;
   late CommandNoArgs saveCompetencyRatings;
   late CommandNoArgs submitCatna;
@@ -107,7 +106,6 @@ class CatnaViewModel extends ChangeNotifier {
        _employeeRepository = employeeRepository {
     _loadEmployees();
 
-    validateCurrentStep = CommandNoArgs<String?>(_validateCurrentStep);
     saveIdentifyingData = CommandNoArgs<void>(_saveIdentifyingData);
     saveCompetencyRatings = CommandNoArgs<void>(_saveCompetencyRatings);
     submitCatna = CommandNoArgs(_submitCatna);
@@ -361,7 +359,7 @@ class CatnaViewModel extends ChangeNotifier {
   // --- Validation Logic ---
 
   /// Main validation router that checks the current page
-  Future<Result<String?>> _validateCurrentStep() async {
+  Future<Result<String?>> validateCurrentStep() async {
     if (_currentIndex == 1) {
       final check1 = _validateIdentifyingData();
       if (check1 != null) {

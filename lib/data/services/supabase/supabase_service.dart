@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:ephor/data/services/shared_prefs/prefs_service.dart';
+import 'package:ephor/domain/models/form_creator/form_enums.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ephor/domain/models/employee/employee.dart'; // Ensure this model is available
@@ -324,5 +325,67 @@ class SupabaseService {
 
   Future<void> insertCatnaAssessment(Map<String, dynamic> payload) async {
     await _client.from('catna_assessments').insert(payload);
+  }
+
+  // Form Things
+  Future<PostgrestMap> upsertForm(Map<String, dynamic> formData) async {
+    final response = await _client
+          .from('forms')
+          .upsert(formData)
+          .select() // Return the saved row
+          .single();
+    
+    return response;
+  }
+
+  Future<PostgrestMap> publishForm(String id) async {
+    final response = await _client
+      .from('forms')
+      .update({
+        'status': FormStatus.published.name, // or .toShortString() depending on your enum setup
+        'updated_at': DateTime.now().toIso8601String(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    return response;
+  }
+
+  Future<PostgrestMap> unpublishForm(String id) async {
+    final response = await _client
+      .from('forms')
+      .update({
+        'status': FormStatus.draft.name,
+        'updated_at': DateTime.now().toIso8601String(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    return response;
+  }
+
+  Future<PostgrestMap?> getFormById(String formId) async {
+    final response = await _client
+      .from('forms')
+      .select()
+      .eq('id', formId)
+      .maybeSingle();
+    
+    return response;
+  }
+
+  Future<List<Map<String, dynamic>>> getAllForms() async {
+    final response = await _client
+      .from('forms')
+      .select()
+      .order('updated_at', ascending: false);
+    
+    return response;
+  }
+
+  Future<void> deleteForm(String formId) async {
+    await _client.from('forms').delete().eq('id', formId);
   }
 }

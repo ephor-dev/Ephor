@@ -1,7 +1,7 @@
 // ui/my_forms/view_model/my_forms_view_model.dart
 
+import 'package:ephor/data/repositories/form/form_repository.dart';
 import 'package:flutter/foundation.dart';
-import 'package:ephor/data/repositories/form/abstract_form_repository.dart';
 import 'package:ephor/domain/models/form_creator/form_model.dart';
 import 'package:ephor/utils/results.dart';
 
@@ -9,8 +9,8 @@ import 'package:ephor/utils/results.dart';
 /// 
 /// Manages the list of all forms (drafts + published) and provides
 /// actions for each form (edit, view responses, delete).
-class MyFormsViewModel extends ChangeNotifier {
-  final IFormRepository _formRepository;
+class FormsViewModel extends ChangeNotifier {
+  final FormRepository _formRepository;
   
   // State
   List<FormModel> _forms = [];
@@ -28,7 +28,7 @@ class MyFormsViewModel extends ChangeNotifier {
   List<FormModel> get draftForms => _forms.where((f) => f.isDraft).toList();
   List<FormModel> get publishedForms => _forms.where((f) => f.isPublished).toList();
   
-  MyFormsViewModel({required IFormRepository formRepository})
+  FormsViewModel({required FormRepository formRepository})
       : _formRepository = formRepository;
   
   // ============================================
