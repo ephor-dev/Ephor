@@ -1,6 +1,6 @@
 // domain/models/form/question_model.dart
 
-import 'package:ephor/domain/models/form_creator/form_enums.dart';
+import 'package:ephor/domain/models/form_editor/form_enums.dart';
 import 'package:flutter/foundation.dart';
 
 @immutable

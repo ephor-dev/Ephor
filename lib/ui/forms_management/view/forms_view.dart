@@ -1,8 +1,6 @@
-// ui/my_forms/view/my_forms_view.dart
-
 import 'package:flutter/material.dart';
 import 'package:ephor/ui/forms_management/view_model/forms_view_model.dart';
-import 'package:ephor/domain/models/form_creator/form_model.dart';
+import 'package:ephor/domain/models/form_editor/form_model.dart';
 import 'package:ephor/utils/responsiveness.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ephor/routing/routes.dart';
@@ -85,32 +83,28 @@ class _FormsViewState extends State<FormsView> {
     }
     
     // Wrap all states in RefreshIndicator
-    return RefreshIndicator(
-      onRefresh: widget.viewModel.refresh,
-      color: primaryColor,
-      child: widget.viewModel.hasError
-          ? _buildErrorState(context)
-          : !widget.viewModel.hasForms
-              ? _buildEmptyState(context)
-              : SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.all(isMobile ? 16.0 : 24.0),
-                  child: Center(
-                    child: Container(
-                      constraints: BoxConstraints(
-                        maxWidth: isMobile ? double.infinity : 1000,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Forms List
-                          ...widget.viewModel.forms.map((form) => _buildFormCard(context, form, isMobile)),
-                        ],
-                      ),
+    return widget.viewModel.hasError
+        ? _buildErrorState(context)
+        : !widget.viewModel.hasForms
+            ? _buildEmptyState(context)
+            : SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.all(isMobile ? 16.0 : 24.0),
+                child: Center(
+                  child: Container(
+                    constraints: BoxConstraints(
+                      maxWidth: isMobile ? double.infinity : 1000,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Forms List
+                        ...widget.viewModel.forms.map((form) => _buildFormCard(context, form, isMobile)),
+                      ],
                     ),
                   ),
                 ),
-    );
+              );
   }
   
   Widget _buildFormCard(BuildContext context, FormModel form, bool isMobile) {
@@ -195,18 +189,6 @@ class _FormsViewState extends State<FormsView> {
                   ),
                 ),
                 const Spacer(),
-                if (form.isPublished) ...[
-                  Icon(Icons.people, size: 16, color: onSurfaceVariantColor),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${form.responseCount} responses',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: onSurfaceVariantColor,
-                    ),
-                  ),
-                ],
               ],
             ),
             
@@ -313,15 +295,6 @@ class _FormsViewState extends State<FormsView> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
-                FilledButton.icon(
-                  onPressed: widget.viewModel.refresh,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Retry'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  ),
-                ),
               ],
             ),
           ),
@@ -330,12 +303,7 @@ class _FormsViewState extends State<FormsView> {
     );
   }
   
-  // ============================================
-  // ACTION HANDLERS
-  // ============================================
-  
   void _handleEditForm(BuildContext context, FormModel form) {
-    // Navigate to form editor with form ID to load existing form
     context.go(Routes.getCatnaFormEditorPath(formId: form.id));
   }
 }

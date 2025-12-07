@@ -1,6 +1,6 @@
 // domain/models/form/section_model.dart
 
-import 'package:ephor/domain/models/form_creator/question_model.dart';
+import 'package:ephor/domain/models/form_editor/question_model.dart';
 import 'package:flutter/foundation.dart';
 
 @immutable

@@ -1,10 +1,10 @@
 import 'package:ephor/data/repositories/form/form_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:ephor/data/repositories/auth/abstract_auth_repository.dart';
-import 'package:ephor/domain/models/form_creator/form_model.dart';
-import 'package:ephor/domain/models/form_creator/section_model.dart';
-import 'package:ephor/domain/models/form_creator/question_model.dart';
-import 'package:ephor/domain/models/form_creator/form_enums.dart';
+import 'package:ephor/domain/models/form_editor/form_model.dart';
+import 'package:ephor/domain/models/form_editor/section_model.dart';
+import 'package:ephor/domain/models/form_editor/question_model.dart';
+import 'package:ephor/domain/models/form_editor/form_enums.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 
@@ -52,9 +52,6 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
   bool _isSaving = false;
   bool get isSaving => _isSaving;
   
-  bool _isPublishing = false;
-  bool get isPublishing => _isPublishing;
-  
   bool _isLoading = false;
   bool get isLoading => _isLoading;
   
@@ -64,13 +61,6 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
   
   String? _validationError;
   String? get validationError => _validationError;
-  
-  // Status flags
-  FormStatus _formStatus = FormStatus.draft;
-  FormStatus get formStatus => _formStatus;
-  
-  bool _isPublished = false;
-  bool get isPublished => _isPublished;
   
   void _initializeForm() {
     if (_formIdToLoad != null) {
@@ -129,10 +119,6 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
             
             _sections.add(uiSection);
           }
-          
-          // Update status
-          _isPublished = form.isPublished;
-          _formStatus = form.status;
           
           _isLoading = false;
           notifyListeners();
@@ -522,8 +508,6 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
         case Ok<FormModel>(:final value):
           // Update local state with saved form (including new ID)
           _currentForm = value;
-          _formStatus = value.status;
-          _isPublished = value.isPublished;
           
           _isSaving = false;
           _isLoading = false;
@@ -546,141 +530,6 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
         CustomMessageException(_errorMessage!)
       );
     }
-  }
-  
-  // ============================================
-  // PUBLISH FORM - Function 2
-  // ============================================
-  
-  /// Validates and publishes the form.
-  /// 
-  /// Pre-publish validation:
-  /// - Title must not be empty
-  /// - At least one section with questions
-  /// - Form must be saved first
-  Future<Result<FormModel>> publishForm() async {
-    // Step 1: Validation
-    if (!_validateFormForPublish()) {
-      return Result.error(
-        CustomMessageException(_validationError ?? 'Form validation failed')
-      );
-    }
-    
-    _isPublishing = true;
-    _validationError = null;
-    notifyListeners();
-    
-    try {
-      // Step 2: Save form first to ensure latest edits are persisted
-      if (_currentForm == null || _currentForm!.id.isEmpty) {
-        final saveResult = await saveForm();
-        if (saveResult is Error) {
-          _isPublishing = false;
-          notifyListeners();
-          return saveResult;
-        }
-      } else {
-        // Even if form exists, save latest changes
-        final saveResult = await saveForm();
-        if (saveResult is Error) {
-          _isPublishing = false;
-          notifyListeners();
-          return saveResult;
-        }
-      }
-      
-      // Step 3: Publish via repository
-      final result = await _formRepository.publishForm(_currentForm!.id);
-      
-      switch (result) {
-        case Ok<FormModel>(:final value):
-          _currentForm = value;
-          _formStatus = FormStatus.published;
-          _isPublished = true;
-          _isPublishing = false;
-          notifyListeners();
-          return Result.ok(value);
-          
-        case Error<FormModel>(:final error):
-          _validationError = error.toString();
-          _isPublishing = false;
-          notifyListeners();
-          return Result.error(error);
-      }
-    } catch (e) {
-      _validationError = 'Unexpected error: ${e.toString()}';
-      _isPublishing = false;
-      notifyListeners();
-      return Result.error(
-        CustomMessageException(_validationError!)
-      );
-    }
-  }
-  
-  /// Unpublishes the form (sets back to draft).
-  Future<Result<FormModel>> unpublishForm() async {
-    // Validation: Form must exist and be saved
-    if (_currentForm == null || _currentForm!.id.isEmpty) {
-      return Result.error(
-        CustomMessageException('Form must be saved before unpublishing')
-      );
-    }
-    
-    _isPublishing = true;
-    _validationError = null;
-    notifyListeners();
-    
-    try {
-      final result = await _formRepository.unpublishForm(_currentForm!.id);
-      
-      switch (result) {
-        case Ok<FormModel>(:final value):
-          _currentForm = value;
-          _formStatus = FormStatus.draft;
-          _isPublished = false;
-          _isPublishing = false;
-          notifyListeners();
-          return Result.ok(value);
-          
-        case Error<FormModel>(:final error):
-          _validationError = error.toString();
-          _isPublishing = false;
-          notifyListeners();
-          return Result.error(error);
-      }
-    } catch (e) {
-      _validationError = 'Unexpected error: ${e.toString()}';
-      _isPublishing = false;
-      notifyListeners();
-      return Result.error(
-        CustomMessageException(_validationError!)
-      );
-    }
-  }
-  
-  /// Business logic: Validates if form can be published.
-  bool _validateFormForPublish() {
-    if (titleController.text.trim().isEmpty) {
-      _validationError = 'Form title is required';
-      return false;
-    }
-    
-    if (_sections.isEmpty) {
-      _validationError = 'Form must have at least one section';
-      return false;
-    }
-    
-    final hasQuestions = _sections.any((section) {
-      final questions = section['questions'] as List;
-      return questions.isNotEmpty;
-    });
-    
-    if (!hasQuestions) {
-      _validationError = 'Form must have at least one question';
-      return false;
-    }
-    
-    return true;
   }
   
   // ============================================
@@ -725,12 +574,9 @@ class CatnaFormCreatorViewModel extends ChangeNotifier {
       id: _currentForm?.id,  // Preserve existing ID if updating
       title: titleController.text.trim(),
       description: descriptionController.text.trim(),
-      status: _formStatus,
       sections: sectionModels,
       createdAt: _currentForm?.createdAt ?? DateTime.now(),
       updatedAt: DateTime.now(),
-      createdBy: _authRepository.currentUser?.userId ?? '',
-      responseCount: _currentForm?.responseCount ?? 0,
     );
   }
   

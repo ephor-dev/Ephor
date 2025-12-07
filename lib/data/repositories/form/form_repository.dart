@@ -1,6 +1,6 @@
 import 'package:ephor/data/repositories/form/abstract_form_repository.dart';
 import 'package:ephor/data/services/supabase/supabase_service.dart';
-import 'package:ephor/domain/models/form_creator/form_model.dart';
+import 'package:ephor/domain/models/form_editor/form_model.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -16,8 +16,6 @@ class FormRepository extends AbstractFormRepository {
     try {
       final formId = form.id;
       final formData = form.toJson();
-
-      formData['created_by'] = SupabaseService.auth.currentUser?.id;
 
       if (formId.isEmpty) {
         formData.remove('id');
@@ -35,84 +33,6 @@ class FormRepository extends AbstractFormRepository {
       );
     }
   }
-
-  @override
-  Future<Result<FormModel>> publishForm(String formId) async {
-    try {
-      final response = await _supabaseService.publishForm(formId);
-
-      return Result.ok(FormModel.fromJson(response));
-    } on PostgrestException catch (e) {
-      return Result.error(
-        CustomMessageException('Database error publishing form: ${e.message}'),
-      );
-    } catch (e) {
-      return Result.error(
-        CustomMessageException('Failed to publish form: $e'),
-      );
-    }
-  }
-
-  @override
-  Future<Result<FormModel>> unpublishForm(String formId) async {
-    try {
-      // 1. Fetch the form first to check constraints
-      final formResult = await getFormById(formId);
-      FormModel? form;
-      
-      if (formResult case Error(error: CustomMessageException exception)) {
-        return Result.error(exception);
-      } else if (formResult case Ok(value: FormModel formModel)) {
-        form = formModel;
-      }
-
-      if (form!.responseCount > 0) {
-        return Result.error(
-          CustomMessageException(
-            'Cannot unpublish form with ${form.responseCount} existing responses. '
-            'Please archive the form instead.',
-          ),
-        );
-      }
-
-      // 3. Update status
-      final response = await _supabaseService.unpublishForm(formId);
-
-      return Result.ok(FormModel.fromJson(response));
-    } catch (e) {
-      return Result.error(
-        CustomMessageException('Failed to unpublish form: $e'),
-      );
-    }
-  }
-
-  // @override
-  // Future<Result<FormResponseSummary>> getFormResponseSummary(
-  //   String formId,
-  // ) async {
-  //   try {
-  //     await Future.delayed(const Duration(milliseconds: 300));
-
-  //     // For mock, return empty summary or cached one
-  //     if (_responseSummaries.containsKey(formId)) {
-  //       return Result.ok(_responseSummaries[formId]!);
-  //     }
-
-  //     final summary = FormResponseSummary(
-  //       formId: formId,
-  //       totalResponses: 0,
-  //       lastResponseAt: null,
-  //       responsesByDate: {},
-  //     );
-
-  //     _responseSummaries[formId] = summary;
-  //     return Result.ok(summary);
-  //   } catch (e) {
-  //     return Result.error(
-  //       CustomMessageException('Failed to fetch responses: ${e.toString()}'),
-  //     );
-  //   }
-  // }
 
   @override
   Future<Result<FormModel?>> getFormById(String formId) async {

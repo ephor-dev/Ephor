@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:ephor/ui/catna_form_creator/view_model/catna_form_creator_view_model.dart';
-import 'package:ephor/domain/models/form_creator/form_model.dart';
+import 'package:ephor/domain/models/form_editor/form_model.dart';
 import 'package:ephor/utils/responsiveness.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:go_router/go_router.dart';
@@ -45,72 +44,71 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
           backgroundColor: surfaceVariantColor,
           appBar: _buildAppBar(context),
           body: widget.viewModel.isLoading
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(color: primaryColor),
-                      SizedBox(height: 16),
-                      Text('Loading form...'),
-                    ],
-                  ),
-                )
-              : SingleChildScrollView(
-                  padding: EdgeInsets.all(isMobile ? 16.0 : 24.0), // 16 = 8*2, 24 = 8*3
-                  child: Center(
-                    child: Container(
-                      constraints: BoxConstraints(
-                        maxWidth: isMobile ? double.infinity : 900,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Error message if any
-                          if (widget.viewModel.errorMessage != null)
-                            Container(
-                              margin: const EdgeInsets.only(bottom: 16),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: errorColor.withValues(alpha: errorColor.a * 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: errorColor),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.error_outline, color: errorColor),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      widget.viewModel.errorMessage!,
-                                      style: TextStyle(color: errorColor),
-                                    ),
-                                  ),
-                                ],
-                              ),
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(color: primaryColor),
+                    SizedBox(height: 16),
+                    Text('Loading form...'),
+                  ],
+                ),
+              )
+            : SingleChildScrollView(
+                padding: EdgeInsets.all(isMobile ? 16.0 : 24.0), // 16 = 8*2, 24 = 8*3
+                child: Center(
+                  child: Container(
+                    constraints: BoxConstraints(
+                      maxWidth: isMobile ? double.infinity : 900,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Error message if any
+                        if (widget.viewModel.errorMessage != null)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: errorColor.withValues(alpha: errorColor.a * 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: errorColor),
                             ),
-                          
-                          // Form Title Card
-                          _buildFormTitleCard(context, isMobile),
-                          const SizedBox(height: 24),
-                          
-                          // Sections
-                          ...List.generate(
-                            widget.viewModel.sections.length,
-                            (index) => _buildSectionCard(context, index, isMobile),
+                            child: Row(
+                              children: [
+                                Icon(Icons.error_outline, color: errorColor),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    widget.viewModel.errorMessage!,
+                                    style: TextStyle(color: errorColor),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          
-                          const SizedBox(height: 16),
-                          
-                          // Add Section Button
-                          _buildAddSectionButton(context),
-                          
-                          const SizedBox(height: 32),
-                        ],
-                      ),
+                        
+                        // Form Title Card
+                        _buildFormTitleCard(context, isMobile),
+                        const SizedBox(height: 24),
+                        
+                        // Sections
+                        ...List.generate(
+                          widget.viewModel.sections.length,
+                          (index) => _buildSectionCard(context, index, isMobile),
+                        ),
+                        
+                        const SizedBox(height: 16),
+                        
+                        // Add Section Button
+                        _buildAddSectionButton(context),
+                        
+                        const SizedBox(height: 32),
+                      ],
                     ),
                   ),
                 ),
-          floatingActionButton: _buildFloatingActionButton(context),
+              ),
         );
       },
     );
@@ -134,100 +132,34 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
         ),
       ),
       actions: [
-        // My Forms Button
-        TextButton.icon(
-          onPressed: () => context.go(Routes.getMyFormsPath()),
-          icon: const Icon(Icons.folder_outlined, size: 24),
-          label: const Text('My Forms'),
-          style: TextButton.styleFrom(
-            foregroundColor: onSurfaceColor,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          ),
-        ),
-        const SizedBox(width: 8),
-        
-        // Publish/Unpublish Button
         FilledButton.icon(
-          onPressed: widget.viewModel.isPublishing ? null : () async {
-            // Show confirmation dialog based on current state
-            if (!widget.viewModel.isPublished) {
-              // Publishing
-              final confirmed = await _showPublishConfirmationDialog(context);
-              if (!confirmed) return;
-              
-              final result = await widget.viewModel.publishForm();
-              
-              if (!context.mounted) return;
-              
-              switch (result) {
-                case Ok<FormModel>(:final value):
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Form published successfully!'),
-                      backgroundColor: Colors.green,
-                      behavior: SnackBarBehavior.floating,
-                      action: SnackBarAction(
-                        label: 'Share',
-                        textColor: Theme.of(context).colorScheme.surfaceContainerLowest,
-                        onPressed: () async {
-                          // Copy form link to clipboard
-                          final formLink = 'https://ephor.app/forms/${value.id}';
-                          await Clipboard.setData(ClipboardData(text: formLink));
-                          
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Form link copied to clipboard!'),
-                                duration: Duration(seconds: 2),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  );
-                  
-                case Error<FormModel>(:final error):
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Publish failed: ${error.toString()}'),
-                      backgroundColor: Theme.of(context).colorScheme.error,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-              }
-            } else {
-              // Unpublishing
-              final confirmed = await _showUnpublishConfirmationDialog(context);
-              if (!confirmed) return;
-              
-              final result = await widget.viewModel.unpublishForm();
-              
-              if (!context.mounted) return;
-              
-              switch (result) {
-                case Ok<FormModel>():
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Form unpublished successfully'),
-                      backgroundColor: Theme.of(context).colorScheme.tertiaryFixedDim,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                  
-                case Error<FormModel>(:final error):
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Unpublish failed: ${error.toString()}'),
-                      backgroundColor: Theme.of(context).colorScheme.error,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-              }
+          onPressed: widget.viewModel.isSaving ? null : () async {
+            final confirmed = await _showSaveConfirmationDialog(context);
+            if (!confirmed) return;
+            
+            final result = await widget.viewModel.saveForm();
+            
+            if (!context.mounted) return;
+            
+            switch (result) {
+              case Ok<FormModel>():
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Form saved successfully!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                
+              case Error<FormModel>(:final error):
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Save failed: ${error.toString()}'),
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                );
             }
           },
-          icon: widget.viewModel.isPublishing
+          icon: widget.viewModel.isSaving
               ? SizedBox(
                   width: 20,
                   height: 20,
@@ -237,21 +169,21 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
                   ),
                 )
               : Icon(
-                  widget.viewModel.isPublished ? Icons.cloud_done : Icons.publish,
+                  Icons.save_outlined,
                   size: 24,
                 ),
           label: Text(
-            widget.viewModel.isPublishing
+            widget.viewModel.isSaving
                 ? 'Processing...'
-                : (widget.viewModel.isPublished ? 'Published' : 'Publish')
+                : 'Save'
           ),
           style: FilledButton.styleFrom(
-            backgroundColor: widget.viewModel.isPublishing 
+            backgroundColor: widget.viewModel.isSaving 
                 ? Colors.grey 
-                : (widget.viewModel.isPublished ? Colors.green : primaryColor),
+                : primaryColor,
             foregroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            elevation: widget.viewModel.isPublishing ? 0 : 2,
+            elevation: 2,
           ),
         ),
         const SizedBox(width: 16),
@@ -1358,62 +1290,6 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
     );
   }
   
-  Widget _buildFloatingActionButton(BuildContext context) {
-    return FloatingActionButton.extended(
-      // Disable button while saving
-      onPressed: widget.viewModel.isSaving ? null : () async {
-        // Call saveForm and handle result
-        final result = await widget.viewModel.saveForm();
-        
-        if (!context.mounted) return;
-        
-        // Pattern match on Result type
-        switch (result) {
-          case Ok<dynamic>(:final value):
-            // Success - show success message with form ID
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Form saved successfully! ID: ${value.id}'),
-                backgroundColor: Colors.green,
-                behavior: SnackBarBehavior.floating,
-                duration: const Duration(seconds: 3),
-              ),
-            );
-            
-          case Error<dynamic>(:final error):
-            // Error - show error message with retry option
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Save failed: ${error.toString()}'),
-                backgroundColor: Theme.of(context).colorScheme.error,
-                behavior: SnackBarBehavior.floating,
-                duration: const Duration(seconds: 4),
-                action: SnackBarAction(
-                  label: 'Retry',
-                  textColor: Theme.of(context).colorScheme.surfaceContainerLowest,
-                  onPressed: () => widget.viewModel.saveForm(),
-                ),
-              ),
-            );
-        }
-      },
-      icon: widget.viewModel.isSaving
-          ? SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.surfaceContainerLowest),
-              ),
-            )
-          : const Icon(Icons.save),
-      label: Text(widget.viewModel.isSaving ? 'Saving...' : 'Save Form'),
-      backgroundColor: widget.viewModel.isSaving ? Colors.grey : primaryColor,
-      foregroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
-      elevation: widget.viewModel.isSaving ? 0 : 4,
-    );
-  }
-  
   void _showAddQuestionDialog(BuildContext context, int sectionIndex) {
     showDialog(
       context: context,
@@ -1463,17 +1339,15 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
   // ============================================
   // CONFIRMATION DIALOGS
   // ============================================
-  
-  /// Shows confirmation dialog before publishing form
-  Future<bool> _showPublishConfirmationDialog(BuildContext context) async {
+  Future<bool> _showSaveConfirmationDialog(BuildContext context) async {
     return await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.publish, color: primaryColor, size: 28),
+            Icon(Icons.save, color: primaryColor, size: 28),
             const SizedBox(width: 12),
-            const Text('Publish Form?'),
+            const Text('Save Form?'),
           ],
         ),
         content: Column(
@@ -1481,7 +1355,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Once published, this form will be accessible to users.',
+              'Once saved, this form will be accessible to users.',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 12),
@@ -1497,7 +1371,7 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'You can still edit it after publishing, but changes will be visible immediately.',
+                      'You can still edit it after saving, but changes will be visible immediately.',
                       style: TextStyle(
                         color: onPrimaryContainerColor,
                         fontSize: 14,
@@ -1516,79 +1390,10 @@ class _CatnaFormCreatorViewState extends State<CatnaFormCreatorView> {
           ),
           FilledButton.icon(
             onPressed: () => Navigator.of(context).pop(true),
-            icon: const Icon(Icons.publish, size: 20),
-            label: const Text('Publish'),
+            icon: const Icon(Icons.save, size: 20),
+            label: const Text('Save'),
             style: FilledButton.styleFrom(
               backgroundColor: primaryColor,
-            ),
-          ),
-        ],
-      ),
-    ) ?? false;
-  }
-  
-  /// Shows confirmation dialog before unpublishing form
-  Future<bool> _showUnpublishConfirmationDialog(BuildContext context) async {
-    return await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(
-              Icons.unpublished, 
-              color: Theme.of(context).colorScheme.tertiaryFixedDim, 
-              size: 28
-            ),
-            const SizedBox(width: 12),
-            const Text('Unpublish Form?'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'The form will no longer be accessible to users.',
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.tertiaryFixedDim.withAlpha(32),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Theme.of(context).colorScheme.tertiaryFixedDim.withAlpha(127)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.warning_amber_rounded, color: Theme.of(context).colorScheme.tertiaryFixedDim, size: 20),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'This action cannot be undone if the form has responses.',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.tertiaryFixedDim,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton.icon(
-            onPressed: () => Navigator.of(context).pop(true),
-            icon: const Icon(Icons.unpublished, size: 20),
-            label: const Text('Unpublish'),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.tertiaryFixedDim,
             ),
           ),
         ],
