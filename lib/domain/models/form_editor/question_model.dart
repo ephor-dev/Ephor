@@ -1,5 +1,6 @@
 // domain/models/form/question_model.dart
 
+import 'dart:convert'; // Required for jsonDecode
 import 'package:ephor/domain/models/form_editor/form_enums.dart';
 import 'package:flutter/foundation.dart';
 
@@ -9,7 +10,8 @@ class QuestionModel {
   final String questionText;
   final QuestionType type;
   final bool isRequired;
-  final List<String>? options;
+  // CHANGED: From List<String> to List<Map> to support {label: "Yes", value: 1}
+  final List<Map<String, dynamic>>? options; 
   final int orderIndex;
   final Map<String, dynamic>? config;
 
@@ -28,7 +30,7 @@ class QuestionModel {
     String? questionText,
     QuestionType? type,
     bool? isRequired,
-    List<String>? options,
+    List<Map<String, dynamic>>? options, // Updated type here
     int? orderIndex,
     Map<String, dynamic>? config,
   }) {
@@ -67,17 +69,65 @@ class QuestionModel {
   }
 
   factory QuestionModel.fromJson(Map<String, dynamic> json) {
+    
+    // Helper to safely parse Options (Handles String vs List crash)
+    List<Map<String, dynamic>>? parseOptions(dynamic value) {
+      if (value == null) return null;
+      
+      // If Supabase returns a JSON String: "[{...}]"
+      if (value is String) {
+        if (value.isEmpty) return [];
+        try {
+          final decoded = jsonDecode(value);
+          if (decoded is List) {
+            return List<Map<String, dynamic>>.from(decoded);
+          }
+        } catch (_) {
+          return []; 
+        }
+      }
+      
+      // If Supabase returns a direct List: [{...}]
+      if (value is List) {
+        return List<Map<String, dynamic>>.from(
+          value.map((e) => e as Map<String, dynamic>)
+        );
+      }
+      return [];
+    }
+
+    // Helper to safely parse Config (Handles String vs Map crash)
+    Map<String, dynamic>? parseConfig(dynamic value) {
+      if (value == null) return null;
+      
+      if (value is String) {
+        if (value.isEmpty) return {};
+        try {
+          return Map<String, dynamic>.from(jsonDecode(value));
+        } catch (_) {
+          return {};
+        }
+      }
+      
+      if (value is Map) {
+        return Map<String, dynamic>.from(value);
+      }
+      return null;
+    }
+
     return QuestionModel(
       id: json['id'] as String?,
       questionText: json['question_text'] as String? ?? '',
       type: QuestionType.fromJson(json['type'] as String? ?? 'text'),
       isRequired: json['is_required'] as bool? ?? false,
-      options: json['options'] != null 
-          ? List<String>.from(json['options'] as List)
-          : null,
+      
+      // Use the helper to parse options
+      options: parseOptions(json['options']),
+      
       orderIndex: json['order_index'] as int? ?? 0,
-      config: json['config'] as Map<String, dynamic>?,
+      
+      // Use the helper to parse config
+      config: parseConfig(json['config']),
     );
   }
 }
-

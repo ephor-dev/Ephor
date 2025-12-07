@@ -625,11 +625,19 @@ class FormEditorViewModel extends ChangeNotifier {
           questionText: qMap['question'] as String? ?? '',
           type: _parseQuestionType(qMap['type'] as String),
           isRequired: qMap['required'] as bool? ?? false,
-          options: qMap['options'] != null 
-              ? List<String>.from(qMap['options'] as List)
-              : null,
+          options: qMap['options'] != null
+            ? (qMap['options'] as List)
+                .map((e) => Map<String, dynamic>.from(e as Map))
+                .toList()
+            : null,
+          // -----------------------
+
           orderIndex: qIndex,
-          config: qMap['config'], // Pass config (including dataSource) to model
+          
+          // Safely cast config as well
+          config: qMap['config'] != null 
+              ? Map<String, dynamic>.from(qMap['config'] as Map) 
+              : null, // Pass config (including dataSource) to model
         );
       }).toList();
       

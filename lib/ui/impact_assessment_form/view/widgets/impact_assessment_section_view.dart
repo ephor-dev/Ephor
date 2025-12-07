@@ -16,7 +16,7 @@ class ImpactAssessmentSectionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isImpactStyle = section.layout == SectionLayout.impact_style;
+    final bool isImpactStyle = section.layout == SectionLayout.impactStyle;
 
     final headerGradient = isImpactStyle
         ? [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.tertiaryFixed]

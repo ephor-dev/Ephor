@@ -1,5 +1,5 @@
 enum FormInputType { text, number, date, dropdown, radioMatrix, radio, header, unknown }
-enum SectionLayout { standard, matrix, impact_style } 
+enum SectionLayout { standard, matrix, impactStyle } 
 
 class FormOption {
   final String label;
@@ -82,7 +82,7 @@ class FormSection {
     // For now, we default to standard. You can add logic: if title contains "Rating", use matrix.
     SectionLayout detectedLayout = SectionLayout.standard;
     if (json['layout'] == 'impact_style') {
-      detectedLayout = SectionLayout.impact_style;
+      detectedLayout = SectionLayout.impactStyle;
     } else if (json['title'].toString().contains('Rating')) {
       detectedLayout = SectionLayout.matrix;
     }
