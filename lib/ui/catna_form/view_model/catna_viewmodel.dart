@@ -108,7 +108,8 @@ class CatnaViewModel extends ChangeNotifier {
     if (result case Ok(value: final list)) {
       _departmentEmployees = list.where((employee) {
         if (currentUser?.role == EmployeeRole.supervisor) {
-          return employee.department == currentUser?.department && employee.role != EmployeeRole.humanResource;
+          return employee.department == currentUser?.department 
+            && employee.role != EmployeeRole.humanResource;
         }
         return true;
       }).toList();
@@ -214,8 +215,6 @@ class CatnaViewModel extends ChangeNotifier {
           final String mappedKey = _mapIdentifyingKey(item.key);
           identifyingData[mappedKey] = _formatIdentifyingValue(mappedKey, value);
         } else {
-          // --- COMPETENCY DATA MAPPING ---
-          // Ensure value is int
           final int intValue = value is int ? value : int.tryParse(value.toString()) ?? 0;
           final String questionText = item.label.trim();
 
@@ -272,7 +271,7 @@ class CatnaViewModel extends ChangeNotifier {
 
   String _mapIdentifyingKey(String rawKey) {
     if (rawKey.contains('personnel_name')) return 'full_name';
-    if (rawKey.contains('position')) return 'designation';
+    if (rawKey.contains('designation')) return 'designation';
     if (rawKey.contains('office')) return 'office';
     if (rawKey.contains('operating_unit')) return 'operating_unit';
     if (rawKey.contains('start_date')) return 'review_start_date';

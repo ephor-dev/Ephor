@@ -23,8 +23,6 @@ class CatnaSectionView extends StatelessWidget {
     final headerGradient = isMatrix
         ? [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.tertiaryFixed]
         : [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.primary.withAlpha(50)];
-
-    final bgColor = Theme.of(context).colorScheme.surface;
     final contentColor = isMatrix 
         ? Theme.of(context).colorScheme.surfaceContainerLowest 
         : Theme.of(context).colorScheme.surface;
