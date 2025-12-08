@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 enum FormInputType { text, number, date, dropdown, radioMatrix, radio, header, unknown }
 enum SectionLayout { standard, matrix, impactStyle } 
 
@@ -15,12 +17,12 @@ class FormOption {
 }
 
 class FormItem {
-  final String key; // Generated from question_text (e.g. "Personnel Name" -> "personnel_name")
-  final String label; // Mapped from "question_text"
+  final String key;
+  final String label;
   final FormInputType type;
-  final bool required; // Mapped from "is_required"
-  final int orderIndex; // Mapped from "order_index"
-  final Map<String, dynamic> config; // Stores "dataSource", "minDate", etc.
+  final bool required;
+  final int orderIndex;
+  final Map<String, dynamic> config;
   final List<FormOption>? options;
 
   FormItem({
@@ -34,7 +36,7 @@ class FormItem {
   });
 
   factory FormItem.fromJson(Map<String, dynamic> json) {
-    // 1. Generate a valid key for saving data since DB doesn't provide one
+    // 1. Generate a valid key
     final String qText = json['question_text'] ?? 'unknown_field';
     final String generatedKey = qText.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_');
 
@@ -48,8 +50,33 @@ class FormItem {
         case 'radiomatrix': return FormInputType.radioMatrix;
         case 'header': return FormInputType.header;
         case 'radio': return FormInputType.radio;
-        default: return FormInputType.unknown; // Fallback for safety
+        default: return FormInputType.unknown;
       }
+    }
+
+    // 3. THE FIX: Safe Options Parsing Helper
+    List<FormOption>? parseOptions(dynamic value) {
+      if (value == null) return null;
+      
+      List<dynamic> rawList = [];
+
+      // If DB sends a String (JSON encoded), decode it first
+      if (value is String) {
+        if (value.isEmpty) return [];
+        try {
+          rawList = jsonDecode(value);
+        } catch (e) {
+          print('Error decoding options in FormItem: $e');
+          return [];
+        }
+      } 
+      // If DB sends a List (Raw JSON), use it directly
+      else if (value is List) {
+        rawList = value;
+      }
+
+      // Convert the raw list into FormOption objects
+      return rawList.map((e) => FormOption.fromJson(e as Map<String, dynamic>)).toList();
     }
 
     return FormItem(
@@ -59,7 +86,9 @@ class FormItem {
       required: json['is_required'] ?? false,
       orderIndex: json['order_index'] ?? 0,
       config: json['config'] ?? {},
-      options: (json['options'] as List?)?.map((e) => FormOption.fromJson(e)).toList(),
+      
+      // USE THE HELPER HERE
+      options: parseOptions(json['options']), 
     );
   }
 }

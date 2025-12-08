@@ -1092,6 +1092,7 @@ class _FormEditorViewState extends State<FormEditorView> {
   ) {
     final config = question['config'] as Map<String, dynamic>? ?? {};
     final currentSource = config['dataSource'] as String? ?? 'employees';
+    print(currentSource);
 
     // Map backend IDs to readable labels for the user
     final Map<String, String> sourceLabels = {
@@ -1100,7 +1101,10 @@ class _FormEditorViewState extends State<FormEditorView> {
       'offices': 'Offices / Colleges',
       'operating_units': 'Operating Units / Campuses',
       'purpose_choices': 'Purpose of Assessment Options',
+      'intervention_types': 'Intervention Types'
     };
+
+    final bool valueExists = sourceLabels.containsKey(currentSource);
 
     return [
       const SizedBox(height: 16),
@@ -1126,7 +1130,7 @@ class _FormEditorViewState extends State<FormEditorView> {
 
       // Data Source Dropdown
       DropdownButtonFormField<String>(
-        value: currentSource,
+        value: valueExists ? currentSource : null,
         decoration: InputDecoration(
           labelText: 'Select List Source',
           helperText: 'This list is populated automatically at runtime.',

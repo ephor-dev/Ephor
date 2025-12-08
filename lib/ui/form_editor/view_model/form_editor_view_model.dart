@@ -48,6 +48,7 @@ class FormEditorViewModel extends ChangeNotifier {
     'offices',         // List of Colleges/Offices
     'operating_units', // List of Campuses
     'purpose_choices', // List of Purposes
+    'intervention_types',
   ];
   
   // ============================================

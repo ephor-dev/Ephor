@@ -69,25 +69,23 @@ class QuestionModel {
   }
 
   factory QuestionModel.fromJson(Map<String, dynamic> json) {
-    
-    // Helper to safely parse Options (Handles String vs List crash)
+
     List<Map<String, dynamic>>? parseOptions(dynamic value) {
       if (value == null) return null;
-      
-      // If Supabase returns a JSON String: "[{...}]"
+
+      // 1. If DB sends a String (The case causing your error), decode it!
       if (value is String) {
         if (value.isEmpty) return [];
         try {
-          final decoded = jsonDecode(value);
-          if (decoded is List) {
-            return List<Map<String, dynamic>>.from(decoded);
-          }
-        } catch (_) {
-          return []; 
+          final decoded = jsonDecode(value); 
+          return List<Map<String, dynamic>>.from(decoded);
+        } catch (e) {
+          print("Error decoding options: $e");
+          return [];
         }
       }
-      
-      // If Supabase returns a direct List: [{...}]
+
+      // 2. If DB sends a raw List, use it directly
       if (value is List) {
         return List<Map<String, dynamic>>.from(
           value.map((e) => e as Map<String, dynamic>)
@@ -96,37 +94,30 @@ class QuestionModel {
       return [];
     }
 
-    // Helper to safely parse Config (Handles String vs Map crash)
+    // --- HELPER: Handles 'config' as String or Map ---
     Map<String, dynamic>? parseConfig(dynamic value) {
       if (value == null) return null;
-      
       if (value is String) {
-        if (value.isEmpty) return {};
         try {
-          return Map<String, dynamic>.from(jsonDecode(value));
-        } catch (_) {
-          return {};
-        }
+          return value.isEmpty ? {} : Map<String, dynamic>.from(jsonDecode(value));
+        } catch (_) { return {}; }
       }
-      
-      if (value is Map) {
-        return Map<String, dynamic>.from(value);
-      }
+      if (value is Map) return Map<String, dynamic>.from(value);
       return null;
     }
 
     return QuestionModel(
       id: json['id'] as String?,
       questionText: json['question_text'] as String? ?? '',
-      type: QuestionType.fromJson(json['type'] as String? ?? 'text'),
+      // Adjust this depending on how you parse Enums (using your existing logic)
+      type: QuestionType.fromJson(json['type'] as String? ?? 'text'), 
       isRequired: json['is_required'] as bool? ?? false,
       
-      // Use the helper to parse options
-      options: parseOptions(json['options']),
+      // --- THIS IS THE FIX ---
+      options: parseOptions(json['options']), 
+      // ----------------------
       
       orderIndex: json['order_index'] as int? ?? 0,
-      
-      // Use the helper to parse config
       config: parseConfig(json['config']),
     );
   }

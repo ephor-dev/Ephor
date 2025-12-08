@@ -83,11 +83,11 @@ class ImpactAssessmentViewModel extends ChangeNotifier {
   }
 
   Future<void> _loadFormDefinition() async {
-    final result = await _formRepository.fetchActiveImpactAssessmentForm(); 
+    final result = await _formRepository.fetchActiveImpactAssessmentForm();
 
     if (result case Ok(value: final jsonMap)) {
       try {
-        final rawSections = jsonMap['sections'] as List? ?? [];
+        final rawSections = jsonMap['sections'] as List? ?? []; 
         _sections = rawSections.map((s) => FormSection.fromJson(Map<String, dynamic>.from(s as Map))).toList();
         
         if (jsonMap.containsKey('draft_data') && jsonMap['draft_data'] != null) {
