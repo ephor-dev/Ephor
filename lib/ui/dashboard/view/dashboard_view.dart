@@ -22,29 +22,79 @@ class DashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<DashboardView> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  bool _showSearch = false;
   final TextEditingController _searchController = TextEditingController();
+  bool _showSearch = false;
 
-  final List<Map<String, dynamic>> menuItems = [
-    {'title': 'Overview', 'icon': Icons.description_outlined, 'selected': true, 'path': Routes.dashboardOverview},
-    {'title': 'Employee List', 'icon': Icons.list, 'selected': false, 'path': Routes.dashboardEmployeeList},
-    {'title': 'Forms Management', 'icon': Icons.assessment_outlined, 'selected': false, 'path': Routes.dashboardMyForms},
-    {'title': 'Fill CATNA', 'icon': Icons.assessment_outlined, 'selected': false, 'path': Routes.dashboardCatnaForms},
-    {'title': 'Fill IA', 'icon': Icons.assessment_outlined, 'selected': false, 'path': Routes.dashboardIAForm},
-  ];
+  bool _shouldShowSearch(String location) {
+    return location.contains(Routes.dashboardEmployeeList);
+  }
 
-  int _getSelectedIndex() {
+  // 2. LOGIC FIX: Helper to get index without modifying state
+  int _getSelectedIndex(List<Map<String, dynamic>> currentItems) {
     final location = GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
-  
-    final index = menuItems.indexWhere((item) {
+    
+    // Use the passed list, not the getter
+    final index = currentItems.indexWhere((item) {
       final path = item['path'];
-
-      _showSearch = (location.contains(path) && path == Routes.dashboardEmployeeList);
-
       return path != null && location.contains(path);
     });
 
     return index != -1 ? index : 0;
+  }
+
+  List<Map<String, dynamic>> get menuItems {
+    final EmployeeRole? role = widget.viewModel.currentUser.value?.role;
+    final List<Map<String, dynamic>> allItems = [
+      {
+        'title': 'Overview',
+        'icon': Icons.description_outlined,
+        'selected': true, // Note: You might want to make this dynamic based on current route
+        'path': Routes.dashboardOverview
+      },
+      {
+        'title': 'Employee List',
+        'icon': Icons.list,
+        'selected': false,
+        'path': Routes.dashboardEmployeeList
+      },
+      {
+        'title': 'Forms Management',
+        'icon': Icons.assessment_outlined,
+        'selected': false,
+        'path': Routes.dashboardMyForms
+      },
+      {
+        'title': 'Fill CATNA',
+        'icon': Icons.assessment_outlined,
+        'selected': false,
+        'path': Routes.dashboardCatnaForms
+      },
+      {
+        'title': 'Fill IA',
+        'icon': Icons.assessment_outlined,
+        'selected': false,
+        'path': Routes.dashboardIAForm
+      },
+    ];
+
+    // 3. Filter based on Role
+    return allItems.where((item) {
+      final String path = item['path'];
+
+      // HIDE 'Forms Management' from Supervisors
+      if (role == EmployeeRole.supervisor && path == Routes.dashboardMyForms) {
+        return false;
+      }
+
+      // HIDE 'Fill CATNA' and 'Fill IA' from HR
+      if (role == EmployeeRole.humanResource &&
+          (path == Routes.dashboardCatnaForms || path == Routes.dashboardIAForm)) {
+        return false;
+      }
+
+      // Show everything else
+      return true;
+    }).toList();
   }
 
   @override
@@ -100,25 +150,13 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   // Helper to build the core menu list (used inside the Drawer)
-  Widget _buildMenuList(int selectedIndex) {
+  Widget _buildMenuList(List<Map<String, dynamic>> currentItems, int selectedIndex) {
     return ListView.builder(
       shrinkWrap: true,
       padding: const EdgeInsets.only(top: 20.0, left: 0, right: 10),
-      itemCount: menuItems.length,
+      itemCount: currentItems.length,
       itemBuilder: (context, index) {
-        final item = menuItems[index];
-
-        EmployeeRole? currentUserRole = widget.viewModel.currentUser.value?.role;
-        if (currentUserRole != null ) {
-          if (currentUserRole == EmployeeRole.supervisor 
-            && item['path'] == Routes.dashboardMyForms) {
-              return const SizedBox.shrink();
-          } else if (currentUserRole == EmployeeRole.humanResource
-            && (item['path'] == Routes.dashboardCatnaForms
-              || item['path'] == Routes.dashboardIAForm)) {
-              return const SizedBox.shrink();
-          }
-        }
+        final item = currentItems[index];
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
@@ -135,7 +173,8 @@ class _DashboardViewState extends State<DashboardView> {
 
   // Helper to build the Drawer content
   Widget _buildDrawer() {
-    final selectedIndex = _getSelectedIndex();
+    final currentMenuItems = menuItems;
+    final selectedIndex = _getSelectedIndex(currentMenuItems);
     return Drawer(
       // Set max drawer width, but allow it to shrink on smaller screens
       width: 300, 
@@ -173,7 +212,7 @@ class _DashboardViewState extends State<DashboardView> {
               ),
             ),
           ),
-          _buildMenuList(selectedIndex),
+          _buildMenuList(currentMenuItems,selectedIndex),
         ],
       ),
     );
@@ -553,8 +592,13 @@ class _DashboardViewState extends State<DashboardView> {
 
   @override
   Widget build(BuildContext context) {
+    final location = GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
+    _showSearch = _shouldShowSearch(location);
     return ListenableBuilder(
-      listenable: widget.viewModel.logout, 
+      listenable: Listenable.merge([
+        widget.viewModel.logout,
+        widget.viewModel.currentUser
+      ]), 
       builder: (context, _) {
         final isMobile = Responsive.isMobile(context);
 
