@@ -218,17 +218,23 @@ class ImpactAssessmentSectionView extends StatelessWidget {
   }
 
   Widget _buildDropdown(BuildContext context, FormItem item) {
-    // Fetches options based on dataSource string (e.g. 'offices')
     final options = viewModel.getOptionsFor(item.config['dataSource']);
+    final menuItems = options.map((opt) => DropdownMenuItem(
+      value: opt.value.toString(),
+      child: Text(opt.label, overflow: TextOverflow.ellipsis),
+    )).toList();
+
+    final currentValue = viewModel.formData[item.key];
+
+    final bool valueExists = options.any((opt) => opt.value.toString() == currentValue);
+
     return DropdownButtonFormField<String>(
-      value: viewModel.formData[item.key],
+      initialValue: valueExists ? currentValue : null,
+      
       decoration: _impactInputDecoration(context, 'Select'),
       icon: const Icon(Icons.arrow_drop_down, size: 28),
       dropdownColor: Theme.of(context).colorScheme.surfaceContainerLowest,
-      items: options.map((opt) => DropdownMenuItem(
-        value: opt.value.toString(),
-        child: Text(opt.label, overflow: TextOverflow.ellipsis),
-      )).toList(),
+      items: menuItems,
       onChanged: (val) => viewModel.updateValue(item.key, val),
     );
   }

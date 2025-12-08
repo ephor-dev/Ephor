@@ -1,5 +1,3 @@
-// presentation/viewmodels/login_view_model.dart
-
 import 'dart:async';
 import 'package:ephor/data/repositories/shared_prefs/abstract_prefs_repository.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
