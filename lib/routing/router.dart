@@ -97,7 +97,9 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
         GoRoute(
           path: Routes.getOverviewPath(),
           builder: (context, state) => OverviewSubView(
-            viewModel: OverviewViewModel(), 
+            viewModel: OverviewViewModel(
+              formRepository: context.read()
+            ), 
           ),
         ),
         GoRoute(
@@ -106,7 +108,7 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
             viewModel: CatnaViewModel(
               formRepository: context.read(),
               employeeRepository: context.read(),
-              authRepository: authRepository
+              authRepository: authRepository,
             )
           )
         ),

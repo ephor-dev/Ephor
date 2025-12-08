@@ -330,6 +330,12 @@ class SupabaseService {
     await _client.from('impact_assessments').insert(payload);
   }
 
+  Future<List<Map<String, dynamic>>> getAllFinishedCATNA() async {
+    final response = await _client.from('catna_assessments').select();
+
+    return response;
+  }
+
   // Form Things
   Future<PostgrestMap> upsertForm(Map<String, dynamic> formData) async {
     final response = await _client
@@ -382,5 +388,31 @@ class SupabaseService {
       .maybeSingle();
     
     return response;
+  }
+
+  // Overview
+  Future<void> updateOverviewStatistics(Map<String, dynamic> analysisResult) async {
+    await _client.from('overview_stats').upsert({
+        'id': 'university_wide_overview', // Constant ID ensures we update the single source of truth
+        'training_needs_count': analysisResult['training_needs_count'], // derived from AI result
+        'recent_activity': analysisResult['recent_activity'], 
+        'full_report': analysisResult['catna_analysis'],
+        'updated_at': DateTime.now().toIso8601String(),
+      });
+  }
+
+  Stream<Map<String, dynamic>> getOverviewStatsStream(
+    Map<String, dynamic> Function(List<Map<String, dynamic>>) convertFunction) {
+  
+    return _client
+        .from('overview_stats') // Ensure this is the correct table name
+        .stream(primaryKey: ['id'])
+        .eq('id', 'university_wide_overview') // Filter for the specific row if needed
+        .map((event) {
+          // Convert the dynamic event to a typed list first
+          final List<Map<String, dynamic>> typedList = List<Map<String, dynamic>>.from(event);
+          // Apply the conversion function
+          return convertFunction(typedList);
+        });
   }
 }

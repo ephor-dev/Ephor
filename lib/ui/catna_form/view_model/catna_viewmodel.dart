@@ -6,7 +6,7 @@ import 'package:ephor/domain/lists/designation_choices.dart';
 import 'package:ephor/domain/lists/office_choices.dart';
 import 'package:ephor/domain/lists/operating_unit_choices.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
-import 'package:ephor/domain/models/form/form_definitions.dart'; 
+import 'package:ephor/domain/models/form/form_definitions.dart';
 import 'package:ephor/utils/command.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';

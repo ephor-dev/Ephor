@@ -1,10 +1,16 @@
 import 'package:ephor/ui/dashboard/subviews/overview/view_model/overview_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class OverviewSubView extends StatelessWidget {
+class OverviewSubView extends StatefulWidget {
   final OverviewViewModel viewModel;
   const OverviewSubView({super.key, required this.viewModel});
 
+  @override
+  State<StatefulWidget> createState() => _OverviewSubViewState();
+}
+
+class _OverviewSubViewState extends State<OverviewSubView> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -21,7 +27,7 @@ class OverviewSubView extends StatelessWidget {
           const _TopStatsRow(),
           const SizedBox(height: 24),
           // Bottom Content Row (Charts & Activity)
-          const _BottomContentRow(),
+          _BottomContentRow(viewModel: widget.viewModel),
         ],
       ),
     );
@@ -94,7 +100,7 @@ class _TopStatsRow extends StatelessWidget {
             children: [
               _StatCard(
                 title: "Training Needs Identified",
-                value: "205",
+                value: context.watch<OverviewViewModel>().trainingNeedsCount.toString(),
                 subtitle: "Training Identified",
                 color: const Color.from(alpha: 0.867, red: 139, green: 0, blue: 0),
                 iconOrChart: _MockLineChart(),
@@ -198,27 +204,28 @@ class _StatCard extends StatelessWidget {
 // -----------------------------------------------------------------------------
 
 class _BottomContentRow extends StatelessWidget {
-  const _BottomContentRow();
+  final OverviewViewModel viewModel;
+  const _BottomContentRow({required this.viewModel});
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth > 900) {
-          return const Row(
+          return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(flex: 2, child: _TrainingNeedsChartCard()),
               SizedBox(width: 24),
-              Expanded(flex: 3, child: _RecentActivityCard()),
+              Expanded(flex: 3, child: _RecentActivityCard(viewModel: viewModel)),
             ],
           );
         } else {
-          return const Column(
+          return Column(
             children: [
               _TrainingNeedsChartCard(),
               SizedBox(height: 24),
-              _RecentActivityCard(),
+              _RecentActivityCard(viewModel: viewModel),
             ],
           );
         }
@@ -344,8 +351,15 @@ class _LegendItem extends StatelessWidget {
   }
 }
 
-class _RecentActivityCard extends StatelessWidget {
-  const _RecentActivityCard();
+class _RecentActivityCard extends StatefulWidget {
+  final OverviewViewModel viewModel;
+  const _RecentActivityCard({required this.viewModel});
+
+  @override
+  State<_RecentActivityCard> createState() => _RecentActivityCardState();
+}
+
+class _RecentActivityCardState extends State<_RecentActivityCard> {
 
   @override
   Widget build(BuildContext context) {
@@ -411,14 +425,26 @@ class _RecentActivityCard extends StatelessWidget {
               const Divider(),
               // List Items
               Expanded(
-                child: ListView(
-                  children: const [
-                    _ActivityRow(name: "Dady Ruman", time: "14 hours ago", status: "Completed", isCompleted: true),
-                    _ActivityRow(name: "Jall Kantin", time: "2 Forametes ago", status: "Pending", isCompleted: false),
-                    _ActivityRow(name: "Fhronel Woolk", time: "14 hours ago", status: "Completed", isCompleted: true),
-                    _ActivityRow(name: "Mrmiort Smith", time: "14 hours ago", status: "Completed", isCompleted: true),
-                    _ActivityRow(name: "Grinother Groman", time: "21 hours ago", status: "Pending", isCompleted: false),
-                  ],
+                child: ListenableBuilder(
+                  listenable: widget.viewModel, // 1. Pass your instance here
+                  builder: (context, child) {
+                    // 2. Access data directly from the instance, not context
+                    final activities = widget.viewModel.recentActivity; 
+
+                    return ListView.builder(
+                      itemCount: activities.length,
+                      itemBuilder: (context, index) {
+                        final activity = activities[index];
+                        
+                        return _ActivityRow(
+                          name: activity.employeeName,
+                          time: activity.timeAgo, 
+                          status: activity.status, 
+                          isCompleted: activity.status == "Completed",
+                        );
+                      },
+                    );
+                  },
                 ),
               )
             ],
