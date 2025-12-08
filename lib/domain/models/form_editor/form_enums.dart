@@ -6,6 +6,7 @@ enum QuestionType {
   date,
   dropdown,
   number,
+  radioMatrix,
   fileUpload;
 
   String toJson() => name;

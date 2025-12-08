@@ -588,6 +588,9 @@ class _FormEditorViewState extends State<FormEditorView> {
         // Text type doesn't need additional configuration
         return [];
       
+      case 'Radio Matrix':
+        return _buildRadioMatrixConfig(context, sectionIndex, questionIndex, question);
+      
       default:
         return [];
     }
@@ -1092,7 +1095,6 @@ class _FormEditorViewState extends State<FormEditorView> {
   ) {
     final config = question['config'] as Map<String, dynamic>? ?? {};
     final currentSource = config['dataSource'] as String? ?? 'employees';
-    print(currentSource);
 
     // Map backend IDs to readable labels for the user
     final Map<String, String> sourceLabels = {
@@ -1434,6 +1436,115 @@ class _FormEditorViewState extends State<FormEditorView> {
       ),
     );
   }
+
+  List<Widget> _buildRadioMatrixConfig(
+    BuildContext context,
+    int sectionIndex,
+    int questionIndex,
+    Map<String, dynamic> question,
+  ) {
+    final config = question['config'] as Map<String, dynamic>? ?? {};
+    final rows = (config['rows'] as List?)?.cast<String>() ?? ['Row 1'];
+    final columns = (config['columns'] as List?)?.cast<String>() ?? ['Col 1'];
+
+    Widget buildListEditor(String title, List<String> items, String typeKey) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                typeKey == 'rows' ? Icons.table_rows : Icons.view_column, 
+                size: 18, 
+                color: onSurfaceVariantColor
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  color: onSurfaceVariantColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...List.generate(items.length, (index) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      initialValue: items[index],
+                      decoration: InputDecoration(
+                        hintText: '$title ${index + 1}',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        isDense: true,
+                      ),
+                      onChanged: (val) {
+                        if (typeKey == 'rows') {
+                          widget.viewModel.updateMatrixRow(sectionIndex, questionIndex, index, val);
+                        } else {
+                          widget.viewModel.updateMatrixColumn(sectionIndex, questionIndex, index, val);
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  if (items.length > 1)
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 20),
+                      color: errorColor,
+                      onPressed: () {
+                        if (typeKey == 'rows') {
+                          widget.viewModel.removeMatrixRow(sectionIndex, questionIndex, index);
+                        } else {
+                          widget.viewModel.removeMatrixColumn(sectionIndex, questionIndex, index);
+                        }
+                      },
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                ],
+              ),
+            );
+          }),
+          TextButton.icon(
+            onPressed: () {
+              if (typeKey == 'rows') {
+                widget.viewModel.addMatrixRow(sectionIndex, questionIndex);
+              } else {
+                widget.viewModel.addMatrixColumn(sectionIndex, questionIndex);
+              }
+            },
+            icon: const Icon(Icons.add, size: 18),
+            label: Text('Add $title'),
+            style: TextButton.styleFrom(
+              foregroundColor: primaryColor,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return [
+      const SizedBox(height: 16),
+      const Divider(),
+      const SizedBox(height: 16),
+      
+      // Rows Editor
+      buildListEditor('Row (Question)', rows, 'rows'),
+      
+      const SizedBox(height: 24),
+      
+      // Columns Editor
+      buildListEditor('Column (Option)', columns, 'columns'),
+    ];
+  }
   
   void _showAddQuestionDialog(BuildContext context, int sectionIndex) {
     showDialog(
@@ -1480,6 +1591,8 @@ class _FormEditorViewState extends State<FormEditorView> {
         return Icons.arrow_drop_down_circle;
       case 'Number':
         return Icons.onetwothree;
+      case 'Radio Matrix':
+        return Icons.grid_on;
       default:
         return Icons.help_outline;
     }

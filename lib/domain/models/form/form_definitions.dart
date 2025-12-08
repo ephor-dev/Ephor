@@ -39,7 +39,7 @@ class FormItem {
     // 1. Generate a valid key
     final String qText = json['question_text'] ?? 'unknown_field';
     final String generatedKey = qText.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_');
-
+    
     // 2. Parse Type safely
     FormInputType parseType(String? t) {
       switch (t?.toLowerCase()) {

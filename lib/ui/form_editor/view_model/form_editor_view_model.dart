@@ -39,7 +39,8 @@ class FormEditorViewModel extends ChangeNotifier {
     'Date',
     'File Upload',
     'Dropdown',
-    'Number'
+    'Number',
+    'Radio Matrix'
   ];
 
   final List<String> availableDataSources = [
@@ -211,6 +212,14 @@ class FormEditorViewModel extends ChangeNotifier {
           };
         }
         break;
+      case QuestionType.radioMatrix: // <--- ADD THIS CASE
+        if (question.config != null) {
+          uiQuestion['config'] = {
+            'rows': question.config!['rows'] ?? [],
+            'columns': question.config!['columns'] ?? [],
+          };
+        }
+        break;
       default:
         break;
     }
@@ -237,6 +246,8 @@ class FormEditorViewModel extends ChangeNotifier {
         return 'Dropdown';
       case QuestionType.number: 
         return 'Number';
+      case QuestionType.radioMatrix:
+        return 'Radio Matrix';
     }
   }
   
@@ -334,6 +345,14 @@ class FormEditorViewModel extends ChangeNotifier {
           'allowMultiple': false,
         };
       }
+
+      if (questionType == 'Radio Matrix') {
+        questionData['options'] = null; // We use config for matrix
+        questionData['config'] = {
+          'rows': ['Question 1', 'Question 2'],
+          'columns': ['Poor', 'Fair', 'Good'],
+        };
+      }
       
       questions.add(questionData);
       notifyListeners();
@@ -400,6 +419,12 @@ class FormEditorViewModel extends ChangeNotifier {
             'allowedTypes': ['all'],
             'maxSizeMB': 10,
             'allowMultiple': false,
+          };
+        } else if (type == 'Radio Matrix') {
+          questions[questionIndex]['options'] = null; // We use config for matrix
+          questions[questionIndex]['config'] = {
+            'rows': ['Question 1', 'Question 2'],
+            'columns': ['Poor', 'Fair', 'Good'],
           };
         } else {
           questions[questionIndex]['options'] = null;
@@ -680,8 +705,75 @@ class FormEditorViewModel extends ChangeNotifier {
         return QuestionType.fileUpload;
       case 'Number': 
         return QuestionType.number;
+      case 'Radio Matrix': // <--- ADD THIS CASE
+        return QuestionType.radioMatrix;
       default:
         return QuestionType.text;
+    }
+  }
+
+  void addMatrixRow(int sectionIndex, int questionIndex) {
+    _modifyMatrixList(sectionIndex, questionIndex, 'rows', (list) {
+      list.add('Row ${list.length + 1}');
+    });
+  }
+
+  void removeMatrixRow(int sectionIndex, int questionIndex, int rowIndex) {
+    _modifyMatrixList(sectionIndex, questionIndex, 'rows', (list) {
+      if (list.length > 1) list.removeAt(rowIndex);
+    });
+  }
+
+  void updateMatrixRow(int sectionIndex, int questionIndex, int rowIndex, String value) {
+    _updateMatrixListValue(sectionIndex, questionIndex, 'rows', rowIndex, value);
+  }
+
+  void addMatrixColumn(int sectionIndex, int questionIndex) {
+    _modifyMatrixList(sectionIndex, questionIndex, 'columns', (list) {
+      list.add('Col ${list.length + 1}');
+    });
+  }
+
+  void removeMatrixColumn(int sectionIndex, int questionIndex, int colIndex) {
+    _modifyMatrixList(sectionIndex, questionIndex, 'columns', (list) {
+      if (list.length > 1) list.removeAt(colIndex);
+    });
+  }
+
+  void updateMatrixColumn(int sectionIndex, int questionIndex, int colIndex, String value) {
+    _updateMatrixListValue(sectionIndex, questionIndex, 'columns', colIndex, value);
+  }
+
+  // Helper to reduce boilerplate
+  void _modifyMatrixList(int sIdx, int qIdx, String key, Function(List<dynamic>) action) {
+    if (sIdx >= 0 && sIdx < _sections.length) {
+      final questions = _sections[sIdx]['questions'] as List<Map<String, dynamic>>;
+      if (qIdx >= 0 && qIdx < questions.length) {
+        final config = Map<String, dynamic>.from(questions[qIdx]['config'] ?? {});
+        final list = List<String>.from(config[key] ?? []);
+        
+        action(list);
+        
+        config[key] = list;
+        questions[qIdx]['config'] = config;
+        notifyListeners();
+      }
+    }
+  }
+
+  void _updateMatrixListValue(int sIdx, int qIdx, String key, int index, String value) {
+    if (sIdx >= 0 && sIdx < _sections.length) {
+      final questions = _sections[sIdx]['questions'] as List<Map<String, dynamic>>;
+      if (qIdx >= 0 && qIdx < questions.length) {
+        final config = questions[qIdx]['config'] as Map<String, dynamic>?;
+        if (config != null) {
+          final list = config[key] as List<dynamic>?; // Keep as dynamic reference
+          if (list != null && index >= 0 && index < list.length) {
+            list[index] = value;
+            // No notifyListeners here for text input performance, similar to other fields
+          }
+        }
+      }
     }
   }
 
