@@ -17,6 +17,8 @@ class EmployeeModel {
   final String? middleName;
   final List<String> extraTags; 
   final String? photoUrl;
+  final bool catnaAssessed;
+  final bool impactAssessed;
 
   const EmployeeModel({
     String? id, // Allows null/omission during creation
@@ -29,6 +31,8 @@ class EmployeeModel {
     this.middleName,
     this.extraTags = const [],
     this.photoUrl,
+    required this.catnaAssessed,
+    required this.impactAssessed
   }) : userId = id ?? ''; // Use empty string placeholder if null
 
   String get fullName {
@@ -47,6 +51,8 @@ class EmployeeModel {
     String? middleName,
     List<String>? extraTags,
     String? photoUrl,
+    bool? catnaAssessed,
+    bool? impactAssessed
   }) {
     return EmployeeModel(
       id: id ?? userId,
@@ -59,6 +65,8 @@ class EmployeeModel {
       middleName: middleName ?? this.middleName,
       extraTags: extraTags ?? this.extraTags,
       photoUrl: photoUrl ?? this.photoUrl,
+      catnaAssessed: catnaAssessed ?? false,
+      impactAssessed: impactAssessed ?? true
     );
   }
 
@@ -73,6 +81,8 @@ class EmployeeModel {
       'department': department,
       'role': role.name, 
       'photo_url': photoUrl,
+      'catna_assessed': catnaAssessed,
+      'impact_assessed': impactAssessed
     };
     if (userId.isNotEmpty) {
       map['id'] = userId;
@@ -106,6 +116,8 @@ class EmployeeModel {
       middleName: map['middle_name'] as String?, 
       extraTags: parseTags(map['tags']), 
       photoUrl: map['photo_url'] as String?,
+      catnaAssessed: map['catna_assessed'] as bool,
+      impactAssessed: map['impact_assessed'] as bool
     );
   }
 }

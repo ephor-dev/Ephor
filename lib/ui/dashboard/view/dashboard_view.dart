@@ -52,7 +52,7 @@ class _DashboardViewState extends State<DashboardView> {
         'path': Routes.dashboardOverview
       },
       {
-        'title': 'Employee List',
+        'title': 'Employee Management',
         'icon': Icons.list,
         'selected': false,
         'path': Routes.dashboardEmployeeList
