@@ -61,15 +61,6 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
     super.dispose();
   }
 
-  Map<String?, String> textEquivalents = {
-    'humanResource': "Human Resource",
-    'supervisor': "Supervisor",
-    'personnel': 'University Personnel',
-    'faculty': 'Faculty Member',
-    'jobOrder': 'Job-Order Employee',
-    null: 'Not Applicable'
-  };
-
   void _onSingleDeleteFinished() {
     if (widget.viewModel.deleteEmployee.completed) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -479,7 +470,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                 employee.fullName, 
                 style: const TextStyle(fontWeight: FontWeight.w600)
               ),
-              subtitle: Text(textEquivalents[employee.role.name] ?? employee.role.name),
+              subtitle: Text('${employee.role.displayName}, ${employee.department}'),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
