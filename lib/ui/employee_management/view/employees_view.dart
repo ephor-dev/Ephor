@@ -121,6 +121,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
       child: Consumer<EmployeeListViewModel>(
         builder: (context, viewModel, child) {
           final bool isUserHR = viewModel.currentUser?.role == EmployeeRole.humanResource;
+          final bool isUserSupervisor = viewModel.currentUser?.role == EmployeeRole.supervisor;
           final String? department = viewModel.currentUser?.department;
 
           return Scaffold(
@@ -143,6 +144,29 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                         ? () => _confirmDelete(context, viewModel, deleteableEmployees)
                         : null, 
                 ),
+                if (isUserSupervisor)
+                  ...[
+                    FilledButton.icon(
+                      onPressed: () => {
+                        context.go(Routes.getCatnaFormsPath()),
+                      }, 
+                      label: Text("Fill CATNA"),
+                      icon: Icon(Icons.assessment),
+                    ),
+                    const SizedBox(width: 16,),
+                    FilledButton.icon(
+                      onPressed: () => {
+                        context.go(Routes.getImpactAssessmentPath()),
+                      }, 
+                      label: Text("Fill IA"),
+                      icon: Icon(Icons.assessment_rounded),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.tertiary,
+                        foregroundColor: Theme.of(context).colorScheme.onTertiary
+                      )
+                    ),
+                    const SizedBox(width: 16,),
+                  ],
                 if (isUserHR) IconButton(
                     icon: const Icon(Icons.person_add),
                     tooltip: 'Add a User',
@@ -490,7 +514,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                   if(canAssessUsers)
                     ...[
                     SizedBox(
-                      width: 250,
+                      width: 220,
                       child: RichText(
                         text: TextSpan(
                           style: TextStyle(
@@ -532,30 +556,6 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                         )
                       ),
                     ),
-                    const SizedBox(width: 16,),
-                    FilledButton.icon(
-                      onPressed: employee.catnaAssessed 
-                        ? null 
-                        : () => {
-                          context.go(Routes.getCatnaFormsPath()),
-                        }, 
-                      label: Text("Fill CATNA"),
-                      icon: Icon(Icons.assessment),
-                    ),
-                    const SizedBox(width: 16,),
-                    FilledButton.icon(
-                      onPressed: employee.impactAssessed 
-                        ? null 
-                        : () => {
-                          context.go(Routes.getImpactAssessmentPath()),
-                        }, 
-                      label: Text("Fill IA"),
-                      icon: Icon(Icons.assessment_rounded),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.tertiary,
-                        foregroundColor: Theme.of(context).colorScheme.onTertiary
-                      )
-                    )
                   ]
                 ],
               ),

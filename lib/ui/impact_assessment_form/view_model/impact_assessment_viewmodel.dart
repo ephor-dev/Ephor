@@ -107,7 +107,8 @@ class ImpactAssessmentViewModel extends ChangeNotifier {
       _departmentEmployees = list.where((employee) {
         if (currentUser?.role == EmployeeRole.supervisor) {
           return employee.department == currentUser?.department &&
-                 employee.role != EmployeeRole.humanResource;
+            employee.role != EmployeeRole.humanResource
+            && employee.catnaAssessed && !employee.impactAssessed;
         }
         return true;
       }).toList();
