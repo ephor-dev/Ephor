@@ -9,6 +9,7 @@ import 'package:ephor/domain/use_cases/excel_generator.dart';
 import 'package:ephor/domain/use_cases/payload_to_api_model.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class FormRepository extends AbstractFormRepository {
@@ -235,29 +236,47 @@ class FormRepository extends AbstractFormRepository {
   }
 
   Stream<Map<String, dynamic>> getOverviewStatsStream() {
-    return _supabaseService.getOverviewStatsStream((List<Map<String, dynamic>> event) {
-      
-      // 1. Handle Empty Case
-      if (event.isEmpty) {
-        return {
-          'training_needs_count': 0,
-          'recent_activity': <ActivityModel>[],
-        };
-      }
+    return _supabaseService.getOverviewStatsStream(convertFunction);
+  }
 
-      final row = event.first;
+  Future<Result<Map<String, dynamic>>> getOverviewStats() async {
+    try {
+      final result = await _supabaseService.getOverviewStats();
+      final List<Map<String, dynamic>> typedList = List<Map<String, dynamic>>.from(result);
 
-      // 2. Deserialize Activity List
-      final List<dynamic> rawActivityList = row['recent_activity'] ?? [];
-      final List<ActivityModel> activities = rawActivityList
-          .map((json) => ActivityModel.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return Result.ok(convertFunction(typedList));
+    } on Error {
+      return Result.error(CustomMessageException("Can't load overview stats"));
+    }
+  }
 
-      // 3. Return Final Map
+  Map<String, dynamic> convertFunction(List<Map<String, dynamic>> event) {
+    // 1. Handle Empty Case
+    if (event.isEmpty) {
       return {
-        'training_needs_count': row['training_needs_count'] ?? 0,
-        'recent_activity': activities,
+        'training_needs_count': 0,
+        'recent_activity': <ActivityModel>[],
+        'gemini_insights': 'None',
+        'updated_at': DateFormat('MM/dd/yyyy hh:mm:ss a').format(DateTime.now()),
+        'full_report': 'N/A'
       };
-    });
+    }
+
+    final row = event.first;
+
+    // 2. Deserialize Activity List
+    final List<dynamic> rawActivityList = row['recent_activity'] ?? [];
+    final List<ActivityModel> activities = rawActivityList
+        .map((json) => ActivityModel.fromJson(json as Map<String, dynamic>))
+        .toList();
+
+    // 3. Return Final Map
+    return {
+      'training_needs_count': row['training_needs_count'] ?? 0,
+      'recent_activity': activities,
+      'gemini_insights': row['full_report']['gemini_insights'],
+      'updated_at': row['updated_at'],
+      'full_report': row['full_report']['catna_analysis']
+    };
   }
 }

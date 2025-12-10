@@ -392,13 +392,27 @@ class SupabaseService {
 
   // Overview
   Future<void> updateOverviewStatistics(Map<String, dynamic> analysisResult) async {
+    final result = analysisResult['catna_analysis'];
+    final individualPlans = result['Individual_Training_Plans'] as List? ?? [];
+    final count = individualPlans.length;
+
+    final derivedActivity = individualPlans.map((plan) {
+      return {
+        'employeeName': plan['Name'],
+        'status': 'Identified',
+        'timeAgo': DateTime.now().toIso8601String(),
+        'description': plan['Training_Recommendation'],
+      };
+    }).toList();
+
+    // 3. Update Supabase
     await _client.from('overview_stats').upsert({
-        'id': 'university_wide_overview', // Constant ID ensures we update the single source of truth
-        'training_needs_count': analysisResult['training_needs_count'], // derived from AI result
-        'recent_activity': analysisResult['recent_activity'], 
-        'full_report': analysisResult['catna_analysis'],
-        'updated_at': DateTime.now().toIso8601String(),
-      });
+      'id': 'university_wide_overview',
+      'training_needs_count': count,
+      'recent_activity': derivedActivity,
+      'full_report': analysisResult,
+      'updated_at': DateTime.now().toIso8601String(),
+    });
   }
 
   Stream<Map<String, dynamic>> getOverviewStatsStream(
@@ -414,5 +428,15 @@ class SupabaseService {
           // Apply the conversion function
           return convertFunction(typedList);
         });
+  }
+
+  Future<PostgrestList> getOverviewStats() async {
+      final response = await _client
+        .from('overview_stats') // Ensure this is the correct table name
+        .select()
+        .eq('id', 'university_wide_overview');
+      
+      // final List<Map<String, dynamic>> typedList = List<Map<String, dynamic>>.from(result);
+      return response;
   }
 }

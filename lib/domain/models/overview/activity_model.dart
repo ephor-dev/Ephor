@@ -10,7 +10,7 @@ class ActivityModel {
   });
 
   // Helper to determine if the status counts as "completed" for the UI red dot
-  bool get isCompleted => status.toLowerCase() == 'completed';
+  bool get isIdentified => status.toLowerCase() == 'identified';
 
   // Helper to format the time (e.g., "2 hours ago")
   String get timeAgo {
@@ -23,10 +23,10 @@ class ActivityModel {
 
   factory ActivityModel.fromJson(Map<String, dynamic> json) {
     return ActivityModel(
-      employeeName: json['employee_name'] ?? 'Unknown Employee',
+      employeeName: json['employeeName'] ?? 'Unknown Employee',
       status: json['status'] ?? 'Pending',
-      timestamp: json['timestamp'] != null 
-          ? DateTime.parse(json['timestamp']) 
+      timestamp: json['timeAgo'] != null 
+          ? DateTime.parse(json['timeAgo']) 
           : DateTime.now(),
     );
   }
