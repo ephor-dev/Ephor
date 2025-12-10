@@ -257,6 +257,32 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                         ]
                       ),
                     ),
+                    PopupMenuItem<String>(
+                      value: 'departments_ascending',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.keyboard_arrow_up, 
+                            color: Theme.of(context).colorScheme.onSurface.withAlpha(222)
+                          ), 
+                          SizedBox(width: 8), 
+                          Text('Departments (Ascending)')
+                        ]
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'departments_descending',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.keyboard_arrow_down, 
+                            color: Theme.of(context).colorScheme.onSurface.withAlpha(222)
+                          ), 
+                          SizedBox(width: 8), 
+                          Text('Departments (Descending)')
+                        ]
+                      ),
+                    ),
                   ],
                   onSelected: (String result) {
                     setState(() {
@@ -343,6 +369,24 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
               ? -1 
               : 0;
           if (impactComparison != 0) return impactComparison;
+          
+          // Tie-breaker: If roles are same, still sort by Name A-Z (easier to read)
+          return a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase());
+        });
+        break;
+      case 'departments_ascending':
+        employeeList.sort((a, b) {
+          int departmentComparison = a.department.compareTo(b.department);
+          if (departmentComparison != 0) return departmentComparison;
+          
+          // Tie-breaker: If roles are same, sort by Name A-Z
+          return a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase());
+        });
+        break;
+      case 'departments_descending':
+        employeeList.sort((a, b) {
+          int departmentComparison = b.department.compareTo(a.department);
+          if (departmentComparison != 0) return departmentComparison;
           
           // Tie-breaker: If roles are same, still sort by Name A-Z (easier to read)
           return a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase());
