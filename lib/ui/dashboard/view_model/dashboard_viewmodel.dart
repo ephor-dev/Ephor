@@ -17,7 +17,9 @@ class DashboardViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   ValueNotifier<bool> _isAnalysisRunning = ValueNotifier(false);
-  ValueNotifier<bool> get isAnalysisRunning => _isAnalysisRunning;
+  bool get isAnalysisRunning => _isAnalysisRunning.value;
+
+  late final VoidCallback _analysisListener;
 
   bool _isAuthenticated = false;
   bool get isAuthenticated => _isAuthenticated;
@@ -67,16 +69,22 @@ class DashboardViewModel extends ChangeNotifier {
   }
 
   void _subscribeToAnalysisStatus() {
-    _formRepository.isAnalyzingNotifer.addListener(() {
+    _analysisListener = () {
       _isAnalysisRunning.value = _formRepository.isAnalyzingNotifer.value;
+      print('value changed: ${_formRepository.isAnalyzingNotifer.value}');
       notifyListeners();
-    });
+    };
+
+    // 3. Add the listener
+    _formRepository.isAnalyzingNotifer.addListener(_analysisListener);
   }
 
   @override
   void dispose() {
     _loadingSubscription.cancel(); 
     _authStatusSubscription.cancel(); 
+
+    _formRepository.isAnalyzingNotifer.removeListener(_analysisListener);
     super.dispose();
   }
 

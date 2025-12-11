@@ -444,21 +444,20 @@ class _DashboardViewState extends State<DashboardView> {
                     onPressed: _showInfoPlaceholder
                   ),
 
-                  ValueListenableBuilder(
-                    valueListenable: widget.viewModel.isAnalysisRunning, 
-                    builder: (context, isAnalysisRunning, child) {
-                      return IconButton(
-                        tooltip: 'CATNA Analysis Status',
-                        icon: isAnalysisRunning
-                          ? const CircularProgressIndicator()
-                          : Icon(
-                              Icons.notifications_none,
-                              color: Theme.of(context).colorScheme.onSurface, 
-                              size: 25
-                            ), 
-                        onPressed: null,
-                      );
-                    }
+                  IconButton(
+                    tooltip: 'CATNA Analysis Status',
+                    onPressed: null, 
+                    icon: widget.viewModel.isAnalysisRunning
+                      ? const SizedBox(
+                          width: 24, 
+                          height: 24, 
+                          child: CircularProgressIndicator(strokeWidth: 2.5),
+                        )
+                      : Icon(
+                          Icons.notifications_none,
+                          color: Theme.of(context).colorScheme.onSurface, 
+                          size: 25
+                        ), 
                   ),
                   
                   const SizedBox(width: 15.0), 
