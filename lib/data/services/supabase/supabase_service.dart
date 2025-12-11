@@ -392,16 +392,28 @@ class SupabaseService {
 
   // Overview
   Future<void> updateOverviewStatistics(Map<String, dynamic> analysisResult) async {
-    final result = analysisResult['catna_analysis'];
-    final individualPlans = result['Individual_Training_Plans'] as List? ?? [];
+    // FIX: The API returns 'catna_analysis_summary', not 'catna_analysis'
+    // We try both just to be safe.
+    final result = analysisResult['catna_analysis_summary'] ?? analysisResult['catna_analysis'];
+
+    if (result == null) {
+      print("Warning: Could not find CATNA analysis data in payload.");
+      return;
+    }
+
+    // FIX: Safe casting to List
+    final individualPlans = (result['Individual_Training_Plans'] as List?) ?? [];
     final count = individualPlans.length;
 
+    // FIX: Map the plans safely
     final derivedActivity = individualPlans.map((plan) {
+      // Ensure 'plan' is treated as a Map
+      final p = plan as Map; 
       return {
-        'employeeName': plan['Name'],
+        'employeeName': p['Name'] ?? 'Unknown',
         'status': 'Identified',
         'timeAgo': DateTime.now().toIso8601String(),
-        'description': plan['Training_Recommendation'],
+        'description': p['Training_Recommendation'] ?? 'No recommendation',
       };
     }).toList();
 
@@ -410,7 +422,7 @@ class SupabaseService {
       'id': 'university_wide_overview',
       'training_needs_count': count,
       'recent_activity': derivedActivity,
-      'full_report': analysisResult,
+      'full_report': analysisResult, // Save the whole thing so you can read 'gemini_insights' later
       'updated_at': DateTime.now().toIso8601String(),
     });
   }
@@ -436,7 +448,6 @@ class SupabaseService {
       .select()
       .eq('id', 'university_wide_overview');
     
-    // final List<Map<String, dynamic>> typedList = List<Map<String, dynamic>>.from(result);
     return response;
   }
 

@@ -83,7 +83,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           viewModel: DashboardViewModel(
             authRepository: authRepository, 
             prefsRepository: context.read(), 
-            employeeRepository: context.read(), 
+            employeeRepository: context.read(),
+            formRepository: context.read(),
             themeNotifier: context.read()
           ), 
           child: child

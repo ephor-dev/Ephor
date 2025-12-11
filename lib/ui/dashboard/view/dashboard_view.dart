@@ -233,15 +233,6 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  void _showNotificationsPlaceholder() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Notifications functionality coming soon! No new alerts.'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
   void _handleEditUserInfo(BuildContext context) {
     context.pop();
     showDialog(
@@ -452,14 +443,22 @@ class _DashboardViewState extends State<DashboardView> {
                     ),
                     onPressed: _showInfoPlaceholder
                   ),
-                  
-                  IconButton(
-                    icon: Icon(
-                      Icons.notifications_none, 
-                      color: Theme.of(context).colorScheme.onSurface, 
-                      size: 25
-                    ), 
-                    onPressed: _showNotificationsPlaceholder
+
+                  ValueListenableBuilder(
+                    valueListenable: widget.viewModel.isAnalysisRunning, 
+                    builder: (context, isAnalysisRunning, child) {
+                      return IconButton(
+                        tooltip: 'CATNA Analysis Status',
+                        icon: isAnalysisRunning
+                          ? const CircularProgressIndicator()
+                          : Icon(
+                              Icons.notifications_none,
+                              color: Theme.of(context).colorScheme.onSurface, 
+                              size: 25
+                            ), 
+                        onPressed: null,
+                      );
+                    }
                   ),
                   
                   const SizedBox(width: 15.0), 

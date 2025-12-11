@@ -271,8 +271,6 @@ class CatnaViewModel extends ChangeNotifier {
       return Result.error(CustomMessageException("Can't retrieve user code"));
     }
 
-    print(employeeCode);
-
     // 5. Final Payload Construction
     final payload = <String, dynamic>{
       'updated_user': employeeCode,
