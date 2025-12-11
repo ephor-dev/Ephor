@@ -61,15 +61,6 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
     super.dispose();
   }
 
-  Map<String?, String> textEquivalents = {
-    'humanResource': "Human Resource",
-    'supervisor': "Supervisor",
-    'personnel': 'University Personnel',
-    'faculty': 'Faculty Member',
-    'jobOrder': 'Job-Order Employee',
-    null: 'Not Applicable'
-  };
-
   void _onSingleDeleteFinished() {
     if (widget.viewModel.deleteEmployee.completed) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -121,6 +112,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
       child: Consumer<EmployeeListViewModel>(
         builder: (context, viewModel, child) {
           final bool isUserHR = viewModel.currentUser?.role == EmployeeRole.humanResource;
+          final bool isUserSupervisor = viewModel.currentUser?.role == EmployeeRole.supervisor;
           final String? department = viewModel.currentUser?.department;
 
           return Scaffold(
@@ -143,6 +135,29 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                         ? () => _confirmDelete(context, viewModel, deleteableEmployees)
                         : null, 
                 ),
+                if (isUserSupervisor)
+                  ...[
+                    FilledButton.icon(
+                      onPressed: () => {
+                        context.go(Routes.getCatnaFormsPath()),
+                      }, 
+                      label: Text("Fill CATNA"),
+                      icon: Icon(Icons.assessment),
+                    ),
+                    const SizedBox(width: 16,),
+                    FilledButton.icon(
+                      onPressed: () => {
+                        context.go(Routes.getImpactAssessmentPath()),
+                      }, 
+                      label: Text("Fill IA"),
+                      icon: Icon(Icons.assessment_rounded),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.tertiary,
+                        foregroundColor: Theme.of(context).colorScheme.onTertiary
+                      )
+                    ),
+                    const SizedBox(width: 16,),
+                  ],
                 if (isUserHR) IconButton(
                     icon: const Icon(Icons.person_add),
                     tooltip: 'Add a User',
@@ -231,6 +246,58 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                         ]
                       ),
                     ),
+                    PopupMenuItem<String>(
+                      value: 'needs_catna_first',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.arrow_left, 
+                            color: Theme.of(context).colorScheme.onSurface.withAlpha(222)
+                          ), 
+                          SizedBox(width: 8), 
+                          Text('Needs CATNA First')
+                        ]
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'needs_ia_first',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.arrow_right, 
+                            color: Theme.of(context).colorScheme.onSurface.withAlpha(222)
+                          ), 
+                          SizedBox(width: 8), 
+                          Text('Needs IA First')
+                        ]
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'departments_ascending',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.keyboard_arrow_up, 
+                            color: Theme.of(context).colorScheme.onSurface.withAlpha(222)
+                          ), 
+                          SizedBox(width: 8), 
+                          Text('Departments (Ascending)')
+                        ]
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'departments_descending',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.keyboard_arrow_down, 
+                            color: Theme.of(context).colorScheme.onSurface.withAlpha(222)
+                          ), 
+                          SizedBox(width: 8), 
+                          Text('Departments (Descending)')
+                        ]
+                      ),
+                    ),
                   ],
                   onSelected: (String result) {
                     setState(() {
@@ -260,6 +327,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
   Widget _buildEmployeeList(BuildContext context, EmployeeListViewModel viewModel) {
 
     final bool canEditUsers = viewModel.currentUser?.role == EmployeeRole.humanResource;
+    final bool canAssessUsers = viewModel.currentUser?.role == EmployeeRole.supervisor;
     List<EmployeeModel> employeeList = viewModel.employees;
     String? searchKeyword = viewModel.searchKeyword;
     employeeList = widget.viewModel.searchEmployees(employeeList, searchKeyword);
@@ -286,6 +354,54 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
         employeeList.sort((a, b) {
           int roleComparison = b.role.index.compareTo(a.role.index);
           if (roleComparison != 0) return roleComparison;
+          
+          // Tie-breaker: If roles are same, still sort by Name A-Z (easier to read)
+          return a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase());
+        });
+        break;
+      case 'needs_catna_first':
+        employeeList.sort((a, b) {
+          int catnaComparison = a.catnaAssessed 
+            ? b.catnaAssessed 
+              ? 0 
+              : 1 
+            : b.catnaAssessed 
+              ? -1 
+              : 0;
+          if (catnaComparison != 0) return catnaComparison;
+          
+          // Tie-breaker: If roles are same, still sort by Name A-Z (easier to read)
+          return a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase());
+        });
+        break;
+      case 'needs_ia_first':
+        employeeList.sort((a, b) {
+          int impactComparison = a.impactAssessed 
+            ? b.impactAssessed 
+              ? 0 
+              : 1 
+            : b.impactAssessed 
+              ? -1 
+              : 0;
+          if (impactComparison != 0) return impactComparison;
+          
+          // Tie-breaker: If roles are same, still sort by Name A-Z (easier to read)
+          return a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase());
+        });
+        break;
+      case 'departments_ascending':
+        employeeList.sort((a, b) {
+          int departmentComparison = a.department.compareTo(b.department);
+          if (departmentComparison != 0) return departmentComparison;
+          
+          // Tie-breaker: If roles are same, sort by Name A-Z
+          return a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase());
+        });
+        break;
+      case 'departments_descending':
+        employeeList.sort((a, b) {
+          int departmentComparison = b.department.compareTo(a.department);
+          if (departmentComparison != 0) return departmentComparison;
           
           // Tie-breaker: If roles are same, still sort by Name A-Z (easier to read)
           return a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase());
@@ -354,13 +470,14 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                 employee.fullName, 
                 style: const TextStyle(fontWeight: FontWeight.w600)
               ),
-              subtitle: Text(textEquivalents[employee.role.name] ?? employee.role.name),
+              subtitle: Text('${employee.role.displayName}, ${employee.department}'),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
 
                   if (canEditUsers)
+                    ...[
                     IconButton(
                       icon: const Icon(Icons.edit_outlined),
                       tooltip: 'Edit Employee',
@@ -374,15 +491,63 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                                 },
                               ),
                     ),
-                  IconButton(
-                    icon: viewModel.deleteEmployee.running
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                        : Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
-                    tooltip: 'Remove Employee',
-                    onPressed: viewModel.deleteEmployee.running
-                        ? null
-                        : () => _confirmDelete(context, viewModel, [employee]),
-                  ),
+                    IconButton(
+                      icon: viewModel.deleteEmployee.running
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                          : Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
+                      tooltip: 'Remove Employee',
+                      onPressed: viewModel.deleteEmployee.running
+                          ? null
+                          : () => _confirmDelete(context, viewModel, [employee]),
+                    )
+                  ],
+
+                  if(canAssessUsers)
+                    ...[
+                    SizedBox(
+                      width: 220,
+                      child: RichText(
+                        text: TextSpan(
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                          children: <TextSpan>[
+                            TextSpan(
+                              text: 'CATNA:\t', 
+                              style: TextStyle(
+                                fontWeight: FontWeight.w400
+                              ),
+                            ),
+                            TextSpan(
+                              text: employee.catnaAssessed ? 'DONE' : 'WAITING', 
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: employee.catnaAssessed
+                                  ? Colors.green
+                                  : Theme.of(context).colorScheme.error
+                              ),
+                            ),
+                            TextSpan(
+                              text: '\nImpact Assessment:\t', 
+                              style: TextStyle(
+                                fontWeight: FontWeight.w400
+                              ),
+                            ),
+                            TextSpan(
+                              text: employee.impactAssessed ? 'WAITING' : 'NOT UPDATED', 
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: employee.impactAssessed
+                                  ? Colors.green
+                                  : Theme.of(context).colorScheme.error
+                              ),
+                            )
+                          ]
+                        )
+                      ),
+                    ),
+                  ]
                 ],
               ),
               onTap: () {

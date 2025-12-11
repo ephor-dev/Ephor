@@ -330,6 +330,12 @@ class SupabaseService {
     await _client.from('impact_assessments').insert(payload);
   }
 
+  Future<List<Map<String, dynamic>>> getAllFinishedCATNA() async {
+    final response = await _client.from('catna_assessments').select();
+
+    return response;
+  }
+
   // Form Things
   Future<PostgrestMap> upsertForm(Map<String, dynamic> formData) async {
     final response = await _client
@@ -382,5 +388,73 @@ class SupabaseService {
       .maybeSingle();
     
     return response;
+  }
+
+  // Overview
+  Future<void> updateOverviewStatistics(Map<String, dynamic> analysisResult) async {
+    final result = analysisResult['catna_analysis'];
+    final individualPlans = result['Individual_Training_Plans'] as List? ?? [];
+    final count = individualPlans.length;
+
+    final derivedActivity = individualPlans.map((plan) {
+      return {
+        'employeeName': plan['Name'],
+        'status': 'Identified',
+        'timeAgo': DateTime.now().toIso8601String(),
+        'description': plan['Training_Recommendation'],
+      };
+    }).toList();
+
+    // 3. Update Supabase
+    await _client.from('overview_stats').upsert({
+      'id': 'university_wide_overview',
+      'training_needs_count': count,
+      'recent_activity': derivedActivity,
+      'full_report': analysisResult,
+      'updated_at': DateTime.now().toIso8601String(),
+    });
+  }
+
+  Stream<Map<String, dynamic>> getOverviewStatsStream(
+    Map<String, dynamic> Function(List<Map<String, dynamic>>) convertFunction) {
+  
+    return _client
+        .from('overview_stats') // Ensure this is the correct table name
+        .stream(primaryKey: ['id'])
+        .eq('id', 'university_wide_overview') // Filter for the specific row if needed
+        .map((event) {
+          // Convert the dynamic event to a typed list first
+          final List<Map<String, dynamic>> typedList = List<Map<String, dynamic>>.from(event);
+          // Apply the conversion function
+          return convertFunction(typedList);
+        });
+  }
+
+  Future<PostgrestList> getOverviewStats() async {
+    final response = await _client
+      .from('overview_stats') // Ensure this is the correct table name
+      .select()
+      .eq('id', 'university_wide_overview');
+    
+    // final List<Map<String, dynamic>> typedList = List<Map<String, dynamic>>.from(result);
+    return response;
+  }
+
+  Future<void> updateEmployeeCATNAStatus(String employeeCode) async {
+    EmployeeModel? employee = await getEmployeeByCode(employeeCode);
+
+    if (employee != null) {
+      final Map<String, dynamic> updates = employee.toJson();
+      updates.remove('id'); 
+      updates.remove('employee_code');
+      updates['catna_assessed'] = true;
+      updates['impact_assessed'] = false;
+
+      await _client
+        .from('employees')
+        .update(updates)
+        .eq('employee_code', employeeCode)
+        .select(); 
+    }
   }
 }

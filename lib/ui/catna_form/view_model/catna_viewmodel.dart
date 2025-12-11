@@ -6,7 +6,7 @@ import 'package:ephor/domain/lists/designation_choices.dart';
 import 'package:ephor/domain/lists/office_choices.dart';
 import 'package:ephor/domain/lists/operating_unit_choices.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
-import 'package:ephor/domain/models/form/form_definitions.dart'; 
+import 'package:ephor/domain/models/form/form_definitions.dart';
 import 'package:ephor/utils/command.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
@@ -109,7 +109,9 @@ class CatnaViewModel extends ChangeNotifier {
       _departmentEmployees = list.where((employee) {
         if (currentUser?.role == EmployeeRole.supervisor) {
           return employee.department == currentUser?.department 
-            && employee.role != EmployeeRole.humanResource;
+            && employee.role != EmployeeRole.humanResource 
+            && !employee.catnaAssessed 
+            && employee.impactAssessed;
         }
         return true;
       }).toList();
@@ -251,8 +253,29 @@ class CatnaViewModel extends ChangeNotifier {
       }
     };
 
+    String employeeCode = "";
+
+    try {
+      final listResult = await _employeeRepository.fetchAllEmployees();
+      if (listResult case Ok(value: List<EmployeeModel> employeeList)) {
+        for (EmployeeModel employee in employeeList) {
+          if (employee.fullName == identifyingData['full_name']) {
+            employeeCode = employee.employeeCode;
+            break;
+          }
+        }
+      }
+
+      if (employeeCode == "") return Result.error(CustomMessageException("Can't retrieve user code"));
+    } on Error {
+      return Result.error(CustomMessageException("Can't retrieve user code"));
+    }
+
+    print(employeeCode);
+
     // 5. Final Payload Construction
     final payload = <String, dynamic>{
+      'updated_user': employeeCode,
       'employee_code': currentUser.employeeCode,
       'identifying_data': identifyingData,
       'competency_ratings': competencyRatings,

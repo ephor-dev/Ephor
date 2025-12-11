@@ -1,15 +1,27 @@
+import 'dart:convert';
+
 import 'package:ephor/data/repositories/form/abstract_form_repository.dart';
+import 'package:ephor/data/services/model_api/model_api_service.dart';
 import 'package:ephor/data/services/supabase/supabase_service.dart';
 import 'package:ephor/domain/models/form_editor/form_model.dart';
+import 'package:ephor/domain/models/overview/activity_model.dart';
+import 'package:ephor/domain/use_cases/excel_generator.dart';
+import 'package:ephor/domain/use_cases/payload_to_api_model.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class FormRepository extends AbstractFormRepository {
   final SupabaseService _supabaseService;
+  final ModelAPIService _modelAPIService;
 
-  FormRepository({required SupabaseService supabaseService})
-    : _supabaseService = supabaseService;
+  FormRepository({
+    required SupabaseService supabaseService,
+    required ModelAPIService modelAPIService
+  })
+    : _supabaseService = supabaseService,
+      _modelAPIService = modelAPIService;
 
   @override
   Future<Result<FormModel>> saveForm(FormModel form) async {
@@ -52,26 +64,6 @@ class FormRepository extends AbstractFormRepository {
       );
     }
   }
-
-  // @override
-  // Future<Result<List<FormModel>>> getFormsByCreator(String creatorId) async {
-  //   try {
-  //     await Future.delayed(const Duration(milliseconds: 500));
-
-  //     final forms = _formsStorage.values
-  //         .where((form) => form.createdBy == creatorId)
-  //         .toList();
-
-  //     // Sort by updatedAt descending (most recent first)
-  //     forms.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-
-  //     return Result.ok(forms);
-  //   } catch (e) {
-  //     return Result.error(
-  //       CustomMessageException('Failed to fetch forms: ${e.toString()}'),
-  //     );
-  //   }
-  // }
 
   @override
   Future<Result<List<FormModel>>> getAllForms() async {
@@ -134,7 +126,10 @@ class FormRepository extends AbstractFormRepository {
   @override
   Future<Result<void>> submitCatna(Map<String, dynamic> payload) async {
     try {
+      String employeeName = payload.remove('updated_user');
       await _supabaseService.insertCatnaAssessment(payload);
+      await _supabaseService.updateEmployeeCATNAStatus(employeeName);
+      _triggerAnalysisInBackground(payload);
       return const Result.ok(null);
     } catch (e) {
       return Result.error(
@@ -153,5 +148,137 @@ class FormRepository extends AbstractFormRepository {
         CustomMessageException('Failed to submit Impact assessment: $e'),
       );
     }
+  }
+
+  Future<Result<Map<String, dynamic>>> analyzeCATNA(List<Map<String, dynamic>> jsonData) async {
+    try {
+      // 1. Convert JSON to Excel Bytes in Memory
+      final List<int>? excelBytes = ExcelGenerator.generateExcelBytes(jsonData);
+      
+      if (excelBytes == null || excelBytes.isEmpty) {
+        return Result.error(CustomMessageException('No data available to generate Excel file.'));
+      }
+
+      // 2. Upload the Bytes (Mocking a filename is required by most APIs)
+      final response = await _modelAPIService.analyzeDatasetBytes(
+        excelBytes, 
+        'catna_submission.xlsx' 
+      );
+      
+      final responseBody = response.body;
+
+      // 3. Handle Response
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(responseBody);
+        return Result.ok(data);
+      } else {
+        // Try to parse server error message
+        String errorMessage = 'Request failed with status: ${response.statusCode}';
+        try {
+          final errorJson = json.decode(responseBody);
+          if (errorJson['detail'] != null) {
+            errorMessage = errorJson['detail'];
+          }
+        } catch (_) {}
+        
+        return Result.error(CustomMessageException(errorMessage));
+      }
+    } catch (e) {
+      return Result.error(CustomMessageException('Analysis failed: $e'));
+    }
+  }
+  
+  void _triggerAnalysisInBackground(Map<String, dynamic> currentPayload) async {
+    try { 
+      
+      final response = await _supabaseService.getAllFinishedCATNA();
+      final List<dynamic> allAssessments = response;
+      final List<Map<String, dynamic>> fullDataset = [];
+
+      for (var assessment in allAssessments) {
+        // Ensure strict type casting
+        final assessmentMap = Map<String, dynamic>.from(assessment as Map);
+        
+        // Use your helper to convert this specific entry
+        final rows = convertPayloadToAPIModel(assessmentMap);
+        fullDataset.addAll(rows);
+      }
+      
+      final analysisResult = await analyzeCATNA(fullDataset);
+
+      if (analysisResult case Ok(value: Map<String, dynamic> result)) {
+        _supabaseService.updateOverviewStatistics(result);
+        _handleIndividualAssessment(currentPayload, result);
+      } else if (analysisResult case Error _) {
+        throw CustomMessageException("Cannot analyze CATNA");
+      }
+
+      print("General Overview updated successfully.");
+    } catch (e) {
+      print("Background analysis failed: $e");
+      // Optionally: Log this error to a monitoring service
+    }
+  }
+
+  void _handleIndividualAssessment(
+    Map<String, dynamic> payload, 
+    Map<String, dynamic> generalOverview
+  ) {
+    // ---------------------------------------------------------------------------
+    // MARKER: INDIVIDUAL ASSESSMENT LOGIC
+    // ---------------------------------------------------------------------------
+    // TODO: Implement logic to handle the specific feedback for the user who just submitted.
+    //
+    // Potential implementation paths:
+    // 1. Extract specific insights for 'payload['employee_code']' from 'generalOverview'.
+    // 2. Run a lightweight, separate analysis just for this payload.
+    // 3. Notify the user that their contribution has been added to the university model.
+    // ---------------------------------------------------------------------------
+    print("Pending: Individual assessment processing for ${payload['employee_code']}");
+  }
+
+  Stream<Map<String, dynamic>> getOverviewStatsStream() {
+    return _supabaseService.getOverviewStatsStream(convertFunction);
+  }
+
+  Future<Result<Map<String, dynamic>>> getOverviewStats() async {
+    try {
+      final result = await _supabaseService.getOverviewStats();
+      final List<Map<String, dynamic>> typedList = List<Map<String, dynamic>>.from(result);
+
+      return Result.ok(convertFunction(typedList));
+    } on Error {
+      return Result.error(CustomMessageException("Can't load overview stats"));
+    }
+  }
+
+  Map<String, dynamic> convertFunction(List<Map<String, dynamic>> event) {
+    // 1. Handle Empty Case
+    if (event.isEmpty) {
+      return {
+        'training_needs_count': 0,
+        'recent_activity': <ActivityModel>[],
+        'gemini_insights': 'None',
+        'updated_at': DateFormat('MM/dd/yyyy hh:mm:ss a').format(DateTime.now()),
+        'full_report': 'N/A'
+      };
+    }
+
+    final row = event.first;
+
+    // 2. Deserialize Activity List
+    final List<dynamic> rawActivityList = row['recent_activity'] ?? [];
+    final List<ActivityModel> activities = rawActivityList
+        .map((json) => ActivityModel.fromJson(json as Map<String, dynamic>))
+        .toList();
+
+    // 3. Return Final Map
+    return {
+      'training_needs_count': row['training_needs_count'] ?? 0,
+      'recent_activity': activities,
+      'gemini_insights': row['full_report']['gemini_insights'],
+      'updated_at': row['updated_at'],
+      'full_report': row['full_report']['catna_analysis']
+    };
   }
 }

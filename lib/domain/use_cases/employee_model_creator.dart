@@ -49,5 +49,7 @@ EmployeeModel createEmployeeModel(AddEmployeeParams params, String? userId, Stri
       department: params.department ?? 'N/A', 
       extraTags: tagList,
       photoUrl: photoUrl,
+      catnaAssessed: false,
+      impactAssessed: true
     );
   }
