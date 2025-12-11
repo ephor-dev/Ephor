@@ -732,86 +732,102 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                   
                   // THE TABLE SECTION
                   Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: DataTable(
-                          headingRowColor: MaterialStateProperty.all(
-                            Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3)
+                    child: Card(
+                      child: employee.assessmentHistory.isEmpty
+                        ? Center(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.hourglass_empty_outlined, 
+                                size: 64,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              Text(
+                                "There are no assessments rendered for this employee.",
+                              )
+                            ],
                           ),
-                          columns: const [
-                            DataColumn(label: Text('Results')),
-                            DataColumn(label: Text('Action Status')),
-                            DataColumn(label: Text('Action Date')),
-                          ],
-                          rows: employee.assessmentHistory.map((item) {
-                            final isDone = item['isDone'] == true;
-                            final date = item['date'] as DateTime?;
-
-                            return DataRow(
-                              cells: [
-                                // 1. Assessment Results
-                                DataCell(
-                                  Text(
-                                    item['result'].toString(), 
-                                    style: const TextStyle(fontWeight: FontWeight.w500)
-                                  )
-                                ),
-
-                                // 2. Action Done Status / Button
-                                DataCell(
-                                  isDone
-                                      ? Chip(
-                                          avatar: const Icon(Icons.check, size: 16, color: Colors.white),
-                                          label: const Text('Done', style: TextStyle(color: Colors.white)),
-                                          backgroundColor: Colors.green.shade600,
-                                          padding: EdgeInsets.zero,
-                                        )
-                                      : ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Theme.of(context).colorScheme.primary,
-                                            foregroundColor: Colors.white,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              item['isDone'] = true;
-                                              // Optional: Auto-set date to today if marking done
-                                              item['date'] ??= DateTime.now();
-                                            });
-                                          },
-                                          child: const Text('Mark as Done'),
-                                        ),
-                                ),
-
-                                // 3. Action Date Picker
-                                DataCell(
-                                  TextButton.icon(
-                                    icon: const Icon(Icons.calendar_today, size: 16),
-                                    label: Text(
-                                      date != null
-                                          ? "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}"
-                                          : "Select Date",
-                                    ),
-                                    onPressed: () async {
-                                      final DateTime? picked = await showEphorDatePicker(
-                                        context,
-                                        date ?? DateTime.now(),
-                                        DateTime(2000),
-                                        DateTime(2030),
-                                        OmniDateTimePickerType.date
-                                      );
-                                      if (picked != null) {
-                                        setState(() {
-                                          item['date'] = picked;
-                                        });
-                                      }
-                                    },
+                        )
+                        : SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: DataTable(
+                            columns: const [
+                              DataColumn(label: Text('Results')),
+                              DataColumn(label: Text('Action Status')),
+                              DataColumn(label: Text('Action Date')),
+                            ],
+                            rows: employee.assessmentHistory.map((item) {
+                              final isDone = item['isDone'] == true;
+                              final date = item['date'] as DateTime?;
+                      
+                              return DataRow(
+                                cells: [
+                                  // 1. Assessment Results
+                                  DataCell(
+                                    Text(
+                                      item['result'].toString(), 
+                                      style: const TextStyle(fontWeight: FontWeight.w500)
+                                    )
                                   ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
+                      
+                                  // 2. Action Done Status / Button
+                                  DataCell(
+                                    isDone
+                                        ? Chip(
+                                            avatar: const Icon(Icons.check, size: 16, color: Colors.white),
+                                            label: const Text('Done', style: TextStyle(color: Colors.white)),
+                                            backgroundColor: Colors.green.shade600,
+                                            padding: EdgeInsets.zero,
+                                          )
+                                        : ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Theme.of(context).colorScheme.primary,
+                                              foregroundColor: Colors.white,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                item['isDone'] = true;
+                                                // Optional: Auto-set date to today if marking done
+                                                item['date'] ??= DateTime.now();
+                                              });
+                                            },
+                                            child: const Text('Mark as Done'),
+                                          ),
+                                  ),
+                      
+                                  // 3. Action Date Picker
+                                  DataCell(
+                                    TextButton.icon(
+                                      icon: const Icon(Icons.calendar_today, size: 16),
+                                      label: Text(
+                                        date != null
+                                            ? "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}"
+                                            : "Select Date",
+                                      ),
+                                      onPressed: () async {
+                                        final DateTime? picked = await showEphorDatePicker(
+                                          context,
+                                          date ?? DateTime.now(),
+                                          DateTime(2000),
+                                          DateTime(2030),
+                                          OmniDateTimePickerType.date
+                                        );
+                                        if (picked != null) {
+                                          setState(() {
+                                            item['date'] = picked;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ),
                         ),
                       ),
                     ),
