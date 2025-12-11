@@ -126,7 +126,9 @@ class FormRepository extends AbstractFormRepository {
   @override
   Future<Result<void>> submitCatna(Map<String, dynamic> payload) async {
     try {
+      String employeeName = payload.remove('updated_user');
       await _supabaseService.insertCatnaAssessment(payload);
+      await _supabaseService.updateEmployeeCATNAStatus(employeeName);
       _triggerAnalysisInBackground(payload);
       return const Result.ok(null);
     } catch (e) {

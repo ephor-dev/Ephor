@@ -253,8 +253,29 @@ class CatnaViewModel extends ChangeNotifier {
       }
     };
 
+    String employeeCode = "";
+
+    try {
+      final listResult = await _employeeRepository.fetchAllEmployees();
+      if (listResult case Ok(value: List<EmployeeModel> employeeList)) {
+        for (EmployeeModel employee in employeeList) {
+          if (employee.fullName == identifyingData['full_name']) {
+            employeeCode = employee.employeeCode;
+            break;
+          }
+        }
+      }
+
+      if (employeeCode == "") return Result.error(CustomMessageException("Can't retrieve user code"));
+    } on Error {
+      return Result.error(CustomMessageException("Can't retrieve user code"));
+    }
+
+    print(employeeCode);
+
     // 5. Final Payload Construction
     final payload = <String, dynamic>{
+      'updated_user': employeeCode,
       'employee_code': currentUser.employeeCode,
       'identifying_data': identifyingData,
       'competency_ratings': competencyRatings,

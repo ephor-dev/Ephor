@@ -431,12 +431,30 @@ class SupabaseService {
   }
 
   Future<PostgrestList> getOverviewStats() async {
-      final response = await _client
-        .from('overview_stats') // Ensure this is the correct table name
-        .select()
-        .eq('id', 'university_wide_overview');
-      
-      // final List<Map<String, dynamic>> typedList = List<Map<String, dynamic>>.from(result);
-      return response;
+    final response = await _client
+      .from('overview_stats') // Ensure this is the correct table name
+      .select()
+      .eq('id', 'university_wide_overview');
+    
+    // final List<Map<String, dynamic>> typedList = List<Map<String, dynamic>>.from(result);
+    return response;
+  }
+
+  Future<void> updateEmployeeCATNAStatus(String employeeCode) async {
+    EmployeeModel? employee = await getEmployeeByCode(employeeCode);
+
+    if (employee != null) {
+      final Map<String, dynamic> updates = employee.toJson();
+      updates.remove('id'); 
+      updates.remove('employee_code');
+      updates['catna_assessed'] = true;
+      updates['impact_assessed'] = false;
+
+      await _client
+        .from('employees')
+        .update(updates)
+        .eq('employee_code', employeeCode)
+        .select(); 
+    }
   }
 }
