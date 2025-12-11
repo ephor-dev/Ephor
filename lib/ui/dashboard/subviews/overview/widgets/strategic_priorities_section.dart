@@ -8,7 +8,13 @@ class StrategicPrioritiesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topNeeds = reportData['Overall_Top_3_Needs'] as List? ?? [];
-    topNeeds.sort((a, b) => (a['Rank'] as int).compareTo(b['Rank'] as int));
+
+    // FIX 1: Safe sorting. We treat Rank as 'num' so it doesn't crash if it's 1.0
+    topNeeds.sort((a, b) {
+      final rankA = (a['Rank'] as num).toInt();
+      final rankB = (b['Rank'] as num).toInt();
+      return rankA.compareTo(rankB);
+    });
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -19,7 +25,8 @@ class StrategicPrioritiesSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: topNeeds.map((need) {
             final isLast = need == topNeeds.last;
-            final card = Expanded(
+            
+            return Expanded(
               flex: isMobile ? 0 : 1,
               child: Container(
                 margin: EdgeInsets.only(
@@ -27,14 +34,20 @@ class StrategicPrioritiesSection extends StatelessWidget {
                   right: (!isMobile && !isLast) ? 16 : 0
                 ),
                 child: PriorityCard(
-                  rank: need['Rank'],
-                  score: need['Mean_Score'],
+                  // FIX 2: Safe casting using 'num'. 
+                  // It accepts 1 or 1.0 and forces it to become an integer (1).
+                  rank: (need['Rank'] as num).toInt(),
+                  
+                  // FIX 3: Same for score. If 'Mean_Score' is 4, it becomes 4.0. 
+                  // (Assuming PriorityCard expects a double for score. 
+                  // If it expects int, change to .toInt())
+                  score: (need['Mean_Score'] as num).toDouble(),
+                  
                   code: need['Focus_Area_Component'],
                   description: need['Training_Recommendation'],
                 ),
               ),
             );
-            return card;
           }).toList(),
         );
       }

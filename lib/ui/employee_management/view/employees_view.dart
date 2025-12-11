@@ -4,12 +4,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/routing/routes.dart';
+import 'package:ephor/ui/core/ui/date_picker/date_picker.dart';
 import 'package:ephor/ui/core/ui/employee_info_popover/employee_info_popover.dart';
 import 'package:ephor/ui/core/ui/svg_icon/svg_icon.dart';
 import 'package:ephor/ui/employee_management/view_model/employees_viewmodel.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:flutter/material.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
@@ -478,6 +480,16 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
 
                   if (canEditUsers)
                     ...[
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.assessment),
+                      label: Text('Check Assessments'),
+                      onPressed: () => _showAssessmentInformation(employee),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary
+                      ),
+                    ),
+                    const SizedBox(width: 16,),
                     IconButton(
                       icon: const Icon(Icons.edit_outlined),
                       tooltip: 'Edit Employee',
@@ -654,5 +666,162 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
       );
       return;
     }
+  }
+  
+  void _showAssessmentInformation(EmployeeModel employee) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        // StatefulBuilder allows the Dialog to update (rebuild) when buttons are clicked
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text(
+                'Assessment Details',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              // Fixed size constraints
+              constraints: BoxConstraints.tight(const Size(640, 480)),
+              content: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Divider(),
+                  // Your existing RichText header
+                  RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        TextSpan(
+                          text: 'CATNA Status: ',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        TextSpan(
+                          text: employee.catnaAssessed ? 'ASSESSED' : 'WAITS ASSESSMENT',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        TextSpan(
+                          text: '\nImpact Assessment Status: ',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        TextSpan(
+                          text: employee.impactAssessed ? 'ASSESSED' : 'WAITS ASSESSMENT',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.tertiary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Assessment Results",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  
+                  // THE TABLE SECTION
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: DataTable(
+                          headingRowColor: MaterialStateProperty.all(
+                            Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3)
+                          ),
+                          columns: const [
+                            DataColumn(label: Text('Results')),
+                            DataColumn(label: Text('Action Status')),
+                            DataColumn(label: Text('Action Date')),
+                          ],
+                          rows: employee.assessmentHistory.map((item) {
+                            final isDone = item['isDone'] == true;
+                            final date = item['date'] as DateTime?;
+
+                            return DataRow(
+                              cells: [
+                                // 1. Assessment Results
+                                DataCell(
+                                  Text(
+                                    item['result'].toString(), 
+                                    style: const TextStyle(fontWeight: FontWeight.w500)
+                                  )
+                                ),
+
+                                // 2. Action Done Status / Button
+                                DataCell(
+                                  isDone
+                                      ? Chip(
+                                          avatar: const Icon(Icons.check, size: 16, color: Colors.white),
+                                          label: const Text('Done', style: TextStyle(color: Colors.white)),
+                                          backgroundColor: Colors.green.shade600,
+                                          padding: EdgeInsets.zero,
+                                        )
+                                      : ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Theme.of(context).colorScheme.primary,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              item['isDone'] = true;
+                                              // Optional: Auto-set date to today if marking done
+                                              item['date'] ??= DateTime.now();
+                                            });
+                                          },
+                                          child: const Text('Mark as Done'),
+                                        ),
+                                ),
+
+                                // 3. Action Date Picker
+                                DataCell(
+                                  TextButton.icon(
+                                    icon: const Icon(Icons.calendar_today, size: 16),
+                                    label: Text(
+                                      date != null
+                                          ? "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}"
+                                          : "Select Date",
+                                    ),
+                                    onPressed: () async {
+                                      final DateTime? picked = await showEphorDatePicker(
+                                        context,
+                                        date ?? DateTime.now(),
+                                        DateTime(2000),
+                                        DateTime(2030),
+                                        OmniDateTimePickerType.date
+                                      );
+                                      if (picked != null) {
+                                        setState(() {
+                                          item['date'] = picked;
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }
