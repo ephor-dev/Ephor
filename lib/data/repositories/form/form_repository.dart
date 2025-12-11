@@ -268,7 +268,7 @@ class FormRepository extends AbstractFormRepository {
       'recent_activity': activities,
       'gemini_insights': row['full_report']['gemini_insights'],
       'updated_at': row['updated_at'],
-      'full_report': row['full_report']['catna_analysis']
+      'full_report': row['full_report']['catna_analysis_summary']
     };
   }
 }
