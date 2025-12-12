@@ -461,7 +461,6 @@ class SupabaseService {
       updates.remove('id'); 
       updates.remove('employee_code');
       updates['catna_assessed'] = true;
-      updates['impact_assessed'] = false;
 
       await _client
         .from('employees')
