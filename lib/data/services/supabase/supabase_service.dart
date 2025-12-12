@@ -413,8 +413,7 @@ class SupabaseService {
 
   // Overview
   Future<void> updateOverviewStatistics(Map<String, dynamic> analysisResult, bool hasImpact) async {
-    // FIX: The API returns 'catna_analysis_summary', not 'catna_analysis'
-    // We try both just to be safe.
+    // 1. Get the Summary Data Safely
     final result = analysisResult['catna_analysis_summary'] ?? analysisResult['catna_analysis'];
 
     if (result == null) {
@@ -422,37 +421,60 @@ class SupabaseService {
       return;
     }
 
-    // FIX: Safe casting to List
+    // 2. Safely Extract Lists (Default to empty list if null)
     final individualPlans = (result['Individual_Training_Plans'] as List?) ?? [];
     final count = individualPlans.length;
 
+    // 3. Handle Impact Assessment Safely
     if (hasImpact) {
-      final impactAssessmentResults = analysisResult['impact_assessment'];
-      await updateIndividualAssessmentStatus(impactAssessmentResults);
+      // Check if the key exists AND is not null
+      if (analysisResult['impact_assessment'] != null) {
+        final Map<String, dynamic> impactData = 
+            Map<String, dynamic>.from(analysisResult['impact_assessment']);
+        
+        // Only call the update if we actually have retake data inside
+        if (impactData['Individual_Impact_Retake_Data'] is List) {
+           await updateIndividualAssessmentStatus(impactData);
+        }
+      }
     }
 
-    // FIX: Map the plans safely
-    final derivedActivity = individualPlans.map((plan) {
-      // Ensure 'plan' is treated as a Map
-      final p = plan as Map;
-      String currentTime = DateTime.now().toIso8601String();
-      updateEmployeeTrainingPlan(p['Name'], p['Training_Recommendation'], currentTime);
-      return {
-        'employeeName': p['Name'] ?? 'Unknown',
-        'status': 'Identified',
-        'timeAgo': currentTime,
-        'description': p['Training_Recommendation'] ?? 'No recommendation',
-      };
-    }).toList();
+    // 4. Process Activity List
+    // We use a simple loop or Future.wait if you want the updates to ensure completion.
+    // For now, we keep your structure but ensure types are safe.
+    final List<Map<String, dynamic>> derivedActivity = [];
+    final String currentTime = DateTime.now().toIso8601String();
 
-    // 3. Update Supabase
-    await _client.from('overview_stats').upsert({
-      'id': 'university_wide_overview',
-      'training_needs_count': count,
-      'recent_activity': derivedActivity,
-      'full_report': analysisResult, // Save the whole thing so you can read 'gemini_insights' later
-      'updated_at': DateTime.now().toIso8601String(),
-    });
+    for (var plan in individualPlans) {
+      if (plan is Map) {
+        // Fire and forget the update (safe as long as it handles its own errors)
+        updateEmployeeTrainingPlan(
+          plan['Name']?.toString(), 
+          plan['Training_Recommendation']?.toString(), 
+          currentTime
+        );
+
+        derivedActivity.add({
+          'employeeName': plan['Name'] ?? 'Unknown',
+          'status': 'Identified',
+          'timeAgo': currentTime,
+          'description': plan['Training_Recommendation'] ?? 'No recommendation',
+        });
+      }
+    }
+
+    // 5. Update Supabase
+    try {
+      await _client.from('overview_stats').upsert({
+        'id': 'university_wide_overview',
+        'training_needs_count': count,
+        'recent_activity': derivedActivity,
+        'full_report': analysisResult,
+        'updated_at': currentTime,
+      });
+    } catch (e) {
+      print("Error saving overview stats: $e");
+    }
   }
 
   Stream<Map<String, dynamic>> getOverviewStatsStream(
