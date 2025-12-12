@@ -243,4 +243,15 @@ class AuthRepository extends AbstractAuthRepository {
 
     return Result.error(CustomMessageException("Cannot get the User Image"));
   }
+
+  @override
+  Future<Result<String>> getGeminiKey() async {
+    final result = await _supabaseService.getGeminiKey();
+    
+    if (result != null) {
+      return Result.ok(result);
+    }
+
+    return Result.error(CustomMessageException("Cannot retrieve Gemini API Key"));
+  }
 }
