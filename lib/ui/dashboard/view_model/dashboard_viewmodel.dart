@@ -17,6 +17,8 @@ class DashboardViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   ValueNotifier<bool> get isAnalysisRunning => _formRepository.isAnalysisRunning;
+  ValueNotifier<List<Map<String, dynamic>>> get awaitingCATNA => _formRepository.awaitingCatna;
+  ValueNotifier<List<Map<String, dynamic>>> get awaitingIA => _formRepository.awaitingIA;
 
   bool _isAuthenticated = false;
   bool get isAuthenticated => _isAuthenticated;
@@ -41,6 +43,8 @@ class DashboardViewModel extends ChangeNotifier {
   late CommandWithArgs checkPassword;
   late CommandWithArgs setDarkMode;
   late CommandWithArgs setEmployeeManagementSearchKeyword;
+  late CommandNoArgs processWaitingCatna;
+  late CommandNoArgs processWaitingIA;
 
   DashboardViewModel({
     required AuthRepository authRepository, 
@@ -60,6 +64,8 @@ class DashboardViewModel extends ChangeNotifier {
     checkPassword = CommandWithArgs<void, String>(_checkPassword);
     setDarkMode = CommandWithArgs<void, ThemeMode>(_setDarkMode);
     setEmployeeManagementSearchKeyword = CommandWithArgs<void, String?>(_setSearchKeyword);
+    processWaitingCatna = CommandNoArgs<void>(_processWaitingCATNA);
+    processWaitingIA = CommandNoArgs<void>(_processWaitingIA);
 
     _getUserImage();
     _subscribeToAnalysisStatus();
@@ -67,6 +73,14 @@ class DashboardViewModel extends ChangeNotifier {
 
   void _subscribeToAnalysisStatus() {
     _formRepository.isAnalysisRunning.addListener(() {
+      notifyListeners(); // Optional: only if you need to rebuild things not using ValueListenableBuilder
+    });
+
+    _formRepository.awaitingCatna.addListener(() {
+      notifyListeners(); // Optional: only if you need to rebuild things not using ValueListenableBuilder
+    });
+
+    _formRepository.awaitingIA.addListener(() {
       notifyListeners(); // Optional: only if you need to rebuild things not using ValueListenableBuilder
     });
   }
@@ -168,6 +182,26 @@ class DashboardViewModel extends ChangeNotifier {
       return result;
     } on Error {
       return Result.error(CustomMessageException("Can't set keyword"));
+    }
+  }
+
+  Future<Result<void>> _processWaitingCATNA() async {
+    try {
+      final result = await _formRepository.processWaitingCatna();
+
+      return result;
+    } on Error {
+      return Result.error(CustomMessageException("Can't process awaiting CATNA"));
+    }
+  }
+
+  Future<Result<void>> _processWaitingIA() async {
+    try {
+      final result = await _formRepository.processWaitingIA();
+
+      return result;
+    } on Error {
+      return Result.error(CustomMessageException("Can't process awaiting IA"));
     }
   }
 }

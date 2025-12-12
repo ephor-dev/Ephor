@@ -6,6 +6,8 @@ import 'package:ephor/ui/core/ui/confirm_identity_dialog/confirm_identity_dialog
 import 'package:ephor/ui/core/ui/dashboard_menu_item/dashboard_menu_item.dart';
 import 'package:ephor/ui/core/ui/edit_profile_dialog/edit_profile_dialog.dart';
 import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
+import 'package:ephor/utils/custom_message_exception.dart';
+import 'package:ephor/utils/results.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -103,6 +105,8 @@ class _DashboardViewState extends State<DashboardView> {
     widget.viewModel.logout.addListener(_onResult);
     widget.viewModel.checkPassword.addListener(_onPasswordChecked);
     widget.viewModel.setDarkMode.addListener(_onDarkModePrefsChanged);
+    widget.viewModel.processWaitingCatna.addListener(_onCatnaProcessed);
+    widget.viewModel.processWaitingIA.addListener(_onIAProcessed);
     widget.viewModel.addListener(_onUpdate);
     _searchController.addListener(_updateListFromSearch);
   }
@@ -124,6 +128,16 @@ class _DashboardViewState extends State<DashboardView> {
       oldWidget.viewModel.setDarkMode.removeListener(_onDarkModePrefsChanged);
       widget.viewModel.setDarkMode.addListener(_onDarkModePrefsChanged);
     }
+
+    if (oldWidget.viewModel.processWaitingCatna != widget.viewModel.processWaitingCatna) {
+      oldWidget.viewModel.processWaitingCatna.removeListener(_onCatnaProcessed);
+      widget.viewModel.processWaitingCatna.addListener(_onCatnaProcessed);
+    }
+
+    if (oldWidget.viewModel.processWaitingIA != widget.viewModel.processWaitingIA) {
+      oldWidget.viewModel.processWaitingIA.removeListener(_onIAProcessed);
+      widget.viewModel.processWaitingIA.addListener(_onIAProcessed);
+    }
   }
 
   @override
@@ -131,6 +145,8 @@ class _DashboardViewState extends State<DashboardView> {
     widget.viewModel.logout.removeListener(_onResult);
     widget.viewModel.checkPassword.removeListener(_onPasswordChecked);
     widget.viewModel.setDarkMode.removeListener(_onDarkModePrefsChanged);
+    widget.viewModel.processWaitingCatna.removeListener(_onCatnaProcessed);
+    widget.viewModel.processWaitingIA.removeListener(_onIAProcessed);
     _searchController.dispose();
     _searchController.removeListener(_updateListFromSearch);
     widget.viewModel.removeListener(_onUpdate);
@@ -141,7 +157,7 @@ class _DashboardViewState extends State<DashboardView> {
     if (!mounted) return;
   
     setState(() {
-      print(widget.viewModel.isAnalysisRunning);
+      // blank
     });
   }
 
@@ -474,16 +490,21 @@ class _DashboardViewState extends State<DashboardView> {
                         );
                       } else {
                         // Show Normal Icon
-                        return IconButton(
-                          tooltip: 'CATNA Analysis Status',
-                          icon: Icon(
-                            Icons.insights,
-                            color: Theme.of(context).colorScheme.onSurface, 
-                            size: 25
-                          ), 
-                          onPressed: () {
-                            // Optional: Show "System Idle" snackbar or similar
-                          },
+                        return Badge.count(
+                          alignment: Alignment.bottomRight,
+                          offset: Offset(0, -16),
+                          count: widget.viewModel.awaitingCATNA.value.length + widget.viewModel.awaitingIA.value.length,
+                          child: IconButton(
+                            tooltip: 'CATNA Analysis Status',
+                            icon: Icon(
+                              Icons.insights,
+                              color: Theme.of(context).colorScheme.onSurface, 
+                              size: 25
+                            ), 
+                            onPressed: () {
+                              _showAwaitingProcesses();
+                            },
+                          ),
                         );
                       }
                     },
@@ -637,5 +658,252 @@ class _DashboardViewState extends State<DashboardView> {
         );
       }
     );
+  }
+  
+  void _showAwaitingProcesses() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.hourglass_top_rounded, color: Theme.of(context).colorScheme.primary),
+              const SizedBox(width: 12),
+              const Text(
+                "Pending Processes", 
+                style: TextStyle(fontWeight: FontWeight.bold)
+              ),
+            ],
+          ),
+          // We keep your fixed size, but SingleChildScrollView handles the overflow
+          constraints: BoxConstraints.tight(const Size(640, 480)),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ==========================================
+                // SECTION 1: Waiting CATNA (Amber/Orange Theme)
+                // ==========================================
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.assignment_late_outlined, 
+                        size: 20, 
+                        color: Theme.of(context).colorScheme.primary
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Waiting CATNA", 
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold, 
+                          color: Theme.of(context).colorScheme.primary,
+                          fontSize: 16
+                        )
+                      ),
+                      Spacer(),
+                      if (widget.viewModel.awaitingCATNA.value.isNotEmpty) ElevatedButton.icon(
+                        onPressed: () {
+                          widget.viewModel.processWaitingCatna.execute();
+                          Navigator.pop(context);
+                        }, 
+                        label: Text("Process All"),
+                        icon: Icon(Icons.arrow_forward_outlined),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                          foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                
+                ValueListenableBuilder<List<Map<String, dynamic>>>(
+                  valueListenable: widget.viewModel.awaitingCATNA,
+                  builder: (context, catnaList, _) {
+                    if (catnaList.isEmpty) {
+                      return _buildEmptyState("No pending CATNA assessments.");
+                    }
+                    return Card(
+                      elevation: 0,
+                      color: Theme.of(context).colorScheme.primary.withAlpha(13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: Theme.of(context).colorScheme.primary.withAlpha(51))
+                      ),
+                      child: ListView.separated(
+                        shrinkWrap: true, 
+                        physics: const NeverScrollableScrollPhysics(), 
+                        itemCount: catnaList.length,
+                        separatorBuilder: (c, i) => Divider(height: 1, color: Theme.of(context).colorScheme.primary.withAlpha(26)),
+                        itemBuilder: (context, index) {
+                          final user = catnaList[index]['updated_user'] ?? 'Unknown User';
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              child: Text(user[0], style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+                            ),
+                            title: Text(user, style: const TextStyle(fontWeight: FontWeight.w600)),
+                            subtitle: const Text("Waits CATNA Processing"),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 24), 
+                const Divider(),
+                const SizedBox(height: 16), 
+
+                // ==========================================
+                // SECTION 2: Waiting IA (Blue/Indigo Theme)
+                // ==========================================
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.assessment_outlined, 
+                        size: 20, 
+                        color: Theme.of(context).colorScheme.tertiary
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Waiting Impact Assessment", 
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold, 
+                          color: Theme.of(context).colorScheme.tertiary,
+                          fontSize: 16
+                        )
+                      ),
+                      Spacer(),
+                      if (widget.viewModel.awaitingIA.value.isNotEmpty) ElevatedButton.icon(
+                        onPressed: () {
+                          widget.viewModel.processWaitingIA.execute();
+                          Navigator.pop(context);
+                        }, 
+                        label: Text("Process All"),
+                        icon: Icon(Icons.arrow_forward_outlined),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
+                          foregroundColor: Theme.of(context).colorScheme.onTertiaryContainer
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+
+                ValueListenableBuilder<List<Map<String, dynamic>>>(
+                  valueListenable: widget.viewModel.awaitingIA,
+                  builder: (context, iaList, _) {
+                    if (iaList.isEmpty) {
+                      return _buildEmptyState("No pending Impact Assessments.");
+                    }
+                    return Card(
+                      elevation: 0,
+                      color: Theme.of(context).colorScheme.tertiary.withAlpha(13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: Theme.of(context).colorScheme.tertiary.withAlpha(51))
+                      ),
+                      child: ListView.separated(
+                        shrinkWrap: true, 
+                        physics: const NeverScrollableScrollPhysics(), 
+                        itemCount: iaList.length,
+                        separatorBuilder: (c, i) => Divider(height: 1, color: Theme.of(context).colorScheme.tertiary.withAlpha(26)),
+                        itemBuilder: (context, index) {
+                          final user = iaList[index]['updated_user'] ?? 'Unknown User';
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Theme.of(context).colorScheme.tertiary,
+                              child: Text(user[0], style: TextStyle(color: Theme.of(context).colorScheme.onTertiary)),
+                            ),
+                            title: Text(user, style: const TextStyle(fontWeight: FontWeight.w600)),
+                            subtitle: const Text("Waits Impact Assessment Processing"),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close"),
+            )
+          ],
+        );
+      },
+    );
+  }
+
+  // Helper for cleaner empty states
+  Widget _buildEmptyState(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+      ),
+      child: Center(
+        child: Text(
+          message,
+          style: TextStyle(color: Theme.of(context).colorScheme.outline),
+        ),
+      ),
+    );
+  }
+
+  void _onCatnaProcessed() {
+    if (widget.viewModel.processWaitingCatna.completed) {
+      Ok okResult = widget.viewModel.processWaitingCatna.result as Ok;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(okResult.value as String),
+        ),
+      );
+      widget.viewModel.processWaitingCatna.clearResult();
+    }
+
+    if (widget.viewModel.processWaitingCatna.error) {
+      Error error = widget.viewModel.processWaitingCatna.result as Error;
+      CustomMessageException messageException = error.error as CustomMessageException;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(messageException.message),
+        ),
+      );
+      widget.viewModel.processWaitingCatna.clearResult();
+    }
+  }
+
+  void _onIAProcessed() {
+    if (widget.viewModel.processWaitingIA.completed) {
+      Ok okResult = widget.viewModel.processWaitingIA.result as Ok;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(okResult.value as String),
+        ),
+      );
+      widget.viewModel.processWaitingIA.clearResult();
+    }
+
+    if (widget.viewModel.processWaitingIA.error) {
+      Error error = widget.viewModel.processWaitingIA.result as Error;
+      CustomMessageException messageException = error.error as CustomMessageException;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(messageException.message),
+        ),
+      );
+      widget.viewModel.processWaitingIA.clearResult();
+    }
   }
 }
