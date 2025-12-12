@@ -336,6 +336,12 @@ class SupabaseService {
     return response;
   }
 
+  Future<List<Map<String, dynamic>>> getAllFinishedIA() async {
+    final response = await _client.from('impact_assessments').select();
+
+    return response;
+  }
+
   // Form Things
   Future<PostgrestMap> upsertForm(Map<String, dynamic> formData) async {
     final response = await _client

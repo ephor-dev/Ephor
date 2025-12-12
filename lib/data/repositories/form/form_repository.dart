@@ -19,6 +19,8 @@ class FormRepository extends AbstractFormRepository {
   final ModelAPIService _modelAPIService;
 
   final ValueNotifier<bool> isAnalysisRunning = ValueNotifier(false);
+  final ValueNotifier<List<Map<String, dynamic>>> awaitingCatna = ValueNotifier([]);
+  final ValueNotifier<List<Map<String, dynamic>>> awaitingIA = ValueNotifier([]);
 
   FormRepository({
     required SupabaseService supabaseService,
@@ -104,131 +106,6 @@ class FormRepository extends AbstractFormRepository {
       );
     }
   }
-  
-  @override
-  Future<Result<PostgrestMap>> fetchActiveCatnaForm() async {
-    final result = await _supabaseService.fetchActiveCatnaForm();
-
-    if (result != null) {
-      return Result.ok(result);
-    }
-
-    return Result.error(CustomMessageException("Can't fetch active CATNA form"));
-  }
-
-  @override
-  Future<Result<PostgrestMap>> fetchActiveImpactAssessmentForm() async {
-    final result = await _supabaseService.fetchActiveImpactAssessmentForm();
-
-    if (result != null) {
-      return Result.ok(result);
-    }
-
-    return Result.error(CustomMessageException("Can't fetch active Impact Assessment form"));
-  }
-  
-  @override
-  Future<Result<void>> submitCatna(Map<String, dynamic> payload) async {
-    try {
-      String employeeName = payload['updated_user'];
-      await _supabaseService.insertCatnaAssessment(payload);
-      await _supabaseService.updateEmployeeCATNAStatus(employeeName);
-      _triggerAnalysisInBackground();
-      return const Result.ok(null);
-    } catch (e) {
-      return Result.error(
-        CustomMessageException('Failed to submit CATNA assessment: $e'),
-      );
-    }
-  }
-
-  @override
-  Future<Result<void>> submitImpactAssessment(Map<String, dynamic> payload) async {
-    try {
-      String employeeName = payload['updated_user'];
-      await _supabaseService.insertImpactAssessment(payload);
-      await _supabaseService.updateEmployeeIAStatus(employeeName);
-      _triggerImpactAnalysisInBackground(payload);
-      return const Result.ok(null);
-    } catch (e) {
-      return Result.error(
-        CustomMessageException('Failed to submit Impact assessment: $e'),
-      );
-    }
-  }
-
-  Future<Result<Map<String, dynamic>>> analyzeCATNA(List<Map<String, dynamic>> jsonData) async {
-    try {
-      // 1. Convert JSON to Excel Bytes in Memory
-      final List<int>? excelBytes = ExcelGenerator.generateExcelBytes(jsonData);
-      
-      if (excelBytes == null || excelBytes.isEmpty) {
-        return Result.error(CustomMessageException('No data available to generate Excel file.'));
-      }
-
-      // 2. Upload the Bytes (Mocking a filename is required by most APIs)
-      final response = await _modelAPIService.analyzeDatasetBytes(
-        excelBytes, 
-        'catna_submission.xlsx' 
-      );
-      
-      final responseBody = response.body;
-
-      // 3. Handle Response
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(responseBody);
-        return Result.ok(data);
-      } else {
-        // Try to parse server error message
-        String errorMessage = 'Request failed with status: ${response.statusCode}';
-        try {
-          final errorJson = json.decode(responseBody);
-          if (errorJson['detail'] != null) {
-            errorMessage = errorJson['detail'];
-          }
-        } catch (_) {}
-        
-        return Result.error(CustomMessageException(errorMessage));
-      }
-    } catch (e) {
-      return Result.error(CustomMessageException('Analysis failed: $e'));
-    }
-  }
-  
-  Future<void> _triggerAnalysisInBackground() async {
-    try { 
-      // Notify listeners analysis started
-      isAnalysisRunning.value = true;
-      
-      final response = await _supabaseService.getAllFinishedCATNA();
-      final List<dynamic> allAssessments = response;
-      final List<Map<String, dynamic>> fullDataset = [];
-
-      for (var assessment in allAssessments) {
-        final assessmentMap = Map<String, dynamic>.from(assessment as Map);
-        final rows = convertPayloadToAPIModel(assessmentMap);
-        fullDataset.addAll(rows);
-      }
-      
-      final analysisResult = await analyzeCATNA(fullDataset);
-
-      if (analysisResult case Ok(value: Map<String, dynamic> result)) {
-        // FIX: Ensure this doesn't crash if result is malformed
-        await _supabaseService.updateOverviewStatistics(result, false);
-      } else if (analysisResult case Error _) {
-        throw CustomMessageException("Cannot analyze CATNA");
-      }
-
-      print("General Overview updated successfully.");
-      
-    } catch (e) {
-      print("Background analysis failed: $e");
-      // Optionally log to Crashlytics here
-    } finally {
-      // CHANGE 2: "finally" ensures this ALWAYS runs, even if there is an error
-      isAnalysisRunning.value = false;
-    }
-  }
 
   Stream<Map<String, dynamic>> getOverviewStatsStream() {
     return _supabaseService.getOverviewStatsStream(convertFunction);
@@ -274,63 +151,217 @@ class FormRepository extends AbstractFormRepository {
       'full_report': row['full_report']['catna_analysis_summary']
     };
   }
+  
+  @override
+  Future<Result<PostgrestMap>> fetchActiveCatnaForm() async {
+    final result = await _supabaseService.fetchActiveCatnaForm();
 
-  Future<void> _triggerImpactAnalysisInBackground(Map<String, dynamic> currentPayload) async {
+    if (result != null) {
+      return Result.ok(result);
+    }
+
+    return Result.error(CustomMessageException("Can't fetch active CATNA form"));
+  }
+
+  @override
+  Future<Result<PostgrestMap>> fetchActiveImpactAssessmentForm() async {
+    final result = await _supabaseService.fetchActiveImpactAssessmentForm();
+
+    if (result != null) {
+      return Result.ok(result);
+    }
+
+    return Result.error(CustomMessageException("Can't fetch active Impact Assessment form"));
+  }
+  
+  @override
+  Future<Result<void>> submitCatna(Map<String, dynamic> payload) async {
     try {
-      isAnalysisRunning.value = true;
-      String employeeCode = currentPayload['updated_user'];
-      final employee = await _supabaseService.getEmployeeByCode(employeeCode);
-      
-      String trainingPlan = "";
-      if (employee != null) {
-        trainingPlan = employee.assessmentHistory['result'];
+      String employeeName = payload['updated_user'];
+      await _supabaseService.insertCatnaAssessment(payload);
+      await _supabaseService.updateEmployeeCATNAStatus(employeeName);
+      awaitingCatna.value.add(payload);
+      // _triggerAnalysisInBackground();
+      return const Result.ok(null);
+    } catch (e) {
+      return Result.error(
+        CustomMessageException('Failed to submit CATNA assessment: $e'),
+      );
+    }
+  }
+
+  @override
+  Future<Result<void>> submitImpactAssessment(Map<String, dynamic> payload) async {
+    try {
+      String employeeName = payload['updated_user'];
+      await _supabaseService.insertImpactAssessment(payload);
+      await _supabaseService.updateEmployeeIAStatus(employeeName);
+      awaitingIA.value.add(payload);
+      // _triggerImpactAnalysisInBackground(payload);
+      return const Result.ok(null);
+    } catch (e) {
+      return Result.error(
+        CustomMessageException('Failed to submit Impact assessment: $e'),
+      );
+    }
+  }
+
+  Future<Result<String>> processWaitingCatna() async {
+    try {
+      String result = await _triggerAnalysisInBackground();
+      if (result.contains("Successfully")) {
+        return Result.ok(result);
+      } else {
+        return Result.error(CustomMessageException(result));
       }
+    } on Error {
+      return Result.error(CustomMessageException("Cannot push through with Analysis"));
+    }
+  }
+
+  Future<Result<String>> processWaitingIA() async {
+    try {
+      String result = await _triggerImpactAnalysisInBackground();
+      if (result.contains("Successfully")) {
+        return Result.ok(result);
+      } else {
+        return Result.error(CustomMessageException(result));
+      }
+    } on Error {
+      return Result.error(CustomMessageException("Cannot push through with Analysis"));
+    }
+  }
+
+  Future<String> _triggerAnalysisInBackground() async {
+    try { 
+      // Notify listeners analysis started
+      isAnalysisRunning.value = true;
       
       final response = await _supabaseService.getAllFinishedCATNA();
       final List<dynamic> allAssessments = response;
       final List<Map<String, dynamic>> fullDataset = [];
-      final Map<String, dynamic> assessmentsData = currentPayload['assessments_data'];
 
       for (var assessment in allAssessments) {
         final assessmentMap = Map<String, dynamic>.from(assessment as Map);
-        
-        if (assessmentMap['updated_user'] == employeeCode) {
-          assessmentMap['Training Plan'] = trainingPlan;
-          assessmentMap['Intervention Type'] = currentPayload['identifying_data']['intervention_title'];
-          assessmentMap['Was the intervention beneficial to the personnel’s scope of work?'] 
-            = assessmentsData['Was the intervention beneficial to your personnel’s scope of work?'] == 1
-            ? 'Yes' : 'No';
-          assessmentMap['Did the personnel incorporate the things they learned in the intervention into their work?'] 
-            = assessmentsData['Did the personnel incorporate the things they learned in the intervention into their work?'] == 1
-            ? 'Yes' : 'No';
-          assessmentMap['Did you notice a significant change at your personnel’s perception, attitude or behavior as a result of the intervention?'] 
-            = assessmentsData['Did you notice a significant change at your personnel’s perception, attitude or behavior?'] == 1
-            ? 'Yes' : 'No';
-          assessmentMap['Rate of the intervention’s overall impact to the efficiency of the personnel'] 
-            = assessmentsData['On a scale of 5-1, kindly rate the intervention’s overall impact to the efficiency of your personnel.'];
-        }
-
         final rows = convertPayloadToAPIModel(assessmentMap);
         fullDataset.addAll(rows);
       }
       
       final analysisResult = await analyzeCATNA(fullDataset);
+      print(analysisResult);
 
       if (analysisResult case Ok(value: Map<String, dynamic> result)) {
         // FIX: Ensure this doesn't crash if result is malformed
-        await _supabaseService.updateOverviewStatistics(result, true);
-      } else if (analysisResult case Error _) {
-        throw CustomMessageException("Cannot analyze CATNA");
+        await _supabaseService.updateOverviewStatistics(result, false);
+      } else if (analysisResult case Error e) {
+        throw CustomMessageException(e.toString());
       }
 
-      print("General Overview updated successfully.");
-      
+      return 'Successfully processed CATNA';
     } catch (e) {
-      print("Background analysis failed: $e");
-      // Optionally log to Crashlytics here
+      return "Background analysis failed: $e";
     } finally {
-      // CHANGE 2: "finally" ensures this ALWAYS runs, even if there is an error
       isAnalysisRunning.value = false;
+      awaitingCatna.value = [];
+    }
+  }
+
+  Future<String> _triggerImpactAnalysisInBackground() async {
+    try {
+      isAnalysisRunning.value = true;
+
+      final response = await _supabaseService.getAllFinishedCATNA();
+      final List<dynamic> allAssessments = response;
+      final List<Map<String, dynamic>> fullDataset = [];
+
+      for (Map<String, dynamic> payload in awaitingIA.value) {
+        String employeeCode = payload['updated_user'];
+        final employee = await _supabaseService.getEmployeeByCode(employeeCode);
+
+        String trainingPlan = "";
+        if (employee != null) {
+          trainingPlan = employee.assessmentHistory['result'];
+        }
+
+        final Map<String, dynamic> assessmentsData = payload['assessments_data'];
+
+        for (var assessment in allAssessments) {
+          final assessmentMap = Map<String, dynamic>.from(assessment as Map);
+          
+          if (assessmentMap['updated_user'] == employeeCode) {
+            assessmentMap['Training Plan'] = trainingPlan;
+            assessmentMap['Intervention Type'] = payload['identifying_data']['intervention_title'];
+            assessmentMap['Was the intervention beneficial to the personnel’s scope of work?'] 
+              = assessmentsData['Was the intervention beneficial to your personnel’s scope of work?'] == 1
+              ? 'Yes' : 'No';
+            assessmentMap['Did the personnel incorporate the things they learned in the intervention into their work?'] 
+              = assessmentsData['Did the personnel incorporate the things they learned in the intervention into their work?'] == 1
+              ? 'Yes' : 'No';
+            assessmentMap['Did you notice a significant change at your personnel’s perception, attitude or behavior as a result of the intervention?'] 
+              = assessmentsData['Did you notice a significant change at your personnel’s perception, attitude or behavior?'] == 1
+              ? 'Yes' : 'No';
+            assessmentMap['Rate of the intervention’s overall impact to the efficiency of the personnel'] 
+              = assessmentsData['On a scale of 5-1, kindly rate the intervention’s overall impact to the efficiency of your personnel.'];
+          }
+
+          final rows = convertPayloadToAPIModel(assessmentMap);
+          fullDataset.addAll(rows);
+        }
+      }
+      
+      final analysisResult = await analyzeCATNA(fullDataset);
+      print(analysisResult);
+
+      if (analysisResult case Ok(value: Map<String, dynamic> result)) {
+        await _supabaseService.updateOverviewStatistics(result, true);
+      } else if (analysisResult case Error e) {
+        throw CustomMessageException(e.toString());
+      }
+
+      return 'Successfully processed Impact Assessment';
+    } catch (e) {
+      return "Background analysis failed: $e";
+    } finally {
+      isAnalysisRunning.value = false;
+      awaitingCatna.value = [];
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> analyzeCATNA(List<Map<String, dynamic>> jsonData) async {
+    try {
+      // 1. Convert JSON to Excel Bytes in Memory
+      final List<int>? excelBytes = ExcelGenerator.generateExcelBytes(jsonData);
+      
+      if (excelBytes == null || excelBytes.isEmpty) {
+        return Result.error(CustomMessageException('No data available to generate Excel file.'));
+      }
+
+      // 2. Upload the Bytes (Mocking a filename is required by most APIs)
+      final response = await _modelAPIService.analyzeDatasetBytes(
+        excelBytes, 
+        'catna_submission.xlsx' 
+      );
+      
+      final responseBody = response.body;
+
+      // 3. Handle Response
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(responseBody);
+        return Result.ok(data);
+      } else {
+        // Try to parse server error message
+        String errorMessage = 'Request failed with status: ${response.statusCode}';
+        try {
+          final errorJson = json.decode(responseBody);
+          if (errorJson['detail'] != null) {
+            errorMessage = errorJson['detail'];
+          }
+        } catch (_) {}
+        
+        return Result.error(CustomMessageException(errorMessage));
+      }
+    } catch (e) {
+      return Result.error(CustomMessageException('Analysis failed: $e'));
     }
   }
 }
