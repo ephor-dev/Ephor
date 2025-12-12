@@ -884,7 +884,10 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                                                     updatedHistory['is_done'] = true;
                                                     updatedHistory['action_date'] = item['action_date'];
                             
-                                                    final updatedEmployee = employee.copyWith(assessmentHistory: updatedHistory);
+                                                    final updatedEmployee = employee.copyWith(
+                                                      assessmentHistory: updatedHistory,
+                                                      shallRetakeTraining: false
+                                                    );
                                                     widget.viewModel.updateEmployeeTrainingStatus.execute(updatedEmployee);
                                                     
                                                     if (mounted){
