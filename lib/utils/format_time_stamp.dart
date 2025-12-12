@@ -7,5 +7,5 @@ String formatTimestamp(String input) {
 
   final formatted = DateFormat("hh:mm:ss a dd MMMM yyyy").format(dt);
 
-  return "Last update: $formatted";
+  return formatted;
 }

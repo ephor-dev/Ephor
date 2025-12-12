@@ -25,6 +25,7 @@ class EmployeeListViewModel extends ChangeNotifier {
   late CommandWithArgs deleteEmployee;
   late CommandWithArgs deleteBatchEmployees;
   late CommandNoArgs loadEmployees;
+  late CommandWithArgs updateEmployeeTrainingStatus;
 
   EmployeeListViewModel({
     required EmployeeRepository employeeRepository,
@@ -36,6 +37,7 @@ class EmployeeListViewModel extends ChangeNotifier {
     loadEmployees = CommandNoArgs<void>(_loadEmployees);
     deleteEmployee = CommandWithArgs<void, EmployeeModel>(_deleteEmployee);
     deleteBatchEmployees = CommandWithArgs<void, List<EmployeeModel>>(_deleteBatchEmployees);
+    updateEmployeeTrainingStatus = CommandWithArgs<void, EmployeeModel>(_updateEmployeeTrainingStatus);
 
     _getCurrentUser();
     _listenToSearchKeywords();
@@ -165,5 +167,34 @@ class EmployeeListViewModel extends ChangeNotifier {
 
     final result = fuse.search(query);
     return result.map((r) => r.item).toList();
+  }
+
+  Future<Result<String>> _updateEmployeeTrainingStatus(EmployeeModel employee) async {
+    try {
+      bool allDone = true;
+      final List<Map<String, dynamic>> updatedHistory = List.from(employee.assessmentHistory);
+      for (Map<String, dynamic> item in updatedHistory) {
+        if (item['is_done'] == false) allDone = false;
+      }
+
+      if (allDone) {
+        employee = employee.copyWith(
+          impactAssessed: false
+        );
+      }
+
+      final result = await _employeeRepository.editEmployee(employee);
+      
+      if (result case Ok()) {
+        return Result.ok("Successfully marked training plan as done.");
+      } else if (result case Error(error: CustomMessageException exception)) {
+        print(exception.message);
+        return Result.error(CustomMessageException("Cannot update training plan for user"));
+      } else {
+        return Result.error(CustomMessageException("Cannot update training plan for user"));
+      }
+    } on Error {
+      return Result.error(CustomMessageException("Cannot update training plan for user"));
+    }
   }
 }

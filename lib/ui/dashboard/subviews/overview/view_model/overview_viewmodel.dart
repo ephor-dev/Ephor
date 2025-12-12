@@ -73,7 +73,7 @@ class OverviewViewModel extends ChangeNotifier {
       // Update Activity List
       // Note: Supabase returns a List<dynamic> of Maps. We must convert them to Models.
       _recentActivity = stats['recent_activity'] as List<ActivityModel>? ?? [];
-      _lastUpdate = formatTimestamp(stats['updated_at']);
+      _lastUpdate = 'Last Update: ${formatTimestamp(stats['updated_at'])}';
       _geminiInsights = stats['gemini_insights'];
 
       notifyListeners();

@@ -406,13 +406,15 @@ class SupabaseService {
     final count = individualPlans.length;
 
     // FIX: Map the plans safely
-    final derivedActivity = individualPlans.map((plan) {
+    final derivedActivity = individualPlans.map((plan) async {
       // Ensure 'plan' is treated as a Map
-      final p = plan as Map; 
+      final p = plan as Map;
+      String currentTime = DateTime.now().toIso8601String();
+      await updateEmployeeTrainingPlan(p['Name'], p['Training_Recommendation'], currentTime);
       return {
         'employeeName': p['Name'] ?? 'Unknown',
         'status': 'Identified',
-        'timeAgo': DateTime.now().toIso8601String(),
+        'timeAgo': currentTime,
         'description': p['Training_Recommendation'] ?? 'No recommendation',
       };
     }).toList();
@@ -466,6 +468,49 @@ class SupabaseService {
         .update(updates)
         .eq('employee_code', employeeCode)
         .select(); 
+    }
+  }
+  
+  Future<void> updateEmployeeTrainingPlan(String? employeeName, String? trainingRecommendation, String updateTime) async {
+    if (employeeName == null || trainingRecommendation == null) return;
+
+    final employeeList = await fetchAllEmployees();
+
+    for (EmployeeModel employee in employeeList) {
+      if (employee.fullName.trim().toLowerCase() == employeeName.trim().toLowerCase()) {
+        List<Map<String, dynamic>> currentHistory = List<Map<String, dynamic>>.from(employee.assessmentHistory);
+
+        final bool alreadyExists = currentHistory.any((item) => 
+          item['result'].toString().toLowerCase() == trainingRecommendation.toLowerCase()
+        );
+
+        if (alreadyExists) {
+          print("Skipping: '$trainingRecommendation' already exists for ${employee.fullName}");
+          break; 
+        }
+
+        // 4. Add the new recommendation since it is unique
+        currentHistory.add({
+          'result': trainingRecommendation,
+          'is_done': false,      // UI expects this boolean
+          'action_date': null,   // UI expects this DateTime?
+          'added_at': updateTime, // Optional: track when it was added
+        });
+
+        // 5. Update Supabase
+        try {
+          await _client.from('employees').update({
+            'assessment_history': currentHistory
+          }).eq('employee_code', employee.employeeCode);
+          
+          print("Successfully added '$trainingRecommendation' to ${employee.fullName}");
+        } catch (e) {
+          print("Failed to update training plan: $e");
+        }
+
+        // Stop the loop once we found and processed the employee
+        break;
+      }
     }
   }
 }

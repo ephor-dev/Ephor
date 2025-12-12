@@ -1,5 +1,3 @@
-// presentation/subviews/employee_list/view/employee_list_subview.dart (Updated)
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
@@ -9,6 +7,7 @@ import 'package:ephor/ui/core/ui/employee_info_popover/employee_info_popover.dar
 import 'package:ephor/ui/core/ui/svg_icon/svg_icon.dart';
 import 'package:ephor/ui/employee_management/view_model/employees_viewmodel.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
+import 'package:ephor/utils/format_time_stamp.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:flutter/material.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
@@ -34,6 +33,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
     widget.viewModel.loadEmployees.addListener(_onResult);
     widget.viewModel.deleteEmployee.addListener(_onSingleDeleteFinished);
     widget.viewModel.deleteBatchEmployees.addListener(_onBatchDeleteFinished);
+    widget.viewModel.updateEmployeeTrainingStatus.addListener(_onTrainingStatusUpdated);
   }
 
   @override
@@ -53,6 +53,11 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
       oldWidget.viewModel.deleteBatchEmployees.removeListener(_onBatchDeleteFinished);
       widget.viewModel.deleteBatchEmployees.addListener(_onBatchDeleteFinished);
     }
+
+    if (oldWidget.viewModel.updateEmployeeTrainingStatus != widget.viewModel.updateEmployeeTrainingStatus) {
+      oldWidget.viewModel.updateEmployeeTrainingStatus.removeListener(_onTrainingStatusUpdated);
+      widget.viewModel.updateEmployeeTrainingStatus.addListener(_onTrainingStatusUpdated);
+    }
   }
 
   @override
@@ -60,6 +65,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
     widget.viewModel.loadEmployees.removeListener(_onResult);
     widget.viewModel.deleteEmployee.removeListener(_onSingleDeleteFinished);
     widget.viewModel.deleteBatchEmployees.removeListener(_onBatchDeleteFinished);
+    widget.viewModel.updateEmployeeTrainingStatus.removeListener(_onTrainingStatusUpdated);
     super.dispose();
   }
 
@@ -82,6 +88,28 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
         ),
       );
       widget.viewModel.deleteEmployee.clearResult();
+    }
+  }
+
+  void _onTrainingStatusUpdated() {
+    if (widget.viewModel.updateEmployeeTrainingStatus.completed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Training Plan Edited successfully!'), backgroundColor: Colors.green),
+      );
+      widget.viewModel.updateEmployeeTrainingStatus.clearResult();
+    }
+    if (widget.viewModel.updateEmployeeTrainingStatus.error) {
+      Error error = widget.viewModel.updateEmployeeTrainingStatus.result as Error;
+      CustomMessageException messageException = error.error as CustomMessageException;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            messageException.message
+          ), 
+          backgroundColor: Theme.of(context).colorScheme.errorContainer
+        ),
+      );
+      widget.viewModel.updateEmployeeTrainingStatus.clearResult();
     }
   }
 
@@ -758,11 +786,15 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                             columns: const [
                               DataColumn(label: Text('Results')),
                               DataColumn(label: Text('Action Status')),
+                              DataColumn(label: Text('Added At')),
                               DataColumn(label: Text('Action Date')),
                             ],
-                            rows: employee.assessmentHistory.map((item) {
-                              final isDone = item['isDone'] == true;
-                              final date = item['date'] as DateTime?;
+                            rows: employee.assessmentHistory.asMap().entries.map((entry) {
+                              final int index = entry.key;
+                              final Map<String, dynamic> item = entry.value;
+                              final isDone = item['is_done'] == true;
+                              final date = item['action_date'] as String?;
+                              final addedTime = item['added_at'] as String;
                       
                               return DataRow(
                                 cells: [
@@ -788,41 +820,49 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                                               backgroundColor: Theme.of(context).colorScheme.primary,
                                               foregroundColor: Colors.white,
                                             ),
-                                            onPressed: () {
-                                              setState(() {
-                                                item['isDone'] = true;
-                                                // Optional: Auto-set date to today if marking done
-                                                item['date'] ??= DateTime.now();
-                                              });
+                                            onPressed: () async {
+                                              final DateTime? picked = await showEphorDatePicker(
+                                                context,
+                                                DateTime.now(),
+                                                DateTime(2000),
+                                                DateTime(2030),
+                                                OmniDateTimePickerType.date
+                                              );
+                                              if (picked != null) {
+                                                setState(() {
+                                                  item['is_done'] = true;
+                                                  item['action_date'] = formatTimestamp(picked.toIso8601String());
+                                                });
+
+                                                final List<Map<String, dynamic>> updatedHistory = List.from(employee.assessmentHistory);
+
+                                                updatedHistory[index] = {
+                                                  ...item, // Keep existing fields
+                                                  'is_done': true,
+                                                  'action_date': item['action_date'],
+                                                };
+
+                                                final updatedEmployee = employee.copyWith(assessmentHistory: updatedHistory);
+                                                widget.viewModel.updateEmployeeTrainingStatus.execute(updatedEmployee);
+                                              }
                                             },
                                             child: const Text('Mark as Done'),
                                           ),
                                   ),
+
+                                  // Added Time
+                                  DataCell(
+                                    Text(
+                                      formatTimestamp(addedTime), 
+                                      style: const TextStyle(fontWeight: FontWeight.w500)
+                                    )
+                                  ),
                       
                                   // 3. Action Date Picker
                                   DataCell(
-                                    TextButton.icon(
-                                      icon: const Icon(Icons.calendar_today, size: 16),
-                                      label: Text(
-                                        date != null
-                                            ? "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}"
-                                            : "Select Date",
-                                      ),
-                                      onPressed: () async {
-                                        final DateTime? picked = await showEphorDatePicker(
-                                          context,
-                                          date ?? DateTime.now(),
-                                          DateTime(2000),
-                                          DateTime(2030),
-                                          OmniDateTimePickerType.date
-                                        );
-                                        if (picked != null) {
-                                          setState(() {
-                                            item['date'] = picked;
-                                          });
-                                        }
-                                      },
-                                    ),
+                                    Text(
+                                        date ?? "N/A",
+                                      )
                                   ),
                                 ],
                               );
