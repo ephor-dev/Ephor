@@ -5,7 +5,6 @@ import 'package:ephor/data/repositories/employee/employee_repository.dart';
 import 'package:ephor/data/repositories/form/form_repository.dart';
 import 'package:ephor/data/repositories/shared_prefs/abstract_prefs_repository.dart';
 import 'package:ephor/domain/enums/auth_status.dart';
-import 'package:ephor/domain/enums/catna_status.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/ui/core/themes/theme_mode_notifier.dart';
 import 'package:ephor/utils/command.dart';
@@ -17,8 +16,7 @@ class DashboardViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  bool _isAnalysisRunning = false;
-  bool get isAnalysisRunning => _isAnalysisRunning;
+  ValueNotifier<bool> get isAnalysisRunning => _formRepository.isAnalysisRunning;
 
   bool _isAuthenticated = false;
   bool get isAuthenticated => _isAuthenticated;
@@ -33,7 +31,6 @@ class DashboardViewModel extends ChangeNotifier {
 
   late final StreamSubscription<bool> _loadingSubscription; 
   late final StreamSubscription<AuthStatus> _authStatusSubscription;
-  late final StreamSubscription<CatnaStatus> _catnaStatusSubscription;
 
   final AuthRepository _authRepository;
   final AbstractPrefsRepository _prefsRepository;
@@ -69,22 +66,16 @@ class DashboardViewModel extends ChangeNotifier {
   }
 
   void _subscribeToAnalysisStatus() {
-    _catnaStatusSubscription = _formRepository.catnaStatusStream.listen((status) {
-      if (status == CatnaStatus.loading) {
-        // We need the concrete user object, which the Service/Client provides globally
-        _isAnalysisRunning = true;
-      } else if (status == CatnaStatus.done) {
-        _isAnalysisRunning = false;
-      }
-      notifyListeners();
+    _formRepository.isAnalysisRunning.addListener(() {
+      print("VM Analysis Running: ${_formRepository.isAnalysisRunning.value}");
+      notifyListeners(); // Optional: only if you need to rebuild things not using ValueListenableBuilder
     });
   }
 
   @override
   void dispose() {
     _loadingSubscription.cancel(); 
-    _authStatusSubscription.cancel(); 
-    _catnaStatusSubscription.cancel();
+    _authStatusSubscription.cancel();
     super.dispose();
   }
 

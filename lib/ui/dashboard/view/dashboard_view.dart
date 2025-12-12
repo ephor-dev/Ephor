@@ -452,20 +452,39 @@ class _DashboardViewState extends State<DashboardView> {
                     onPressed: _showInfoPlaceholder
                   ),
 
-                  IconButton(
-                    tooltip: 'CATNA Analysis Status',
-                    onPressed: null, 
-                    icon: widget.viewModel.isAnalysisRunning
-                      ? const SizedBox(
-                          width: 24, 
-                          height: 24, 
-                          child: CircularProgressIndicator(strokeWidth: 2.5),
-                        )
-                      : Icon(
-                          Icons.analytics_outlined,
-                          color: Theme.of(context).colorScheme.onSurface, 
-                          size: 25
-                        ), 
+                  ValueListenableBuilder<bool>(
+                    valueListenable: widget.viewModel.isAnalysisRunning,
+                    builder: (context, isRunning, child) {
+                      if (isRunning) {
+                        // Show Spinner
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Theme.of(context).colorScheme.primary
+                              ),
+                            ),
+                          ),
+                        );
+                      } else {
+                        // Show Normal Icon
+                        return IconButton(
+                          tooltip: 'CATNA Analysis Status',
+                          icon: Icon(
+                            Icons.insights,
+                            color: Theme.of(context).colorScheme.onSurface, 
+                            size: 25
+                          ), 
+                          onPressed: () {
+                            // Optional: Show "System Idle" snackbar or similar
+                          },
+                        );
+                      }
+                    },
                   ),
                   
                   const SizedBox(width: 15.0), 

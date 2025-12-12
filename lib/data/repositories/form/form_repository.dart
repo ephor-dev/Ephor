@@ -4,13 +4,13 @@ import 'dart:convert';
 import 'package:ephor/data/repositories/form/abstract_form_repository.dart';
 import 'package:ephor/data/services/model_api/model_api_service.dart';
 import 'package:ephor/data/services/supabase/supabase_service.dart';
-import 'package:ephor/domain/enums/catna_status.dart';
 import 'package:ephor/domain/models/form_editor/form_model.dart';
 import 'package:ephor/domain/models/overview/activity_model.dart';
 import 'package:ephor/domain/use_cases/excel_generator.dart';
 import 'package:ephor/domain/use_cases/payload_to_api_model.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -18,8 +18,7 @@ class FormRepository extends AbstractFormRepository {
   final SupabaseService _supabaseService;
   final ModelAPIService _modelAPIService;
 
-  final _catnaStatusController = StreamController<CatnaStatus>.broadcast();
-  Stream<CatnaStatus> get catnaStatusStream => _catnaStatusController.stream;
+  final ValueNotifier<bool> isAnalysisRunning = ValueNotifier(false);
 
   FormRepository({
     required SupabaseService supabaseService,
@@ -196,7 +195,7 @@ class FormRepository extends AbstractFormRepository {
   Future<void> _triggerAnalysisInBackground(Map<String, dynamic> currentPayload) async {
     try { 
       // Notify listeners analysis started
-      _catnaStatusController.add(CatnaStatus.loading);
+      isAnalysisRunning.value = true;
       
       final response = await _supabaseService.getAllFinishedCATNA();
       final List<dynamic> allAssessments = response;
@@ -225,7 +224,7 @@ class FormRepository extends AbstractFormRepository {
       // Optionally log to Crashlytics here
     } finally {
       // CHANGE 2: "finally" ensures this ALWAYS runs, even if there is an error
-      _catnaStatusController.add(CatnaStatus.done);
+      isAnalysisRunning.value = false;
     }
   }
 

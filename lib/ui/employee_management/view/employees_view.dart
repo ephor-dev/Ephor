@@ -517,7 +517,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                   if(canAssessUsers)
                     ...[
                     SizedBox(
-                      width: 220,
+                      width: 250,
                       child: RichText(
                         text: TextSpan(
                           style: TextStyle(

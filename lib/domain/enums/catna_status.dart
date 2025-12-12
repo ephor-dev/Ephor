@@ -1,4 +1,0 @@
-enum CatnaStatus {
-  loading,
-  done
-}
