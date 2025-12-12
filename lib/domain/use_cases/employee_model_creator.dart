@@ -50,6 +50,8 @@ EmployeeModel createEmployeeModel(AddEmployeeParams params, String? userId, Stri
       extraTags: tagList,
       photoUrl: photoUrl,
       catnaAssessed: false,
-      impactAssessed: true
+      impactAssessed: true,
+      shallRetakeTraining: false,
+      assessmentHistory: {}
     );
   }

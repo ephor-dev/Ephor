@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:ephor/data/repositories/auth/auth_repository.dart';
 import 'package:ephor/data/repositories/employee/employee_repository.dart';
+import 'package:ephor/data/repositories/form/form_repository.dart';
 import 'package:ephor/data/repositories/shared_prefs/abstract_prefs_repository.dart';
 import 'package:ephor/domain/enums/auth_status.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
@@ -15,6 +16,8 @@ class DashboardViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  ValueNotifier<bool> get isAnalysisRunning => _formRepository.isAnalysisRunning;
+
   bool _isAuthenticated = false;
   bool get isAuthenticated => _isAuthenticated;
 
@@ -27,11 +30,12 @@ class DashboardViewModel extends ChangeNotifier {
   String? get currentUserImageUrl => _currentUserImageUrl;
 
   late final StreamSubscription<bool> _loadingSubscription; 
-  late final StreamSubscription<AuthStatus> _authStatusSubscription; 
+  late final StreamSubscription<AuthStatus> _authStatusSubscription;
 
   final AuthRepository _authRepository;
   final AbstractPrefsRepository _prefsRepository;
   final EmployeeRepository _employeeRepository;
+  final FormRepository _formRepository;
 
   late CommandNoArgs logout;
   late CommandWithArgs checkPassword;
@@ -42,11 +46,13 @@ class DashboardViewModel extends ChangeNotifier {
     required AuthRepository authRepository, 
     required AbstractPrefsRepository prefsRepository,
     required EmployeeRepository employeeRepository,
+    required FormRepository formRepository,
     required ThemeModeNotifier themeNotifier
   })
     : _authRepository = authRepository, 
     _prefsRepository = prefsRepository,
     _employeeRepository = employeeRepository,
+    _formRepository = formRepository,
     _themeNotifier = themeNotifier {
     _subscribeToLoadingStatus(); 
     _subscribeToAuthStatus();
@@ -56,12 +62,19 @@ class DashboardViewModel extends ChangeNotifier {
     setEmployeeManagementSearchKeyword = CommandWithArgs<void, String?>(_setSearchKeyword);
 
     _getUserImage();
+    _subscribeToAnalysisStatus();
+  }
+
+  void _subscribeToAnalysisStatus() {
+    _formRepository.isAnalysisRunning.addListener(() {
+      notifyListeners(); // Optional: only if you need to rebuild things not using ValueListenableBuilder
+    });
   }
 
   @override
   void dispose() {
     _loadingSubscription.cancel(); 
-    _authStatusSubscription.cancel(); 
+    _authStatusSubscription.cancel();
     super.dispose();
   }
 

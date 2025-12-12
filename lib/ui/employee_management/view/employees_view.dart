@@ -1,15 +1,17 @@
-// presentation/subviews/employee_list/view/employee_list_subview.dart (Updated)
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ephor/domain/enums/employee_role.dart';
 import 'package:ephor/domain/models/employee/employee.dart';
 import 'package:ephor/routing/routes.dart';
+import 'package:ephor/ui/core/ui/date_picker/date_picker.dart';
 import 'package:ephor/ui/core/ui/employee_info_popover/employee_info_popover.dart';
 import 'package:ephor/ui/core/ui/svg_icon/svg_icon.dart';
 import 'package:ephor/ui/employee_management/view_model/employees_viewmodel.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
+import 'package:ephor/utils/format_time_stamp.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
@@ -32,6 +34,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
     widget.viewModel.loadEmployees.addListener(_onResult);
     widget.viewModel.deleteEmployee.addListener(_onSingleDeleteFinished);
     widget.viewModel.deleteBatchEmployees.addListener(_onBatchDeleteFinished);
+    widget.viewModel.updateEmployeeTrainingStatus.addListener(_onTrainingStatusUpdated);
   }
 
   @override
@@ -51,6 +54,11 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
       oldWidget.viewModel.deleteBatchEmployees.removeListener(_onBatchDeleteFinished);
       widget.viewModel.deleteBatchEmployees.addListener(_onBatchDeleteFinished);
     }
+
+    if (oldWidget.viewModel.updateEmployeeTrainingStatus != widget.viewModel.updateEmployeeTrainingStatus) {
+      oldWidget.viewModel.updateEmployeeTrainingStatus.removeListener(_onTrainingStatusUpdated);
+      widget.viewModel.updateEmployeeTrainingStatus.addListener(_onTrainingStatusUpdated);
+    }
   }
 
   @override
@@ -58,6 +66,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
     widget.viewModel.loadEmployees.removeListener(_onResult);
     widget.viewModel.deleteEmployee.removeListener(_onSingleDeleteFinished);
     widget.viewModel.deleteBatchEmployees.removeListener(_onBatchDeleteFinished);
+    widget.viewModel.updateEmployeeTrainingStatus.removeListener(_onTrainingStatusUpdated);
     super.dispose();
   }
 
@@ -80,6 +89,28 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
         ),
       );
       widget.viewModel.deleteEmployee.clearResult();
+    }
+  }
+
+  void _onTrainingStatusUpdated() {
+    if (widget.viewModel.updateEmployeeTrainingStatus.completed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Training Plan Edited successfully!'), backgroundColor: Colors.green),
+      );
+      widget.viewModel.updateEmployeeTrainingStatus.clearResult();
+    }
+    if (widget.viewModel.updateEmployeeTrainingStatus.error) {
+      Error error = widget.viewModel.updateEmployeeTrainingStatus.result as Error;
+      CustomMessageException messageException = error.error as CustomMessageException;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            messageException.message
+          ), 
+          backgroundColor: Theme.of(context).colorScheme.errorContainer
+        ),
+      );
+      widget.viewModel.updateEmployeeTrainingStatus.clearResult();
     }
   }
 
@@ -478,6 +509,16 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
 
                   if (canEditUsers)
                     ...[
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.assessment),
+                      label: Text('Check Assessments'),
+                      onPressed: () => _showAssessmentInformation(employee),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary
+                      ),
+                    ),
+                    const SizedBox(width: 16,),
                     IconButton(
                       icon: const Icon(Icons.edit_outlined),
                       tooltip: 'Edit Employee',
@@ -505,7 +546,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                   if(canAssessUsers)
                     ...[
                     SizedBox(
-                      width: 220,
+                      width: 250,
                       child: RichText(
                         text: TextSpan(
                           style: TextStyle(
@@ -654,5 +695,261 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
       );
       return;
     }
+  }
+  
+  void _showAssessmentInformation(EmployeeModel employee) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        // StatefulBuilder allows the Dialog to update (rebuild) when buttons are clicked
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text(
+                'Assessment Details',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              // Fixed size constraints
+              constraints: BoxConstraints.tight(const Size(800, 480)),
+              content: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Divider(),
+                  // Your existing RichText header
+                  RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        TextSpan(
+                          text: 'CATNA Status: ',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        TextSpan(
+                          text: employee.catnaAssessed ? 'ASSESSED' : 'WAITS ASSESSMENT',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        TextSpan(
+                          text: '\nImpact Assessment Status: ',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        TextSpan(
+                          text: employee.impactAssessed ? 'ASSESSED' : 'WAITS ASSESSMENT',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.tertiary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Assessment Results",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  
+                  // THE TABLE SECTION
+                  Expanded(
+                    child: Card(
+                      child: employee.assessmentHistory.isEmpty
+                        ? Center(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.hourglass_empty_outlined, 
+                                size: 64,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              Text(
+                                "There are no assessments rendered for this employee.",
+                              )
+                            ],
+                          ),
+                        )
+                        : SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: Column(
+                          children: [
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: DataTable(
+                                dataRowMaxHeight: double.infinity,
+                                columns: const [
+                                  DataColumn(
+                                    columnWidth: FixedColumnWidth(150.0),
+                                    label: Text(
+                                      'Results', 
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold
+                                      ),
+                                    )
+                                  ),
+                                  DataColumn(
+                                    columnWidth: FixedColumnWidth(150.0),
+                                    label: Text(
+                                      'Action Status', 
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold
+                                      ),
+                                    )
+                                  ),
+                                  DataColumn(
+                                    columnWidth: FixedColumnWidth(150.0),
+                                    label: Text(
+                                      'Added At', 
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold
+                                      ),
+                                    )
+                                  ),
+                                  DataColumn(
+                                    columnWidth: FixedColumnWidth(150.0),
+                                    label: Text(
+                                      'Action Date', 
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold
+                                      ),
+                                    )
+                                  ),
+                                  DataColumn(
+                                    columnWidth: FixedColumnWidth(150.0),
+                                    label: Text(
+                                      'Should Retake?', 
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold
+                                      ),
+                                    )
+                                  ),
+                                ],
+                                rows: [employee.assessmentHistory].map((item) {
+                                  final isDone = item['is_done'] == true;
+                                  final date = item['action_date'] as String?;
+                                  final addedTime = item['added_at'] as String;
+                            
+                                  return DataRow(
+                                    cells: [
+                                      // 1. Assessment Results
+                                      DataCell(
+                                        Text(
+                                          item['result'].toString(),
+                                          style: const TextStyle(fontWeight: FontWeight.w500)
+                                        )
+                                      ),
+                            
+                                      // 2. Action Done Status / Button
+                                      DataCell(
+                                        isDone
+                                            ? Chip(
+                                                avatar: const Icon(Icons.check, size: 16, color: Colors.white),
+                                                label: const Text('Done', style: TextStyle(color: Colors.white)),
+                                                backgroundColor: Colors.green.shade600,
+                                                padding: EdgeInsets.zero,
+                                              )
+                                            : ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Theme.of(context).colorScheme.primary,
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                                onPressed: () async {
+                                                  final DateTime? picked = await showEphorDatePicker(
+                                                    context,
+                                                    DateTime.now(),
+                                                    DateTime(2000),
+                                                    DateTime(2030),
+                                                    OmniDateTimePickerType.date,
+                                                  );
+                                                  if (picked != null) {
+                                                    setState(() {
+                                                      item['is_done'] = true;
+                                                      item['action_date'] = formatTimestamp(picked.toIso8601String());
+                                                    });
+                            
+                                                    // FIX: Create a copy of the Map (not a List)
+                                                    final Map<String, dynamic> updatedHistory = Map<String, dynamic>.from(item);
+                                                    
+                                                    // Update the fields in the new map
+                                                    updatedHistory['is_done'] = true;
+                                                    updatedHistory['action_date'] = item['action_date'];
+                            
+                                                    final updatedEmployee = employee.copyWith(
+                                                      assessmentHistory: updatedHistory,
+                                                      shallRetakeTraining: false
+                                                    );
+                                                    widget.viewModel.updateEmployeeTrainingStatus.execute(updatedEmployee);
+                                                    
+                                                    if (mounted){
+                                                      Navigator.pop(context);
+                                                    }
+                                                  }
+                                                },
+                                                child: const Text('Done'),
+                                              ),
+                                      ),
+                            
+                                      // Added Time
+                                      DataCell(
+                                        Text(
+                                          formatTimestamp(addedTime),
+                                          style: const TextStyle(fontWeight: FontWeight.w500)
+                                        )
+                                      ),
+                            
+                                      // 3. Action Date Picker
+                                      DataCell(
+                                        Text(
+                                          date ?? "N/A",
+                                        )
+                                      ),
+
+                                      DataCell(
+                                        Text(
+                                          '${employee.shallRetakeTraining}',
+                                        )
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                            if (employee.impactAssessmentNotes != null) 
+                              ...[
+                                const SizedBox(height: 8),
+                                const Text(
+                                  "AI Impact Assessment Notes",
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                                ),
+                                const SizedBox(height: 8),
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: MarkdownBody(
+                                    data: employee.impactAssessmentNotes!
+                                  ),
+                                )
+                              ]
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }

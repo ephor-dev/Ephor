@@ -103,6 +103,7 @@ class _DashboardViewState extends State<DashboardView> {
     widget.viewModel.logout.addListener(_onResult);
     widget.viewModel.checkPassword.addListener(_onPasswordChecked);
     widget.viewModel.setDarkMode.addListener(_onDarkModePrefsChanged);
+    widget.viewModel.addListener(_onUpdate);
     _searchController.addListener(_updateListFromSearch);
   }
 
@@ -132,7 +133,16 @@ class _DashboardViewState extends State<DashboardView> {
     widget.viewModel.setDarkMode.removeListener(_onDarkModePrefsChanged);
     _searchController.dispose();
     _searchController.removeListener(_updateListFromSearch);
+    widget.viewModel.removeListener(_onUpdate);
     super.dispose();
+  }
+
+  void _onUpdate() {
+    if (!mounted) return;
+  
+    setState(() {
+      print(widget.viewModel.isAnalysisRunning);
+    });
   }
 
   void _onSelectItem(String pathSegment) {
@@ -230,15 +240,6 @@ class _DashboardViewState extends State<DashboardView> {
         height: 96,
       ),
       applicationLegalese: "© Copyright Ephor-Dev 2025",
-    );
-  }
-
-  void _showNotificationsPlaceholder() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Notifications functionality coming soon! No new alerts.'),
-        duration: Duration(seconds: 2),
-      ),
     );
   }
 
@@ -452,14 +453,40 @@ class _DashboardViewState extends State<DashboardView> {
                     ),
                     onPressed: _showInfoPlaceholder
                   ),
-                  
-                  IconButton(
-                    icon: Icon(
-                      Icons.notifications_none, 
-                      color: Theme.of(context).colorScheme.onSurface, 
-                      size: 25
-                    ), 
-                    onPressed: _showNotificationsPlaceholder
+
+                  ValueListenableBuilder<bool>(
+                    valueListenable: widget.viewModel.isAnalysisRunning,
+                    builder: (context, isRunning, child) {
+                      if (isRunning) {
+                        // Show Spinner
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Theme.of(context).colorScheme.primary
+                              ),
+                            ),
+                          ),
+                        );
+                      } else {
+                        // Show Normal Icon
+                        return IconButton(
+                          tooltip: 'CATNA Analysis Status',
+                          icon: Icon(
+                            Icons.insights,
+                            color: Theme.of(context).colorScheme.onSurface, 
+                            size: 25
+                          ), 
+                          onPressed: () {
+                            // Optional: Show "System Idle" snackbar or similar
+                          },
+                        );
+                      }
+                    },
                   ),
                   
                   const SizedBox(width: 15.0), 

@@ -103,7 +103,9 @@ class CsvEmployeeMapper {
           middleName: middleName.isNotEmpty ? middleName : null,
           extraTags: tagsString.isNotEmpty ? tagsString.split(',').map((e) => e.trim()).toList() : const [],
           catnaAssessed: false,
-          impactAssessed: true
+          impactAssessed: true,
+          shallRetakeTraining: false,
+          assessmentHistory: {}
         )
       );
     }

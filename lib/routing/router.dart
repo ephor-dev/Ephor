@@ -10,16 +10,8 @@ import 'package:ephor/ui/dashboard/view/dashboard_view.dart';
 import 'package:ephor/ui/dashboard/view_model/dashboard_viewmodel.dart';
 import 'package:ephor/ui/forms_management/view/forms_view.dart';
 import 'package:ephor/ui/forms_management/view_model/forms_view_model.dart';
-import 'package:ephor/ui/dashboard/subviews/finished_assessment/view/finished_assessment_subview.dart';
-import 'package:ephor/ui/dashboard/subviews/finished_assessment/view_model/finished_assessment_viewmodel.dart';
-import 'package:ephor/ui/dashboard/subviews/finished_trainings/view/finished_trainings_subview.dart';
-import 'package:ephor/ui/dashboard/subviews/finished_trainings/view_model/finished_trainings_viewmodel.dart';
 import 'package:ephor/ui/dashboard/subviews/overview/view/overview_subview.dart';
 import 'package:ephor/ui/dashboard/subviews/overview/view_model/overview_viewmodel.dart';
-import 'package:ephor/ui/dashboard/subviews/recommended_trainings/view/recommended_trainings_subview.dart';
-import 'package:ephor/ui/dashboard/subviews/recommended_trainings/view_model/recommended_trainings_viewmodel.dart';
-import 'package:ephor/ui/dashboard/subviews/upcoming_schedules/view/upcoming_schedules_subview.dart';
-import 'package:ephor/ui/dashboard/subviews/upcoming_schedules/view_model/upcoming_schedules_viewmodel.dart';
 import 'package:ephor/ui/edit_employee/view/edit_employee_view.dart';
 import 'package:ephor/ui/edit_employee/view_model/edit_employee_viewmodel.dart';
 import 'package:ephor/ui/employee_management/view/employees_view.dart';
@@ -83,7 +75,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           viewModel: DashboardViewModel(
             authRepository: authRepository, 
             prefsRepository: context.read(), 
-            employeeRepository: context.read(), 
+            employeeRepository: context.read(),
+            formRepository: context.read(),
             themeNotifier: context.read()
           ), 
           child: child
@@ -167,30 +160,6 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
               },
             ),
           ]
-        ),
-        GoRoute(
-          path: Routes.getSchedulesPath(),
-          builder: (context, state) => UpcomingSchedulesSubView(
-            viewModel: UpcomingSchedulesViewModel(),
-          ),
-        ),
-        GoRoute(
-          path: Routes.getAssessmentsPath(),
-          builder: (context, state) => FinishedAssessmentsSubView(
-            viewModel: FinishedAssessmentsViewModel(),
-          ),
-        ),
-        GoRoute(
-          path: Routes.getFinishedTrainingsPath(),
-          builder: (context, state) => FinishedTrainingsSubView(
-            viewModel: FinishedTrainingsViewModel(),
-          ),
-        ),
-        GoRoute(
-          path: Routes.getRecommendedTrainingsPath(),
-          builder: (context, state) => RecommendedTrainingsSubView(
-            viewModel: RecommendedTrainingsViewModel(),
-          ),
         ),
         GoRoute(
           path: Routes.getCatnaFormEditorPath(),

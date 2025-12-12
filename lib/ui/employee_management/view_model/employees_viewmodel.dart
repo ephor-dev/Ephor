@@ -25,6 +25,7 @@ class EmployeeListViewModel extends ChangeNotifier {
   late CommandWithArgs deleteEmployee;
   late CommandWithArgs deleteBatchEmployees;
   late CommandNoArgs loadEmployees;
+  late CommandWithArgs updateEmployeeTrainingStatus;
 
   EmployeeListViewModel({
     required EmployeeRepository employeeRepository,
@@ -36,6 +37,7 @@ class EmployeeListViewModel extends ChangeNotifier {
     loadEmployees = CommandNoArgs<void>(_loadEmployees);
     deleteEmployee = CommandWithArgs<void, EmployeeModel>(_deleteEmployee);
     deleteBatchEmployees = CommandWithArgs<void, List<EmployeeModel>>(_deleteBatchEmployees);
+    updateEmployeeTrainingStatus = CommandWithArgs<void, EmployeeModel>(_updateEmployeeTrainingStatus);
 
     _getCurrentUser();
     _listenToSearchKeywords();
@@ -165,5 +167,35 @@ class EmployeeListViewModel extends ChangeNotifier {
 
     final result = fuse.search(query);
     return result.map((r) => r.item).toList();
+  }
+
+  Future<Result<String>> _updateEmployeeTrainingStatus(EmployeeModel employee) async {
+    try {
+      bool done = true;
+      final Map<String, dynamic> updatedHistory = employee.assessmentHistory;
+
+      if (updatedHistory['is_done'] as bool == false) {
+        done = false;
+      }
+
+      if (done) {
+        employee = employee.copyWith(
+          catnaAssessed: true,
+          impactAssessed: false
+        );
+      }
+
+      final result = await _employeeRepository.editEmployee(employee);
+      
+      if (result case Ok()) {
+        return Result.ok("Successfully marked training plan as done.");
+      } else if (result case Error(error: CustomMessageException exception)) {
+        return Result.error(CustomMessageException(exception.message));
+      } else {
+        return Result.error(CustomMessageException("Cannot update training plan for user"));
+      }
+    } on Error {
+      return Result.error(CustomMessageException("Cannot update training plan for user"));
+    }
   }
 }
