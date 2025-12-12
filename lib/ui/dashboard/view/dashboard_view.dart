@@ -662,7 +662,7 @@ class _DashboardViewState extends State<DashboardView> {
               onPressed: () {
                 context.go(Routes.getChatbotPath());
               },
-              label: Text("Ask Augusta"),
+              label: Text("Ask Augustus"),
               icon: Icon(Icons.auto_awesome),
             ),
           body: widget.child, // The main content area is now fully expanded
