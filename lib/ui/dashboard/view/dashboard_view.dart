@@ -103,6 +103,7 @@ class _DashboardViewState extends State<DashboardView> {
     widget.viewModel.logout.addListener(_onResult);
     widget.viewModel.checkPassword.addListener(_onPasswordChecked);
     widget.viewModel.setDarkMode.addListener(_onDarkModePrefsChanged);
+    widget.viewModel.addListener(_onUpdate);
     _searchController.addListener(_updateListFromSearch);
   }
 
@@ -132,7 +133,14 @@ class _DashboardViewState extends State<DashboardView> {
     widget.viewModel.setDarkMode.removeListener(_onDarkModePrefsChanged);
     _searchController.dispose();
     _searchController.removeListener(_updateListFromSearch);
+    widget.viewModel.removeListener(_onUpdate);
     super.dispose();
+  }
+
+  void _onUpdate() {
+    setState(() {
+      print(widget.viewModel.isAnalysisRunning);
+    });
   }
 
   void _onSelectItem(String pathSegment) {
@@ -454,7 +462,7 @@ class _DashboardViewState extends State<DashboardView> {
                           child: CircularProgressIndicator(strokeWidth: 2.5),
                         )
                       : Icon(
-                          Icons.notifications_none,
+                          Icons.analytics_outlined,
                           color: Theme.of(context).colorScheme.onSurface, 
                           size: 25
                         ), 

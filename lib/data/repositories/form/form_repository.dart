@@ -1,22 +1,25 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:ephor/data/repositories/form/abstract_form_repository.dart';
 import 'package:ephor/data/services/model_api/model_api_service.dart';
 import 'package:ephor/data/services/supabase/supabase_service.dart';
+import 'package:ephor/domain/enums/catna_status.dart';
 import 'package:ephor/domain/models/form_editor/form_model.dart';
 import 'package:ephor/domain/models/overview/activity_model.dart';
 import 'package:ephor/domain/use_cases/excel_generator.dart';
 import 'package:ephor/domain/use_cases/payload_to_api_model.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
-import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class FormRepository extends AbstractFormRepository {
   final SupabaseService _supabaseService;
   final ModelAPIService _modelAPIService;
-  late ValueNotifier<bool> isAnalyzingNotifer = ValueNotifier(false);
+
+  final _catnaStatusController = StreamController<CatnaStatus>.broadcast();
+  Stream<CatnaStatus> get catnaStatusStream => _catnaStatusController.stream;
 
   FormRepository({
     required SupabaseService supabaseService,
@@ -132,7 +135,6 @@ class FormRepository extends AbstractFormRepository {
       await _supabaseService.insertCatnaAssessment(payload);
       await _supabaseService.updateEmployeeCATNAStatus(employeeName);
       _triggerAnalysisInBackground(payload);
-      isAnalyzingNotifer.value = true;
       return const Result.ok(null);
     } catch (e) {
       return Result.error(
@@ -194,7 +196,7 @@ class FormRepository extends AbstractFormRepository {
   Future<void> _triggerAnalysisInBackground(Map<String, dynamic> currentPayload) async {
     try { 
       // Notify listeners analysis started
-      isAnalyzingNotifer.value = true;
+      _catnaStatusController.add(CatnaStatus.loading);
       
       final response = await _supabaseService.getAllFinishedCATNA();
       final List<dynamic> allAssessments = response;
@@ -223,7 +225,7 @@ class FormRepository extends AbstractFormRepository {
       // Optionally log to Crashlytics here
     } finally {
       // CHANGE 2: "finally" ensures this ALWAYS runs, even if there is an error
-      isAnalyzingNotifer.value = false;
+      _catnaStatusController.add(CatnaStatus.done);
     }
   }
 
