@@ -171,14 +171,16 @@ class EmployeeListViewModel extends ChangeNotifier {
 
   Future<Result<String>> _updateEmployeeTrainingStatus(EmployeeModel employee) async {
     try {
-      bool allDone = true;
-      final List<Map<String, dynamic>> updatedHistory = List.from(employee.assessmentHistory);
-      for (Map<String, dynamic> item in updatedHistory) {
-        if (item['is_done'] == false) allDone = false;
+      bool done = true;
+      final Map<String, dynamic> updatedHistory = employee.assessmentHistory;
+
+      if (updatedHistory['is_done'] as bool == false) {
+        done = false;
       }
 
-      if (allDone) {
+      if (done) {
         employee = employee.copyWith(
+          catnaAssessed: true,
           impactAssessed: false
         );
       }
@@ -188,8 +190,7 @@ class EmployeeListViewModel extends ChangeNotifier {
       if (result case Ok()) {
         return Result.ok("Successfully marked training plan as done.");
       } else if (result case Error(error: CustomMessageException exception)) {
-        print(exception.message);
-        return Result.error(CustomMessageException("Cannot update training plan for user"));
+        return Result.error(CustomMessageException(exception.message));
       } else {
         return Result.error(CustomMessageException("Cannot update training plan for user"));
       }

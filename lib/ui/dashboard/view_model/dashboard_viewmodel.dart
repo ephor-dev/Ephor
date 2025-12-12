@@ -67,7 +67,6 @@ class DashboardViewModel extends ChangeNotifier {
 
   void _subscribeToAnalysisStatus() {
     _formRepository.isAnalysisRunning.addListener(() {
-      print("VM Analysis Running: ${_formRepository.isAnalysisRunning.value}");
       notifyListeners(); // Optional: only if you need to rebuild things not using ValueListenableBuilder
     });
   }

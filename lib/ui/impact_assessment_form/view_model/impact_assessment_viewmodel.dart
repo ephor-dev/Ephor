@@ -87,7 +87,7 @@ class ImpactAssessmentViewModel extends ChangeNotifier {
 
     if (result case Ok(value: final jsonMap)) {
       try {
-        final rawSections = jsonMap['sections'] as List? ?? []; 
+        final rawSections = jsonMap['sections'] as List? ?? [];
         _sections = rawSections.map((s) => FormSection.fromJson(Map<String, dynamic>.from(s as Map))).toList();
         
         if (jsonMap.containsKey('draft_data') && jsonMap['draft_data'] != null) {
@@ -212,20 +212,43 @@ class ImpactAssessmentViewModel extends ChangeNotifier {
         
         final value = _formData[item.key];
 
-        // Logic: Identifying Data is typically Section 0 ("I. Identifying Data")
         if (section.title.contains("Identifying")) {
           identifyingData[item.key] = value;
         } else {
           // Everything else (Section II) goes to assessment
-          assessmentData[item.key] = value;
+          assessmentData[item.label] = value;
         }
       }
+    }
+
+    String employeeCode = "";
+
+    try {
+      final listResult = await _employeeRepository.fetchAllEmployees();
+
+      if (listResult case Ok(value: List<EmployeeModel> employeeList)) {
+        for (EmployeeModel employee in employeeList) {
+          if (employee.fullName == identifyingData['personnel_name']) {
+            employeeCode = employee.employeeCode;
+            break;
+          }
+        }
+      }
+
+      if (employeeCode == "") {
+        _isSubmitting = false;
+        return Result.error(CustomMessageException("Can't retrieve user code"));
+      }
+    } catch (e) {
+      _isSubmitting = false;
+      return Result.error(CustomMessageException("Can't retrieve user code"));
     }
 
     final payload = <String, dynamic>{
       'employee_code': currentUser.employeeCode,
       'identifying_data': identifyingData,
       'assessments_data': assessmentData,
+      'updated_user': employeeCode
     };
 
     try {

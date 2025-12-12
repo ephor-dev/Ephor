@@ -104,7 +104,8 @@ class CsvEmployeeMapper {
           extraTags: tagsString.isNotEmpty ? tagsString.split(',').map((e) => e.trim()).toList() : const [],
           catnaAssessed: false,
           impactAssessed: true,
-          assessmentHistory: List<Map<String, dynamic>>.empty()
+          shallRetakeTraining: false,
+          assessmentHistory: {}
         )
       );
     }

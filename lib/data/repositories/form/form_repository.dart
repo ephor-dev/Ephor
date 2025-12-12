@@ -130,10 +130,10 @@ class FormRepository extends AbstractFormRepository {
   @override
   Future<Result<void>> submitCatna(Map<String, dynamic> payload) async {
     try {
-      String employeeName = payload.remove('updated_user');
+      String employeeName = payload['updated_user'];
       await _supabaseService.insertCatnaAssessment(payload);
       await _supabaseService.updateEmployeeCATNAStatus(employeeName);
-      _triggerAnalysisInBackground(payload);
+      _triggerAnalysisInBackground();
       return const Result.ok(null);
     } catch (e) {
       return Result.error(
@@ -145,7 +145,10 @@ class FormRepository extends AbstractFormRepository {
   @override
   Future<Result<void>> submitImpactAssessment(Map<String, dynamic> payload) async {
     try {
+      String employeeName = payload['updated_user'];
       await _supabaseService.insertImpactAssessment(payload);
+      await _supabaseService.updateEmployeeIAStatus(employeeName);
+      _triggerImpactAnalysisInBackground(payload);
       return const Result.ok(null);
     } catch (e) {
       return Result.error(
@@ -192,7 +195,7 @@ class FormRepository extends AbstractFormRepository {
     }
   }
   
-  Future<void> _triggerAnalysisInBackground(Map<String, dynamic> currentPayload) async {
+  Future<void> _triggerAnalysisInBackground() async {
     try { 
       // Notify listeners analysis started
       isAnalysisRunning.value = true;
@@ -208,11 +211,10 @@ class FormRepository extends AbstractFormRepository {
       }
       
       final analysisResult = await analyzeCATNA(fullDataset);
-      print(analysisResult);
 
       if (analysisResult case Ok(value: Map<String, dynamic> result)) {
         // FIX: Ensure this doesn't crash if result is malformed
-        await _supabaseService.updateOverviewStatistics(result);
+        await _supabaseService.updateOverviewStatistics(result, false);
       } else if (analysisResult case Error _) {
         throw CustomMessageException("Cannot analyze CATNA");
       }
@@ -271,5 +273,64 @@ class FormRepository extends AbstractFormRepository {
       'updated_at': row['updated_at'],
       'full_report': row['full_report']['catna_analysis_summary']
     };
+  }
+
+  Future<void> _triggerImpactAnalysisInBackground(Map<String, dynamic> currentPayload) async {
+    try {
+      isAnalysisRunning.value = true;
+      String employeeCode = currentPayload['updated_user'];
+      final employee = await _supabaseService.getEmployeeByCode(employeeCode);
+      
+      String trainingPlan = "";
+      if (employee != null) {
+        trainingPlan = employee.assessmentHistory['result'];
+      }
+      
+      final response = await _supabaseService.getAllFinishedCATNA();
+      final List<dynamic> allAssessments = response;
+      final List<Map<String, dynamic>> fullDataset = [];
+      final Map<String, dynamic> assessmentsData = currentPayload['assessments_data'];
+
+      for (var assessment in allAssessments) {
+        final assessmentMap = Map<String, dynamic>.from(assessment as Map);
+        
+        if (assessmentMap['updated_user'] == employeeCode) {
+          assessmentMap['Training Plan'] = trainingPlan;
+          assessmentMap['Intervention Type'] = currentPayload['identifying_data']['intervention_title'];
+          assessmentMap['Was the intervention beneficial to the personnel’s scope of work?'] 
+            = assessmentsData['Was the intervention beneficial to your personnel’s scope of work?'] == 1
+            ? 'Yes' : 'No';
+          assessmentMap['Did the personnel incorporate the things they learned in the intervention into their work?'] 
+            = assessmentsData['Did the personnel incorporate the things they learned in the intervention into their work?'] == 1
+            ? 'Yes' : 'No';
+          assessmentMap['Did you notice a significant change at your personnel’s perception, attitude or behavior as a result of the intervention?'] 
+            = assessmentsData['Did you notice a significant change at your personnel’s perception, attitude or behavior?'] == 1
+            ? 'Yes' : 'No';
+          assessmentMap['Rate of the intervention’s overall impact to the efficiency of the personnel'] 
+            = assessmentsData['On a scale of 5-1, kindly rate the intervention’s overall impact to the efficiency of your personnel.'];
+        }
+
+        final rows = convertPayloadToAPIModel(assessmentMap);
+        fullDataset.addAll(rows);
+      }
+      
+      final analysisResult = await analyzeCATNA(fullDataset);
+
+      if (analysisResult case Ok(value: Map<String, dynamic> result)) {
+        // FIX: Ensure this doesn't crash if result is malformed
+        await _supabaseService.updateOverviewStatistics(result, true);
+      } else if (analysisResult case Error _) {
+        throw CustomMessageException("Cannot analyze CATNA");
+      }
+
+      print("General Overview updated successfully.");
+      
+    } catch (e) {
+      print("Background analysis failed: $e");
+      // Optionally log to Crashlytics here
+    } finally {
+      // CHANGE 2: "finally" ensures this ALWAYS runs, even if there is an error
+      isAnalysisRunning.value = false;
+    }
   }
 }

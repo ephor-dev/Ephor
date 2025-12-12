@@ -10,6 +10,7 @@ import 'package:ephor/utils/custom_message_exception.dart';
 import 'package:ephor/utils/format_time_stamp.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -709,7 +710,7 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               // Fixed size constraints
-              constraints: BoxConstraints.tight(const Size(640, 480)),
+              constraints: BoxConstraints.tight(const Size(800, 480)),
               content: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -780,94 +781,162 @@ class _EmployeeListSubViewState extends State<EmployeeListSubView> {
                         )
                         : SingleChildScrollView(
                         scrollDirection: Axis.vertical,
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: DataTable(
-                            columns: const [
-                              DataColumn(label: Text('Results')),
-                              DataColumn(label: Text('Action Status')),
-                              DataColumn(label: Text('Added At')),
-                              DataColumn(label: Text('Action Date')),
-                            ],
-                            rows: employee.assessmentHistory.asMap().entries.map((entry) {
-                              final int index = entry.key;
-                              final Map<String, dynamic> item = entry.value;
-                              final isDone = item['is_done'] == true;
-                              final date = item['action_date'] as String?;
-                              final addedTime = item['added_at'] as String;
-                      
-                              return DataRow(
-                                cells: [
-                                  // 1. Assessment Results
-                                  DataCell(
-                                    Text(
-                                      item['result'].toString(), 
-                                      style: const TextStyle(fontWeight: FontWeight.w500)
+                        child: Column(
+                          children: [
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: DataTable(
+                                dataRowMaxHeight: double.infinity,
+                                columns: const [
+                                  DataColumn(
+                                    columnWidth: FixedColumnWidth(150.0),
+                                    label: Text(
+                                      'Results', 
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold
+                                      ),
                                     )
                                   ),
-                      
-                                  // 2. Action Done Status / Button
-                                  DataCell(
-                                    isDone
-                                        ? Chip(
-                                            avatar: const Icon(Icons.check, size: 16, color: Colors.white),
-                                            label: const Text('Done', style: TextStyle(color: Colors.white)),
-                                            backgroundColor: Colors.green.shade600,
-                                            padding: EdgeInsets.zero,
-                                          )
-                                        : ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Theme.of(context).colorScheme.primary,
-                                              foregroundColor: Colors.white,
-                                            ),
-                                            onPressed: () async {
-                                              final DateTime? picked = await showEphorDatePicker(
-                                                context,
-                                                DateTime.now(),
-                                                DateTime(2000),
-                                                DateTime(2030),
-                                                OmniDateTimePickerType.date
-                                              );
-                                              if (picked != null) {
-                                                setState(() {
-                                                  item['is_done'] = true;
-                                                  item['action_date'] = formatTimestamp(picked.toIso8601String());
-                                                });
-
-                                                final List<Map<String, dynamic>> updatedHistory = List.from(employee.assessmentHistory);
-
-                                                updatedHistory[index] = {
-                                                  ...item, // Keep existing fields
-                                                  'is_done': true,
-                                                  'action_date': item['action_date'],
-                                                };
-
-                                                final updatedEmployee = employee.copyWith(assessmentHistory: updatedHistory);
-                                                widget.viewModel.updateEmployeeTrainingStatus.execute(updatedEmployee);
-                                              }
-                                            },
-                                            child: const Text('Mark as Done'),
-                                          ),
-                                  ),
-
-                                  // Added Time
-                                  DataCell(
-                                    Text(
-                                      formatTimestamp(addedTime), 
-                                      style: const TextStyle(fontWeight: FontWeight.w500)
+                                  DataColumn(
+                                    columnWidth: FixedColumnWidth(150.0),
+                                    label: Text(
+                                      'Action Status', 
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold
+                                      ),
                                     )
                                   ),
-                      
-                                  // 3. Action Date Picker
-                                  DataCell(
-                                    Text(
-                                        date ?? "N/A",
-                                      )
+                                  DataColumn(
+                                    columnWidth: FixedColumnWidth(150.0),
+                                    label: Text(
+                                      'Added At', 
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold
+                                      ),
+                                    )
+                                  ),
+                                  DataColumn(
+                                    columnWidth: FixedColumnWidth(150.0),
+                                    label: Text(
+                                      'Action Date', 
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold
+                                      ),
+                                    )
+                                  ),
+                                  DataColumn(
+                                    columnWidth: FixedColumnWidth(150.0),
+                                    label: Text(
+                                      'Should Retake?', 
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold
+                                      ),
+                                    )
                                   ),
                                 ],
-                              );
-                            }).toList(),
-                          ),
+                                rows: [employee.assessmentHistory].map((item) {
+                                  final isDone = item['is_done'] == true;
+                                  final date = item['action_date'] as String?;
+                                  final addedTime = item['added_at'] as String;
+                            
+                                  return DataRow(
+                                    cells: [
+                                      // 1. Assessment Results
+                                      DataCell(
+                                        Text(
+                                          item['result'].toString(),
+                                          style: const TextStyle(fontWeight: FontWeight.w500)
+                                        )
+                                      ),
+                            
+                                      // 2. Action Done Status / Button
+                                      DataCell(
+                                        isDone
+                                            ? Chip(
+                                                avatar: const Icon(Icons.check, size: 16, color: Colors.white),
+                                                label: const Text('Done', style: TextStyle(color: Colors.white)),
+                                                backgroundColor: Colors.green.shade600,
+                                                padding: EdgeInsets.zero,
+                                              )
+                                            : ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Theme.of(context).colorScheme.primary,
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                                onPressed: () async {
+                                                  final DateTime? picked = await showEphorDatePicker(
+                                                    context,
+                                                    DateTime.now(),
+                                                    DateTime(2000),
+                                                    DateTime(2030),
+                                                    OmniDateTimePickerType.date,
+                                                  );
+                                                  if (picked != null) {
+                                                    setState(() {
+                                                      item['is_done'] = true;
+                                                      item['action_date'] = formatTimestamp(picked.toIso8601String());
+                                                    });
+                            
+                                                    // FIX: Create a copy of the Map (not a List)
+                                                    final Map<String, dynamic> updatedHistory = Map<String, dynamic>.from(item);
+                                                    
+                                                    // Update the fields in the new map
+                                                    updatedHistory['is_done'] = true;
+                                                    updatedHistory['action_date'] = item['action_date'];
+                            
+                                                    final updatedEmployee = employee.copyWith(assessmentHistory: updatedHistory);
+                                                    widget.viewModel.updateEmployeeTrainingStatus.execute(updatedEmployee);
+                                                    
+                                                    if (mounted){
+                                                      Navigator.pop(context);
+                                                    }
+                                                  }
+                                                },
+                                                child: const Text('Done'),
+                                              ),
+                                      ),
+                            
+                                      // Added Time
+                                      DataCell(
+                                        Text(
+                                          formatTimestamp(addedTime),
+                                          style: const TextStyle(fontWeight: FontWeight.w500)
+                                        )
+                                      ),
+                            
+                                      // 3. Action Date Picker
+                                      DataCell(
+                                        Text(
+                                          date ?? "N/A",
+                                        )
+                                      ),
+
+                                      DataCell(
+                                        Text(
+                                          '${employee.shallRetakeTraining}',
+                                        )
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                            if (employee.impactAssessmentNotes != null) 
+                              ...[
+                                const SizedBox(height: 8),
+                                const Text(
+                                  "AI Impact Assessment Notes",
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                                ),
+                                const SizedBox(height: 8),
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: MarkdownBody(
+                                    data: employee.impactAssessmentNotes!
+                                  ),
+                                )
+                              ]
+                          ],
                         ),
                       ),
                     ),

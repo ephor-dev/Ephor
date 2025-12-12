@@ -19,7 +19,9 @@ class EmployeeModel {
   final String? photoUrl;
   final bool catnaAssessed;
   final bool impactAssessed;
-  final List<Map<String, dynamic>> assessmentHistory;
+  final Map<String, dynamic> assessmentHistory;
+  final String? impactAssessmentNotes;
+  final bool shallRetakeTraining;
 
   const EmployeeModel({
     String? id, // Allows null/omission during creation
@@ -35,6 +37,8 @@ class EmployeeModel {
     required this.catnaAssessed,
     required this.impactAssessed,
     required this.assessmentHistory,
+    this.impactAssessmentNotes,
+    required this.shallRetakeTraining
   }) : userId = id ?? ''; // Use empty string placeholder if null
 
   String get fullName {
@@ -55,7 +59,9 @@ class EmployeeModel {
     String? photoUrl,
     bool? catnaAssessed,
     bool? impactAssessed,
-    List<Map<String, dynamic>>? assessmentHistory
+    Map<String, dynamic>? assessmentHistory,
+    String? impactAssessmentNotes,
+    bool? shallRetakeTraining
   }) {
     return EmployeeModel(
       id: id ?? userId,
@@ -70,7 +76,9 @@ class EmployeeModel {
       photoUrl: photoUrl ?? this.photoUrl,
       catnaAssessed: catnaAssessed ?? false,
       impactAssessed: impactAssessed ?? true,
-      assessmentHistory: assessmentHistory ?? this.assessmentHistory
+      assessmentHistory: assessmentHistory ?? this.assessmentHistory,
+      impactAssessmentNotes: impactAssessmentNotes ?? this.impactAssessmentNotes,
+      shallRetakeTraining: shallRetakeTraining ?? this.shallRetakeTraining
     );
   }
 
@@ -87,7 +95,9 @@ class EmployeeModel {
       'photo_url': photoUrl,
       'catna_assessed': catnaAssessed,
       'impact_assessed': impactAssessed,
-      'assessment_history': assessmentHistory
+      'assessment_history': assessmentHistory,
+      'impact_assessment_notes': impactAssessmentNotes,
+      'shall_retake_training': shallRetakeTraining
     };
     if (userId.isNotEmpty) {
       map['id'] = userId;
@@ -123,9 +133,9 @@ class EmployeeModel {
       photoUrl: map['photo_url'] as String?,
       catnaAssessed: map['catna_assessed'] as bool,
       impactAssessed: map['impact_assessed'] as bool,
-      assessmentHistory: (map['assessment_history'] as List<dynamic>?)
-        ?.map((e) => e as Map<String, dynamic>)
-        .toList() ?? []
-        );
+      assessmentHistory: map['assessment_history'] as Map<String, dynamic>,
+      impactAssessmentNotes: map['impact_assessment_notes'] as String?,
+      shallRetakeTraining: map['shall_retake_training'] as bool
+    );
   }
 }

@@ -391,7 +391,7 @@ class SupabaseService {
   }
 
   // Overview
-  Future<void> updateOverviewStatistics(Map<String, dynamic> analysisResult) async {
+  Future<void> updateOverviewStatistics(Map<String, dynamic> analysisResult, bool hasImpact) async {
     // FIX: The API returns 'catna_analysis_summary', not 'catna_analysis'
     // We try both just to be safe.
     final result = analysisResult['catna_analysis_summary'] ?? analysisResult['catna_analysis'];
@@ -405,12 +405,17 @@ class SupabaseService {
     final individualPlans = (result['Individual_Training_Plans'] as List?) ?? [];
     final count = individualPlans.length;
 
+    if (hasImpact) {
+      final impactAssessmentResults = analysisResult['impact_assessment'];
+      await updateIndividualAssessmentStatus(impactAssessmentResults);
+    }
+
     // FIX: Map the plans safely
-    final derivedActivity = individualPlans.map((plan) async {
+    final derivedActivity = individualPlans.map((plan) {
       // Ensure 'plan' is treated as a Map
       final p = plan as Map;
       String currentTime = DateTime.now().toIso8601String();
-      await updateEmployeeTrainingPlan(p['Name'], p['Training_Recommendation'], currentTime);
+      updateEmployeeTrainingPlan(p['Name'], p['Training_Recommendation'], currentTime);
       return {
         'employeeName': p['Name'] ?? 'Unknown',
         'status': 'Identified',
@@ -461,6 +466,25 @@ class SupabaseService {
       updates.remove('id'); 
       updates.remove('employee_code');
       updates['catna_assessed'] = true;
+      updates['impact_assessed'] = true;
+
+      await _client
+        .from('employees')
+        .update(updates)
+        .eq('employee_code', employeeCode)
+        .select(); 
+    }
+  }
+
+  Future<void> updateEmployeeIAStatus(String employeeCode) async {
+    EmployeeModel? employee = await getEmployeeByCode(employeeCode);
+
+    if (employee != null) {
+      final Map<String, dynamic> updates = employee.toJson();
+      updates.remove('id'); 
+      updates.remove('employee_code');
+      updates['catna_assessed'] = false;
+      updates['impact_assessed'] = true;
 
       await _client
         .from('employees')
@@ -477,11 +501,9 @@ class SupabaseService {
 
     for (EmployeeModel employee in employeeList) {
       if (employee.fullName.trim().toLowerCase() == employeeName.trim().toLowerCase()) {
-        List<Map<String, dynamic>> currentHistory = List<Map<String, dynamic>>.from(employee.assessmentHistory);
+        Map<String, dynamic> currentHistory =Map<String, dynamic>.from(employee.assessmentHistory);
 
-        final bool alreadyExists = currentHistory.any((item) => 
-          item['result'].toString().toLowerCase() == trainingRecommendation.toLowerCase()
-        );
+        final bool alreadyExists = currentHistory['result'].toString().toLowerCase() == trainingRecommendation.toLowerCase();
 
         if (alreadyExists) {
           print("Skipping: '$trainingRecommendation' already exists for ${employee.fullName}");
@@ -489,12 +511,12 @@ class SupabaseService {
         }
 
         // 4. Add the new recommendation since it is unique
-        currentHistory.add({
+        currentHistory = {
           'result': trainingRecommendation,
           'is_done': false,      // UI expects this boolean
           'action_date': null,   // UI expects this DateTime?
           'added_at': updateTime, // Optional: track when it was added
-        });
+        };
 
         // 5. Update Supabase
         try {
@@ -509,6 +531,45 @@ class SupabaseService {
 
         // Stop the loop once we found and processed the employee
         break;
+      }
+    }
+  }
+  
+  Future<void> updateIndividualAssessmentStatus(Map<String, dynamic> impactAssessmentResults) async {
+    final rawList = impactAssessmentResults['Individual_Impact_Retake_Data'] as List?;;
+    if (rawList == null) return;
+
+    List<Map<String, dynamic>> individualImpactRetakeData = 
+        rawList.map((e) => e as Map<String, dynamic>).toList();
+    String geminiGroupAssessmentDetails = impactAssessmentResults['Gemini_Group_Assessment_Details'];
+    List<EmployeeModel> employeeList = await fetchAllEmployees();
+
+    print(individualImpactRetakeData);
+    print(geminiGroupAssessmentDetails);
+
+    for (Map<String, dynamic> retakeData in individualImpactRetakeData) {
+      for (EmployeeModel employee in employeeList) {
+        if (retakeData['name'] == employee.fullName && retakeData['retake_decision'] == "YES") {
+          final Map<String, dynamic> updatedHistory = Map<String, dynamic>.from(employee.assessmentHistory);
+          updatedHistory['is_done'] = false;
+          updatedHistory['action_date'] = null;
+  
+          final EmployeeModel updatedEmployee = employee.copyWith(
+            impactAssessmentNotes: geminiGroupAssessmentDetails,
+            shallRetakeTraining: true,
+            assessmentHistory: updatedHistory
+          );
+
+          await editEmployee(updatedEmployee);
+
+          break;
+        } else if (retakeData['name'] == employee.fullName && retakeData['retake_decision'] == 'NO') {
+          final EmployeeModel updatedEmployee = employee.copyWith(
+            impactAssessmentNotes: geminiGroupAssessmentDetails,
+          );
+
+          await editEmployee(updatedEmployee);
+        }
       }
     }
   }

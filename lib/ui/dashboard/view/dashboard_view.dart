@@ -138,6 +138,8 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   void _onUpdate() {
+    if (!mounted) return;
+  
     setState(() {
       print(widget.viewModel.isAnalysisRunning);
     });

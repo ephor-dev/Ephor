@@ -51,6 +51,7 @@ EmployeeModel createEmployeeModel(AddEmployeeParams params, String? userId, Stri
       photoUrl: photoUrl,
       catnaAssessed: false,
       impactAssessed: true,
-      assessmentHistory: List<Map<String, dynamic>>.empty()
+      shallRetakeTraining: false,
+      assessmentHistory: {}
     );
   }
