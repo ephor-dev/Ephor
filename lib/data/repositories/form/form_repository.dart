@@ -177,9 +177,9 @@ class FormRepository extends AbstractFormRepository {
   @override
   Future<Result<void>> submitCatna(Map<String, dynamic> payload) async {
     try {
-      String employeeName = payload['updated_user'];
+      // String employeeName = payload['updated_user'];
       await _supabaseService.insertCatnaAssessment(payload);
-      await _supabaseService.updateEmployeeCATNAStatus(employeeName);
+      // await _supabaseService.updateEmployeeCATNAStatus(employeeName);
       awaitingCatna.value.add(payload);
       return const Result.ok(null);
     } catch (e) {
@@ -192,9 +192,9 @@ class FormRepository extends AbstractFormRepository {
   @override
   Future<Result<void>> submitImpactAssessment(Map<String, dynamic> payload) async {
     try {
-      String employeeName = payload['updated_user'];
+      // String employeeName = payload['updated_user'];
       await _supabaseService.insertImpactAssessment(payload);
-      await _supabaseService.updateEmployeeIAStatus(employeeName);
+      // await _supabaseService.updateEmployeeIAStatus(employeeName);
       awaitingIA.value.add(payload);
       return const Result.ok(null);
     } catch (e) {
@@ -257,6 +257,11 @@ class FormRepository extends AbstractFormRepository {
           throw CustomMessageException(status);
         }
 
+        for (Map<String, dynamic> payload in awaitingIA.value) {
+          String employeeCode = payload['updated_user'];
+          await _supabaseService.updateEmployeeCATNAStatus(employeeCode);
+        }
+
       } else if (analysisResult case Error e) {
         throw CustomMessageException(e.toString());
       }
@@ -317,7 +322,15 @@ class FormRepository extends AbstractFormRepository {
       print(analysisResult);
 
       if (analysisResult case Ok(value: Map<String, dynamic> result)) {
-        await _supabaseService.updateOverviewStatistics(result, true);
+        String status = await _supabaseService.updateOverviewStatistics(result, true);
+        if (status.contains("Error")) {
+          throw CustomMessageException(status);
+        }
+
+        for (Map<String, dynamic> payload in awaitingIA.value) {
+          String employeeCode = payload['updated_user'];
+          await _supabaseService.updateEmployeeIAStatus(employeeCode);
+        }
       } else if (analysisResult case Error e) {
         throw CustomMessageException(e.toString());
       }
