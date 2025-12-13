@@ -39,7 +39,7 @@ List<Map<String, dynamic>> convertPayloadToAPIModel(Map<String, dynamic> payload
 
   // Impact Assessment Parts
 
-  if (row['Training Plan'] != "") {
+  if (payload['Training Plan'] != "") {
     row['Training Plan'] = payload['Training Plan'];
     row['Intervention Type'] = payload['Intervention Type'];
     row['Was the intervention beneficial to the personnel’s scope of work?'] = payload['Was the intervention beneficial to the personnel’s scope of work?'];

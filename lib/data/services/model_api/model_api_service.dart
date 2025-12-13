@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 class ModelAPIService {
-  static const String _baseUrl = 'https://catna-ai-model.vercel.app';
+  static const String _baseUrl = 'https://catna-ai-model-pi.vercel.app';
   final http.Client _client;
 
   ModelAPIService({http.Client? client}) : _client = client ?? http.Client();
