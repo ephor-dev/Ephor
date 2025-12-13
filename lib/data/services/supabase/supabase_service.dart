@@ -412,13 +412,12 @@ class SupabaseService {
   }
 
   // Overview
-  Future<void> updateOverviewStatistics(Map<String, dynamic> analysisResult, bool hasImpact) async {
+  Future<String> updateOverviewStatistics(Map<String, dynamic> analysisResult, bool hasImpact) async {
     // 1. Get the Summary Data Safely
     final result = analysisResult['catna_analysis_summary'] ?? analysisResult['catna_analysis'];
 
     if (result == null) {
-      print("Warning: Could not find CATNA analysis data in payload.");
-      return;
+      return "Error: Could not find CATNA analysis data in payload.";
     }
 
     // 2. Safely Extract Lists (Default to empty list if null)
@@ -448,11 +447,15 @@ class SupabaseService {
     for (var plan in individualPlans) {
       if (plan is Map) {
         // Fire and forget the update (safe as long as it handles its own errors)
-        updateEmployeeTrainingPlan(
+        String status = await updateEmployeeTrainingPlan(
           plan['Name']?.toString(), 
           plan['Training_Recommendation']?.toString(), 
           currentTime
         );
+
+        if (status.contains('Error')) {
+          return status;
+        }
 
         derivedActivity.add({
           'employeeName': plan['Name'] ?? 'Unknown',
@@ -472,8 +475,10 @@ class SupabaseService {
         'full_report': analysisResult,
         'updated_at': currentTime,
       });
+
+      return "Update success!";
     } catch (e) {
-      print("Error saving overview stats: $e");
+      return "Error saving overview stats: $e";
     }
   }
 
@@ -537,8 +542,8 @@ class SupabaseService {
     }
   }
   
-  Future<void> updateEmployeeTrainingPlan(String? employeeName, String? trainingRecommendation, String updateTime) async {
-    if (employeeName == null || trainingRecommendation == null) return;
+  Future<String> updateEmployeeTrainingPlan(String? employeeName, String? trainingRecommendation, String updateTime) async {
+    if (employeeName == null || trainingRecommendation == null) return "";
 
     final employeeList = await fetchAllEmployees();
 
@@ -567,15 +572,14 @@ class SupabaseService {
             'assessment_history': currentHistory
           }).eq('employee_code', employee.employeeCode);
           
-          print("Successfully added '$trainingRecommendation' to ${employee.fullName}");
+          return "Successfully added '$trainingRecommendation' to ${employee.fullName}";
         } catch (e) {
-          print("Failed to update training plan: $e");
+          return "Error: Failed to update training plan: $e";
         }
-
-        // Stop the loop once we found and processed the employee
-        break;
       }
     }
+
+    return "Error: Failed to update training plan";
   }
   
   Future<void> updateIndividualAssessmentStatus(Map<String, dynamic> impactAssessmentResults) async {
@@ -586,9 +590,6 @@ class SupabaseService {
         rawList.map((e) => e as Map<String, dynamic>).toList();
     String geminiGroupAssessmentDetails = impactAssessmentResults['Gemini_Group_Assessment_Details'];
     List<EmployeeModel> employeeList = await fetchAllEmployees();
-
-    print(individualImpactRetakeData);
-    print(geminiGroupAssessmentDetails);
 
     for (Map<String, dynamic> retakeData in individualImpactRetakeData) {
       for (EmployeeModel employee in employeeList) {

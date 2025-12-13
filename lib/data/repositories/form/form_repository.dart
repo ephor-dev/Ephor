@@ -181,7 +181,6 @@ class FormRepository extends AbstractFormRepository {
       await _supabaseService.insertCatnaAssessment(payload);
       await _supabaseService.updateEmployeeCATNAStatus(employeeName);
       awaitingCatna.value.add(payload);
-      // _triggerAnalysisInBackground();
       return const Result.ok(null);
     } catch (e) {
       return Result.error(
@@ -197,7 +196,6 @@ class FormRepository extends AbstractFormRepository {
       await _supabaseService.insertImpactAssessment(payload);
       await _supabaseService.updateEmployeeIAStatus(employeeName);
       awaitingIA.value.add(payload);
-      // _triggerImpactAnalysisInBackground(payload);
       return const Result.ok(null);
     } catch (e) {
       return Result.error(
@@ -243,6 +241,8 @@ class FormRepository extends AbstractFormRepository {
 
       for (var assessment in allAssessments) {
         final assessmentMap = Map<String, dynamic>.from(assessment as Map);
+        assessmentMap['Training Plan'] = "";
+        assessmentMap['Intervention Type'] = "";
         final rows = convertPayloadToAPIModel(assessmentMap);
         fullDataset.addAll(rows);
       }
@@ -252,7 +252,11 @@ class FormRepository extends AbstractFormRepository {
 
       if (analysisResult case Ok(value: Map<String, dynamic> result)) {
         // FIX: Ensure this doesn't crash if result is malformed
-        await _supabaseService.updateOverviewStatistics(result, false);
+        String status = await _supabaseService.updateOverviewStatistics(result, false);
+        if (status.contains("Error")) {
+          throw CustomMessageException(status);
+        }
+
       } else if (analysisResult case Error e) {
         throw CustomMessageException(e.toString());
       }
@@ -323,7 +327,7 @@ class FormRepository extends AbstractFormRepository {
       return "Background analysis failed: $e";
     } finally {
       isAnalysisRunning.value = false;
-      awaitingCatna.value = [];
+      awaitingIA.value = [];
     }
   }
 
@@ -331,6 +335,8 @@ class FormRepository extends AbstractFormRepository {
     try {
       // 1. Convert JSON to Excel Bytes in Memory
       final List<int>? excelBytes = ExcelGenerator.generateExcelBytes(jsonData);
+      // print(jsonData);
+      // print('SCALE: $excelBytes');
       
       if (excelBytes == null || excelBytes.isEmpty) {
         return Result.error(CustomMessageException('No data available to generate Excel file.'));
