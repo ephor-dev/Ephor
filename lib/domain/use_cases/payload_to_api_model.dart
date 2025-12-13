@@ -39,12 +39,14 @@ List<Map<String, dynamic>> convertPayloadToAPIModel(Map<String, dynamic> payload
 
   // Impact Assessment Parts
 
-  row['Training Plan'] = payload['Training Plan'];
-  row['Intervention Type'] = payload['Intervention Type'];
-  row['Was the intervention beneficial to the personnel’s scope of work?'] = payload['Was the intervention beneficial to the personnel’s scope of work?'];
-  row['Did the personnel incorporate the things they learned in the intervention into their work?'] = payload['Did the personnel incorporate the things they learned in the intervention into their work?'];
-  row['Did you notice a significant change at your personnel’s perception, attitude or behavior as a result of the intervention?'] = payload['Did you notice a significant change at your personnel’s perception, attitude or behavior as a result of the intervention?'];
-  row['Rate of the intervention’s overall impact to the efficiency of the personnel'] = payload['Rate of the intervention’s overall impact to the efficiency of the personnel'];
+  if (row['Training Plan'] != "") {
+    row['Training Plan'] = payload['Training Plan'];
+    row['Intervention Type'] = payload['Intervention Type'];
+    row['Was the intervention beneficial to the personnel’s scope of work?'] = payload['Was the intervention beneficial to the personnel’s scope of work?'];
+    row['Did the personnel incorporate the things they learned in the intervention into their work?'] = payload['Did the personnel incorporate the things they learned in the intervention into their work?'];
+    row['Did you notice a significant change at your personnel’s perception, attitude or behavior as a result of the intervention?'] = payload['Did you notice a significant change at your personnel’s perception, attitude or behavior as a result of the intervention?'];
+    row['Rate of the intervention’s overall impact to the efficiency of the personnel'] = payload['Rate of the intervention’s overall impact to the efficiency of the personnel'];
+  }
 
   // --- MAPPING COMPETENCY RATINGS (Dynamic Bucket Logic) ---
   // We need to group questions by their code (CK, FK, SK, etc.) and sort them

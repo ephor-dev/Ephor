@@ -269,7 +269,7 @@ class FormRepository extends AbstractFormRepository {
 
       for (var assessment in allAssessments) {
         final assessmentMap = Map<String, dynamic>.from(assessment as Map);
-        // assessmentMap['Training Plan'] = "";
+        assessmentMap['Training Plan'] = "";
         // assessmentMap['Intervention Type'] = "";
         final rows = convertPayloadToAPIModel(assessmentMap);
         fullDataset.addAll(rows);
@@ -381,7 +381,7 @@ class FormRepository extends AbstractFormRepository {
       // 1. Convert JSON to Excel Bytes in Memory
       final List<int>? excelBytes = ExcelGenerator.generateExcelBytes(jsonData);
       // print(jsonData);
-      // print('SCALE: $excelBytes');
+      print('SCALE: $jsonData');
       
       if (excelBytes == null || excelBytes.isEmpty) {
         return Result.error(CustomMessageException('No data available to generate Excel file.'));
