@@ -27,7 +27,33 @@ class FormRepository extends AbstractFormRepository {
     required ModelAPIService modelAPIService
   })
     : _supabaseService = supabaseService,
-      _modelAPIService = modelAPIService;
+      _modelAPIService = modelAPIService {
+
+    loadUnprocessed();
+  }
+
+  void loadUnprocessed() async {
+    // Load waiting CATNA
+    List<Map<String, dynamic>> finishedCATNA = await _supabaseService.getAllFinishedCATNA();
+    final newCatnaList = <Map<String, dynamic>>[];
+    for (Map<String, dynamic> catna in finishedCATNA) {
+      if (catna['has_run'] == false) { // Explicit check
+        newCatnaList.add(catna);
+      }
+    }
+    // FIX 2: Reassign the list to trigger listeners
+    awaitingCatna.value = newCatnaList;
+
+    // Load waiting IA
+    List<Map<String, dynamic>> finishedIA = await _supabaseService.getAllFinishedIA();
+    final newIAList = <Map<String, dynamic>>[];
+    for (Map<String, dynamic> ia in finishedIA) {
+      if (ia['has_run'] == false) {
+        newIAList.add(ia);
+      }
+    }
+    awaitingIA.value = newIAList;
+  }
 
   @override
   Future<Result<FormModel>> saveForm(FormModel form) async {
@@ -178,9 +204,10 @@ class FormRepository extends AbstractFormRepository {
   Future<Result<void>> submitCatna(Map<String, dynamic> payload) async {
     try {
       // String employeeName = payload['updated_user'];
+      payload['has_run'] = false;
       await _supabaseService.insertCatnaAssessment(payload);
       // await _supabaseService.updateEmployeeCATNAStatus(employeeName);
-      awaitingCatna.value.add(payload);
+      awaitingCatna.value = List.from(awaitingCatna.value)..add(payload);
       return const Result.ok(null);
     } catch (e) {
       return Result.error(
@@ -193,9 +220,10 @@ class FormRepository extends AbstractFormRepository {
   Future<Result<void>> submitImpactAssessment(Map<String, dynamic> payload) async {
     try {
       // String employeeName = payload['updated_user'];
+      payload['has_run'] = false;
       await _supabaseService.insertImpactAssessment(payload);
       // await _supabaseService.updateEmployeeIAStatus(employeeName);
-      awaitingIA.value.add(payload);
+      awaitingIA.value = List.from(awaitingIA.value)..add(payload);
       return const Result.ok(null);
     } catch (e) {
       return Result.error(
@@ -257,9 +285,10 @@ class FormRepository extends AbstractFormRepository {
           throw CustomMessageException(status);
         }
 
-        for (Map<String, dynamic> payload in awaitingIA.value) {
+        for (Map<String, dynamic> payload in awaitingCatna.value) {
           String employeeCode = payload['updated_user'];
           await _supabaseService.updateEmployeeCATNAStatus(employeeCode);
+          await _supabaseService.updateRunCATNAStatus(employeeCode);
         }
 
       } else if (analysisResult case Error e) {
@@ -330,6 +359,7 @@ class FormRepository extends AbstractFormRepository {
         for (Map<String, dynamic> payload in awaitingIA.value) {
           String employeeCode = payload['updated_user'];
           await _supabaseService.updateEmployeeIAStatus(employeeCode);
+          await _supabaseService.updateRunIAStatus(employeeCode);
         }
       } else if (analysisResult case Error e) {
         throw CustomMessageException(e.toString());
@@ -369,6 +399,12 @@ class FormRepository extends AbstractFormRepository {
         return Result.ok(data);
       } else {
         // Try to parse server error message
+        if (response.statusCode == 429 || responseBody.contains("RESOURCE_EXHAUSTED")) {
+           return Result.error(CustomMessageException(
+             "AI System is busy (Rate Limit). Please wait 1 minute."
+           ));
+        }
+        
         String errorMessage = 'Request failed with status: ${response.statusCode}';
         try {
           final errorJson = json.decode(responseBody);

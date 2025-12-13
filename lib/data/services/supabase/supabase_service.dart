@@ -323,7 +323,7 @@ class SupabaseService {
   // CATNA THINGS
 
   Future<void> insertCatnaAssessment(Map<String, dynamic> payload) async {
-    await _client.from('catna_assessments').insert(payload);
+    await _client.from('catna_assessments').upsert(payload);
   }
 
   // Chatbot Things
@@ -342,7 +342,7 @@ class SupabaseService {
   }
 
   Future<void> insertImpactAssessment(Map<String, dynamic> payload) async {
-    await _client.from('impact_assessments').insert(payload);
+    await _client.from('impact_assessments').upsert(payload);
   }
 
   Future<List<Map<String, dynamic>>> getAllFinishedCATNA() async {
@@ -616,5 +616,29 @@ class SupabaseService {
         }
       }
     }
+  }
+
+  Future<void> updateRunCATNAStatus(String employeeCode) async {
+    final Map<String, dynamic> updates = {
+      'has_run': true,
+    };
+
+    await _client
+        .from('catna_assessments')
+        .update(updates)        // Pass the map of fields to change
+        .eq('updated_user', employeeCode)  // CRITICAL: WHERE id = employee.id
+        .eq('has_run', false);              // Ask Supabase to return the updated row
+  }
+
+  Future<void> updateRunIAStatus(String employeeCode) async {
+    final Map<String, dynamic> updates = {
+      'has_run': true,
+    };
+
+    await _client
+        .from('impact_assessments')
+        .update(updates)        // Pass the map of fields to change
+        .eq('updated_user', employeeCode)  // CRITICAL: WHERE id = employee.id
+        .eq('has_run', false);              // Ask Supabase to return the updated row
   }
 }
