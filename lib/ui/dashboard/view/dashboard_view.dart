@@ -656,7 +656,8 @@ class _DashboardViewState extends State<DashboardView> {
           key: _scaffoldKey,
           appBar: _buildAppBar(isMobile: isMobile),
           drawer: _buildDrawer(), // Hidden drawer used for navigation
-          floatingActionButton: currentRoute.contains(Routes.getChatbotPath())
+          floatingActionButton: currentRoute.contains(Routes.getChatbotPath()) 
+            || !currentRoute.contains(Routes.getOverviewPath()) 
             ? null
             : FloatingActionButton.extended(
               onPressed: () {

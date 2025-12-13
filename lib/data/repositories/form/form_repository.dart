@@ -269,8 +269,8 @@ class FormRepository extends AbstractFormRepository {
 
       for (var assessment in allAssessments) {
         final assessmentMap = Map<String, dynamic>.from(assessment as Map);
-        assessmentMap['Training Plan'] = "";
-        assessmentMap['Intervention Type'] = "";
+        // assessmentMap['Training Plan'] = "";
+        // assessmentMap['Intervention Type'] = "";
         final rows = convertPayloadToAPIModel(assessmentMap);
         fullDataset.addAll(rows);
       }
@@ -353,6 +353,7 @@ class FormRepository extends AbstractFormRepository {
       if (analysisResult case Ok(value: Map<String, dynamic> result)) {
         String status = await _supabaseService.updateOverviewStatistics(result, true);
         if (status.contains("Error")) {
+          print(status);
           throw CustomMessageException(status);
         }
 
@@ -362,6 +363,7 @@ class FormRepository extends AbstractFormRepository {
           await _supabaseService.updateRunIAStatus(employeeCode);
         }
       } else if (analysisResult case Error e) {
+        print(e.toString());
         throw CustomMessageException(e.toString());
       }
 
