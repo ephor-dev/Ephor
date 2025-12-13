@@ -566,6 +566,9 @@ class SupabaseService {
           'added_at': updateTime, // Optional: track when it was added
         };
 
+        print(employee.employeeCode);
+        print(employee.assessmentHistory);
+
         // 5. Update Supabase
         try {
           await _client.from('employees').update({
@@ -579,7 +582,7 @@ class SupabaseService {
       }
     }
 
-    return "Error: Failed to update training plan";
+    return "DONE";
   }
   
   Future<void> updateIndividualAssessmentStatus(Map<String, dynamic> impactAssessmentResults) async {
