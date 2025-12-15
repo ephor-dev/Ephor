@@ -118,7 +118,7 @@ class OverviewViewModel extends ChangeNotifier {
           ),
         ),
         context: args.context, 
-        delay: const Duration(milliseconds: 150), // Increased slightly to be safe
+        delay: const Duration(milliseconds: 150),
         constraints: const BoxConstraints(maxWidth: 800),
         pixelRatio: 2.0,
       );
@@ -130,12 +130,9 @@ class OverviewViewModel extends ChangeNotifier {
       final int pageHeight = (decodedImage.width * 1.414).toInt();
       int currentY = 0;
 
-      // 4. Loop and Slice
       while (currentY < decodedImage.height) {
-        // Determine the height of this slice (don't go past the end)
         final int sliceHeight = min(pageHeight, decodedImage.height - currentY);
 
-        // Crop the image
         final img.Image slice = img.copyCrop(
           decodedImage, 
           x: 0, 
@@ -144,18 +141,15 @@ class OverviewViewModel extends ChangeNotifier {
           height: sliceHeight
         );
 
-        // Encode the slice back to PNG bytes for the PDF library
         final Uint8List sliceBytes = img.encodePng(slice);
         final sliceImage = pw.MemoryImage(sliceBytes);
 
-        // Add the page
         pdf.addPage(
           pw.Page(
             pageFormat: PdfPageFormat.a4,
-            margin: pw.EdgeInsets.zero, // Full bleed
+            margin: pw.EdgeInsets.zero,
             build: (pw.Context context) {
               return pw.Center(
-                // fitWidth ensures it fills horizontally
                 child: pw.Image(sliceImage, fit: pw.BoxFit.fitWidth, alignment: pw.Alignment.topCenter),
               );
             },

@@ -156,23 +156,6 @@ class _ImpactAssessmentViewState extends State<ImpactAssessmentView> {
               ),
             ),
             leadingWidth: 140,
-            actions: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(right: 16.0),
-                child: SizedBox(
-                  width: 105,
-                  child: FilledButton.icon(
-                    icon: Icon(isLastPage ? Icons.check : Icons.arrow_forward, size: 18),
-                    label: Text(isLastPage ? 'Submit' : 'Next'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: isLastPage ? Colors.green.shade700 : null,
-                      padding: EdgeInsets.zero,
-                    ),
-                    onPressed: isLastPage ? widget.viewModel.submitAssessment.execute : _next,
-                  ),
-                ),
-              ),
-            ],
           ),
           body: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
@@ -198,6 +181,28 @@ class _ImpactAssessmentViewState extends State<ImpactAssessmentView> {
               child: steps.isNotEmpty && currentIndex < steps.length
                   ? steps[currentIndex]
                   : const Center(child: Text("No form sections available.")),
+            ),
+          ),
+          bottomNavigationBar: BottomAppBar(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: SizedBox(
+                    width: 105,
+                    child: FilledButton.icon(
+                      icon: Icon(isLastPage ? Icons.check : Icons.arrow_forward, size: 18),
+                      label: Text(isLastPage ? 'Submit' : 'Next'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: isLastPage ? Colors.green.shade700 : null,
+                        padding: EdgeInsets.zero,
+                      ),
+                      onPressed: isLastPage ? widget.viewModel.submitAssessment.execute : _next,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         );
