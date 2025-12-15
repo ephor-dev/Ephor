@@ -1,4 +1,4 @@
-import 'package:ephor/ui/dashboard/subviews/overview/widgets/group_stat_card.dart';
+import 'package:ephor/ui/overview/widgets/group_stat_card.dart';
 import 'package:flutter/material.dart';
 
 class GroupAnalysisSection extends StatelessWidget {
