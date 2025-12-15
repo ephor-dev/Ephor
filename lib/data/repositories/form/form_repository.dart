@@ -6,7 +6,7 @@ import 'package:ephor/data/services/model_api/model_api_service.dart';
 import 'package:ephor/data/services/supabase/supabase_service.dart';
 import 'package:ephor/domain/models/form_editor/form_model.dart';
 import 'package:ephor/domain/models/overview/activity_model.dart';
-import 'package:ephor/domain/use_cases/excel_generator.dart';
+import 'package:ephor/domain/use_cases/catna_calculator.dart';
 import 'package:ephor/domain/use_cases/payload_to_api_model.dart';
 import 'package:ephor/utils/results.dart';
 import 'package:ephor/utils/custom_message_exception.dart';
@@ -17,6 +17,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class FormRepository extends AbstractFormRepository {
   final SupabaseService _supabaseService;
   final ModelAPIService _modelAPIService;
+  final CatnaCalculator _calculator = CatnaCalculator();
 
   final ValueNotifier<bool> isAnalysisRunning = ValueNotifier(false);
   final ValueNotifier<List<Map<String, dynamic>>> awaitingCatna = ValueNotifier([]);
@@ -33,18 +34,15 @@ class FormRepository extends AbstractFormRepository {
   }
 
   void loadUnprocessed() async {
-    // Load waiting CATNA
     List<Map<String, dynamic>> finishedCATNA = await _supabaseService.getAllFinishedCATNA();
     final newCatnaList = <Map<String, dynamic>>[];
     for (Map<String, dynamic> catna in finishedCATNA) {
-      if (catna['has_run'] == false) { // Explicit check
+      if (catna['has_run'] == false) {
         newCatnaList.add(catna);
       }
     }
-    // FIX 2: Reassign the list to trigger listeners
     awaitingCatna.value = newCatnaList;
 
-    // Load waiting IA
     List<Map<String, dynamic>> finishedIA = await _supabaseService.getAllFinishedIA();
     final newIAList = <Map<String, dynamic>>[];
     for (Map<String, dynamic> ia in finishedIA) {
@@ -114,13 +112,7 @@ class FormRepository extends AbstractFormRepository {
   @override
   Future<Result<void>> deleteForm(String formId) async {
     try {
-      // Determine if we need to delete responses first (Cascade)
-      // If your Supabase/Postgres Foreign Key is set to "ON DELETE CASCADE",
-      // you only need to delete the form. 
-      // If not, you must delete responses manually first.
-      // Assuming ON DELETE CASCADE is set up in DB:
       await _supabaseService.deleteForm(formId);
-
       return Result.ok(null);
     } on PostgrestException catch (e) {
       return Result.error(
@@ -149,32 +141,79 @@ class FormRepository extends AbstractFormRepository {
   }
 
   Map<String, dynamic> convertFunction(List<Map<String, dynamic>> event) {
-    // 1. Handle Empty Case
     if (event.isEmpty) {
       return {
         'training_needs_count': 0,
         'recent_activity': <ActivityModel>[],
         'gemini_insights': 'None',
-        'updated_at': DateFormat('MM/dd/yyyy hh:mm:ss a').format(DateTime.now()),
-        'full_report': 'N/A'
+        'updated_at': DateTime.now().toIso8601String(), 
+        'full_report': <String, dynamic>{}
       };
     }
 
     final row = event.first;
 
-    // 2. Deserialize Activity List
     final List<dynamic> rawActivityList = row['recent_activity'] ?? [];
     final List<ActivityModel> activities = rawActivityList
         .map((json) => ActivityModel.fromJson(json as Map<String, dynamic>))
         .toList();
 
-    // 3. Return Final Map
+    var rawInsights = row['full_report'] != null 
+        ? row['full_report']['gemini_insights'] 
+        : null;
+    
+    String finalInsights = 'None';
+    if (rawInsights != null) {
+      if (rawInsights is String) {
+        finalInsights = rawInsights;
+      } else {
+        finalInsights = jsonEncode(rawInsights); 
+      }
+    }
+
+    var rawReport = row['full_report'] != null 
+        ? row['full_report']['catna_analysis_summary'] 
+        : null;
+
+    Map<String, dynamic> finalReport = {};
+
+    if (rawReport != null) {
+      if (rawReport is Map) {
+        finalReport = Map<String, dynamic>.from(rawReport);
+      } else if (rawReport is String) {
+        try {
+          finalReport = jsonDecode(rawReport) as Map<String, dynamic>;
+        } catch (e) {
+          finalReport = {};
+        }
+      }
+    }
+
+    String safeDate;
+    var rawDate = row['updated_at'];
+    
+    if (rawDate == null) {
+      safeDate = DateTime.now().toIso8601String();
+    } else {
+      try {
+        DateTime.parse(rawDate.toString());
+        safeDate = rawDate.toString();
+      } catch (_) {
+        try {
+          final dateObj = DateFormat('MM/dd/yyyy hh:mm:ss a').parse(rawDate.toString());
+          safeDate = dateObj.toIso8601String();
+        } catch (e) {
+          safeDate = DateTime.now().toIso8601String();
+        }
+      }
+    }
+
     return {
       'training_needs_count': row['training_needs_count'] ?? 0,
       'recent_activity': activities,
-      'gemini_insights': row['full_report']['gemini_insights'],
-      'updated_at': row['updated_at'],
-      'full_report': row['full_report']['catna_analysis_summary']
+      'gemini_insights': finalInsights,
+      'updated_at': safeDate,
+      'full_report': finalReport
     };
   }
   
@@ -203,10 +242,8 @@ class FormRepository extends AbstractFormRepository {
   @override
   Future<Result<void>> submitCatna(Map<String, dynamic> payload) async {
     try {
-      // String employeeName = payload['updated_user'];
       payload['has_run'] = false;
       await _supabaseService.insertCatnaAssessment(payload);
-      // await _supabaseService.updateEmployeeCATNAStatus(employeeName);
       awaitingCatna.value = List.from(awaitingCatna.value)..add(payload);
       return const Result.ok(null);
     } catch (e) {
@@ -219,10 +256,8 @@ class FormRepository extends AbstractFormRepository {
   @override
   Future<Result<void>> submitImpactAssessment(Map<String, dynamic> payload) async {
     try {
-      // String employeeName = payload['updated_user'];
       payload['has_run'] = false;
       await _supabaseService.insertImpactAssessment(payload);
-      // await _supabaseService.updateEmployeeIAStatus(employeeName);
       awaitingIA.value = List.from(awaitingIA.value)..add(payload);
       return const Result.ok(null);
     } catch (e) {
@@ -260,7 +295,6 @@ class FormRepository extends AbstractFormRepository {
 
   Future<String> _triggerAnalysisInBackground() async {
     try { 
-      // Notify listeners analysis started
       isAnalysisRunning.value = true;
       
       final response = await _supabaseService.getAllFinishedCATNA();
@@ -270,7 +304,6 @@ class FormRepository extends AbstractFormRepository {
       for (var assessment in allAssessments) {
         final assessmentMap = Map<String, dynamic>.from(assessment as Map);
         assessmentMap['Training Plan'] = "";
-        // assessmentMap['Intervention Type'] = "";
         final rows = convertPayloadToAPIModel(assessmentMap);
         fullDataset.addAll(rows);
       }
@@ -279,7 +312,6 @@ class FormRepository extends AbstractFormRepository {
       print(analysisResult);
 
       if (analysisResult case Ok(value: Map<String, dynamic> result)) {
-        // FIX: Ensure this doesn't crash if result is malformed
         String status = await _supabaseService.updateOverviewStatistics(result, false);
         if (status.contains("Error")) {
           throw CustomMessageException(status);
@@ -316,9 +348,11 @@ class FormRepository extends AbstractFormRepository {
         String employeeCode = payload['updated_user'];
         final employee = await _supabaseService.getEmployeeByCode(employeeCode);
 
+        // FIX #1: Handle potential Null here safely
         String trainingPlan = "";
         if (employee != null) {
-          trainingPlan = employee.assessmentHistory['result'];
+          // If 'result' is null, use empty string instead of crashing
+          trainingPlan = employee.assessmentHistory['result']?.toString() ?? ""; 
         }
 
         final Map<String, dynamic> assessmentsData = payload['assessments_data'];
@@ -378,45 +412,37 @@ class FormRepository extends AbstractFormRepository {
 
   Future<Result<Map<String, dynamic>>> analyzeCATNA(List<Map<String, dynamic>> jsonData) async {
     try {
-      // 1. Convert JSON to Excel Bytes in Memory
-      final List<int>? excelBytes = ExcelGenerator.generateExcelBytes(jsonData);
-      // print(jsonData);
-      print('SCALE: $jsonData');
-      
-      if (excelBytes == null || excelBytes.isEmpty) {
-        return Result.error(CustomMessageException('No data available to generate Excel file.'));
+      if (jsonData.isEmpty) {
+        return Result.error(CustomMessageException('No data available for analysis.'));
       }
 
-      // 2. Upload the Bytes (Mocking a filename is required by most APIs)
-      final response = await _modelAPIService.analyzeDatasetBytes(
-        excelBytes, 
-        'catna_submission.xlsx' 
+      final calculatedData = _calculator.calculateIndividualMeans(jsonData);
+      
+      final summaryStats = {
+        "Overall_Top_3_Needs": _calculator.getOverallTop3(calculatedData),
+        "Group_Mean_Plans_Office_College": _calculator.getGroupMeanPlans(calculatedData, "Office/College"),
+        "Individual_Training_Plans": _calculator.getIndividualTrainingPlans(calculatedData),
+      };
+
+      bool hasImpact = calculatedData.isNotEmpty && 
+          calculatedData.first.containsKey('Rate of the intervention’s overall impact to the efficiency of the personnel');
+
+      final aiInsights = await _modelAPIService.getAiInsights(
+        summaryStats: summaryStats, 
+        hasImpact: hasImpact
       );
-      
-      final responseBody = response.body;
 
-      // 3. Handle Response
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(responseBody);
-        return Result.ok(data);
-      } else {
-        // Try to parse server error message
-        if (response.statusCode == 429 || responseBody.contains("RESOURCE_EXHAUSTED")) {
-           return Result.error(CustomMessageException(
-             "AI System is busy (Rate Limit). Please wait 1 minute."
-           ));
-        }
-        
-        String errorMessage = 'Request failed with status: ${response.statusCode}';
-        try {
-          final errorJson = json.decode(responseBody);
-          if (errorJson['detail'] != null) {
-            errorMessage = errorJson['detail'];
-          }
-        } catch (_) {}
-        
-        return Result.error(CustomMessageException(errorMessage));
-      }
+      // FIX #2: Safely handle nullable AI fields
+      return Result.ok({
+        "catna_analysis_summary": summaryStats,
+        "impact_assessment": {
+          "Individual_Impact_Retake_Data": aiInsights['individual_impact_list'] ?? [],
+          // Ensure this is a String, never null
+          "Gemini_Group_Assessment_Details": aiInsights['impact_assessment_details']?.toString() ?? "" 
+        },
+        "gemini_insights": aiInsights['key_insights_and_prioritization']?.toString() ?? "No insights available."
+      });
+
     } catch (e) {
       return Result.error(CustomMessageException('Analysis failed: $e'));
     }

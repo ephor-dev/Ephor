@@ -1,8 +1,8 @@
-import 'package:ephor/ui/dashboard/subviews/overview/view_model/overview_viewmodel.dart';
-import 'package:ephor/ui/dashboard/subviews/overview/widgets/gemini_insights_card.dart';
-import 'package:ephor/ui/dashboard/subviews/overview/widgets/group_analysis_section.dart';
-import 'package:ephor/ui/dashboard/subviews/overview/widgets/strategic_priorities_section.dart';
-import 'package:ephor/ui/dashboard/subviews/overview/widgets/top_stats_row.dart';
+import 'package:ephor/ui/overview/view_model/overview_viewmodel.dart';
+import 'package:ephor/ui/overview/widgets/gemini_insights_card.dart';
+import 'package:ephor/ui/overview/widgets/group_analysis_section.dart';
+import 'package:ephor/ui/overview/widgets/strategic_priorities_section.dart';
+import 'package:ephor/ui/overview/widgets/top_stats_row.dart';
 import 'package:flutter/material.dart';
 
 class OverviewSubView extends StatefulWidget {
@@ -41,7 +41,7 @@ class _OverviewSubViewState extends State<OverviewSubView> {
                       Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
                       const SizedBox(width: 8),
                       Text(
-                        dateStr,
+                        'Last Update: $dateStr',
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 14,

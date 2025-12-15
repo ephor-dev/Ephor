@@ -1,5 +1,5 @@
-import 'package:ephor/ui/dashboard/subviews/overview/view_model/overview_viewmodel.dart';
-import 'package:ephor/ui/dashboard/subviews/overview/widgets/activity_row.dart';
+import 'package:ephor/ui/overview/view_model/overview_viewmodel.dart';
+import 'package:ephor/ui/overview/widgets/activity_row.dart';
 import 'package:flutter/material.dart';
 
 class RecentActivityCard extends StatelessWidget {

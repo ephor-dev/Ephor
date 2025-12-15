@@ -1,4 +1,4 @@
-import 'package:ephor/ui/dashboard/subviews/overview/widgets/priority_card.dart';
+import 'package:ephor/ui/overview/widgets/priority_card.dart';
 import 'package:flutter/material.dart';
 
 class StrategicPrioritiesSection extends StatelessWidget {

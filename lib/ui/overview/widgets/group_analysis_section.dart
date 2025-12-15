@@ -1,4 +1,4 @@
-import 'package:ephor/ui/dashboard/subviews/overview/widgets/group_stat_card.dart';
+import 'package:ephor/ui/overview/widgets/group_stat_card.dart';
 import 'package:flutter/material.dart';
 
 class GroupAnalysisSection extends StatelessWidget {
@@ -24,9 +24,14 @@ class GroupAnalysisSection extends StatelessWidget {
               width: width,
               child: GroupStatCard(
                 groupName: item['Group_Name'].toString(),
-                rating: item['Overall_Group_Rating'],
-                primaryFocus: item['Primary_Focus_1'],
-                secondaryFocus: item['Secondary_Focus_2'],
+                
+                // FIX 1: Robustly handle rating. If it's a String, parse it. If it's a Number, cast it.
+                rating: double.tryParse(item['Overall_Group_Rating'].toString()),
+                
+                // FIX 2: Ensure Focus is always a String (Card expects String)
+                primaryFocus: item['Primary_Focus_1']?.toString(),
+                secondaryFocus: item['Secondary_Focus_2']?.toString(),
+                
                 icon: icon,
               ),
             );
