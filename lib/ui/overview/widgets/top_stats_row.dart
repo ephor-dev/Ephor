@@ -1,7 +1,7 @@
-import 'package:ephor/ui/dashboard/subviews/overview/view_model/overview_viewmodel.dart';
-import 'package:ephor/ui/dashboard/subviews/overview/widgets/recent_activity_card.dart';
-import 'package:ephor/ui/dashboard/subviews/overview/widgets/stat_card.dart';
-import 'package:ephor/ui/dashboard/subviews/overview/widgets/training_needs_chart_card.dart';
+import 'package:ephor/ui/overview/view_model/overview_viewmodel.dart';
+import 'package:ephor/ui/overview/widgets/recent_activity_card.dart';
+import 'package:ephor/ui/overview/widgets/stat_card.dart';
+import 'package:ephor/ui/overview/widgets/training_needs_chart_card.dart';
 import 'package:flutter/material.dart';
 
 class TopStatsRow extends StatelessWidget {

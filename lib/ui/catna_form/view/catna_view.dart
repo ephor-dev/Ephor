@@ -187,25 +187,6 @@ class _CatnaViewState extends State<CatnaView> {
           ),
         ),
         leadingWidth: 140,
-        actions: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: SizedBox(
-              width: 105,
-              child: FilledButton.icon(
-                icon: Icon(isLastPage ? Icons.check : Icons.arrow_forward,
-                    size: 18),
-                label: Text(isLastPage ? 'Submit' : 'Next'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: isLastPage ? Colors.green.shade700 : null,
-                  padding: EdgeInsets.zero,
-                ),
-                onPressed:
-                    isLastPage ? _submit : _next, // Calls _submit or _next
-              ),
-            ),
-          ),
-        ],
       ),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
@@ -237,6 +218,30 @@ class _CatnaViewState extends State<CatnaView> {
           child: steps.length > currentIndex
               ? steps[currentIndex]
               : const Center(child: Text("Error: Step index out of bounds")),
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: SizedBox(
+                width: 105,
+                child: FilledButton.icon(
+                  icon: Icon(isLastPage ? Icons.check : Icons.arrow_forward,
+                      size: 18),
+                  label: Text(isLastPage ? 'Submit' : 'Next'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: isLastPage ? Colors.green.shade700 : null,
+                    padding: EdgeInsets.zero,
+                  ),
+                  onPressed:
+                      isLastPage ? _submit : _next, // Calls _submit or _next
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
