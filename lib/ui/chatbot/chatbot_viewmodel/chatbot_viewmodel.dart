@@ -19,7 +19,6 @@ class ChatbotViewModel extends ChangeNotifier {
 
   void getGeminiKey() async {
     final result = await _authRepository.getGeminiKey();
-    print(result);
     switch (result) {
       case Ok():
         _geminiApiKey = result.value;
