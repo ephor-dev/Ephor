@@ -20,8 +20,8 @@ const RESOURCES = {"flutter.js": "24bc71911b75b5f8135c949e27a2984e",
 "assets/assets/images/logo.png": "8f8a9933cc71abc47ac686842456e32d",
 "assets/assets/images/sort_name_descending.svg": "b0201598a8c7b010606280af5ddcabad",
 "assets/assets/images/batch_add.svg": "ce49c61e4188bddcfea49555bc5b77bb",
-"assets/fonts/MaterialIcons-Regular.otf": "264969026ad88b8a1c156ae08ca144a0",
-"assets/NOTICES": "7dbf91c931e80d404f60167ce30fc3c7",
+"assets/fonts/MaterialIcons-Regular.otf": "98ae550fa5453d98f8145b1fbc323925",
+"assets/NOTICES": "06058ca2a0174313ae8285adb8d1da0b",
 "assets/packages/cupertino_icons/assets/CupertinoIcons.ttf": "33b7d9392238c04c131b6ce224e13711",
 "assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_AMS-Regular.ttf": "657a5353a553777e270827bd1630e467",
 "assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Math-Italic.ttf": "a7732ecb5840a15be39e1eda377bc21d",
@@ -60,9 +60,9 @@ const RESOURCES = {"flutter.js": "24bc71911b75b5f8135c949e27a2984e",
 "canvaskit/skwasm.js.symbols": "3a4aadf4e8141f284bd524976b1d6bdc",
 "favicon.png": "c065573ac3c94f317ef7cd8acca54f0d",
 ".well-known/assetlinks.json": "5c52dfdedaea40ebe55ea79bea9a04b4",
-"flutter_bootstrap.js": "e6245690ea384a5d9aed4cecc968ecbc",
+"flutter_bootstrap.js": "84d2e03fa673b84e289070d82a93df1e",
 "version.json": "d477c3ff5a79eb3ed9b962113b72a0e0",
-"main.dart.js": "72b3c943ce9baac2a4d868853bcd6c8c"};
+"main.dart.js": "73f8d3dd75f92bd398fce9245370f80a"};
 // The application shell files that are downloaded before a service worker can
 // start.
 const CORE = ["main.dart.js",
